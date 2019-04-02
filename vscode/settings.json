@@ -1,5 +1,5 @@
 {
-    "window.zoomLevel": 1,
+    "window.zoomLevel": 0,
     "editor.cursorBlinking": "phase",
     "editor.dragAndDrop": false,
     "editor.fontLigatures": true,
@@ -12,14 +12,22 @@
     "editor.detectIndentation": false,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
-    "editor.fontSize": 13,
+    "editor.fontSize": 14,
     "javascript.implicitProjectConfig.experimentalDecorators": true,
     "editor.rulers": [80, 120],
     "typescript.tsdk": "node_modules/typescript/lib",
     "explorer.confirmDelete": false,
-    "editor.fontFamily": "'Fira Code Retina','Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
-    "vim.useCtrlKeys": true,
+    "editor.fontFamily": "'Fira Code','Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
     "zenMode.hideLineNumbers": false,
     "workbench.colorTheme": "Default High Contrast",
     "files.autoSave": "off",
+    "workbench.activityBar.visible": false,
+    "vim.insertModeKeyBindings": [{
+      "before": ["j", "j"],
+      "after": ["<esc>"]
+    }],
+    "vim.handleKeys": {
+      "<C-f>": false
+    },
+    "vim.useCtrlKeys": false
   }
