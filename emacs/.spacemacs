@@ -40,7 +40,12 @@ values."
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      helm
-     auto-completion
+     (auto-completion :variables
+                      auto-completion-return-key-behavior 'nil
+                      auto-completion-tab-key-behavior 'cycle
+                      auto-completion-enable-sort-by-usage t
+                      auto-completion-enable-help-tooltip 'manual
+                      auto-completion-private-snippets-directory nil )
      better-defaults
      emacs-lisp
      git
@@ -60,6 +65,7 @@ values."
      html
      typescript
      erc
+     org-roam
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -325,24 +331,84 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (setq make-backup-files nil) ; stop creating backup~ files
 (setq auto-save-default nil) ; stop creating #autosave# files
 (setq create-lockfiles nil)
+(setq org-directory "~/Dropbox/org")
+
 (with-eval-after-load 'org
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
-  (setq org-directory "~/Dropbox/org")
-  (setq org-default-notes-file (concat org-directory "/notes.org"))
+  (setq org-default-notes-file (concat org-directory "/inbox.org"))
   (setq org-agenda-files '("~/Dropbox/org/"))
   (setq org-projectile-projects-file
         (concat org-directory "/projects.org"))
-  )
-(setq typescript-indent-level 2)
-(setq js-indent-level 2)
-(indent-guide-global-mode)
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
+  (setq org-capture-templates
+        `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
+           "* TODO %?")
+          ))
 
+  (setq org-refile-targets '(
+                             ("projects.org" :maxlevel . 1)))
+  (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
+
+
+  (setq q-view
+          `("Q" "Agenda"
+           ((agenda ""
+                    ((org-agenda-span 'day)
+                     (org-deadline-warning-days 365)))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "To Refile")
+                   (org-agenda-files '("~/Dropbox/org/inbox.org"))))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "Life Stuff")
+                   (org-agenda-files '("~/Dropbox/org/Life.org"))
+                   ))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "Projects")
+                   (org-agenda-files '("~/Dropbox/org/projects.org"))
+                   ))
+            nil
+            )
+           )
+          )
+  (setq w-view
+           `("W" "Work"
+             (
+              (agenda ""
+                      ((org-agenda-span 'day)
+                       (org-deadline-warning-days 365)
+                       ))
+              (tags-todo "@work"
+                         ((org-agenda-overriding-header "All Work")
+                          (org-agenda-files '("~/Dropbox/org/inbox.org"))
+                          ))
+              (tags-todo "@work"
+                         ((org-agenda-overriding-header "Work Projects")
+                          (org-agenda-files '("~/Dropbox/org/projects.org"))
+                          ))
+              nil
+              )
+             )
+           )
+  (add-to-list 'org-agenda-custom-commands `,q-view)
+  (add-to-list 'org-agenda-custom-commands `,w-view)
+
+  )
+  (setq typescript-indent-level 2)
+  (setq js-indent-level 2)
+  (indent-guide-global-mode)
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
+
+;; ;; Fixes error with spacemacs using wrong org mode function
+;; (with-eval-after-load 'org
+;;   ;; Replace org-set-tags with org-set-tags-command in keybinding
+;;   (spacemacs/set-leader-keys-for-major-mode 'org-mode ":" 'org-set-tags-command)
+;; )
 (defun my-web-mode-hook ()
   "Hooks for Web mode."
   (setq web-mode-markup-indent-offset 2)
@@ -358,22 +424,59 @@ you should place your code here."
   (visual-line-mode -1 )
   (spacemacs/disable-smooth-scrolling)
   )
-(spacemacs/declare-prefix "o" "custom")
-(spacemacs/set-leader-keys "oc" 'org-projectile-capture-for-current-project)
+  (defvar org-current-effort "1:00" "Current effort for agenda items.")
+  (defun my-org-agenda-set-effort (effort)
+    "Set the effort property for the current headline."
+    (interactive
+     (list (read-string (format "Effort [%s]: " org-current-effort) nil nil org-current-effort)))
+    (setq jethro/org-current-effort effort)
+    (org-agenda-check-no-diary)
+    (let* ((hdmarker (or (org-get-at-bol 'org-hd-marker)
+                         (org-agenda-error)))
+           (buffer (marker-buffer hdmarker))
+           (pos (marker-position hdmarker))
+           (inhibit-read-only t)
+           newhead)
+      (org-with-remote-undo buffer
+        (with-current-buffer buffer
+          (widen)
+          (goto-char pos)
+          (org-show-context 'agenda)
+          (funcall-interactively 'org-set-effort nil org-current-effort)
+          (end-of-line 1)
+          (setq newhead (org-get-heading)))
+        (org-agenda-change-all-lines newhead hdmarker))))
+
+  (defun org-agenda-process-inbox-item ()
+    "Process a single item in the org-agenda."
+    (org-with-wide-buffer
+     (org-agenda-set-tags)
+     (org-agenda-priority)
+     (call-interactively 'my-org-agenda-set-effort)
+     (org-agenda-refile nil nil t)))
+
+  (spacemacs/declare-prefix "o" "custom")
+  (spacemacs/set-leader-keys "oc" 'org-projectile-capture-for-current-project)
+  (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
+
+  ;; (spacemacs/declare-prefix "ar" "org-roam")
+  ;; (spacemacs/set-leader-keys
+  ;;   "arl" 'org-roam
+  ;;   "art" 'org-roam-today
+  ;;   "arf" 'org-roam-find-file
+  ;;   "arg" 'org-roam-show-graph)
+
+  ;; (spacemacs/declare-prefix-for-mode 'org-mode "mr" "org-roam")
+  ;; (spacemacs/set-leader-keys-for-major-mode 'org-mode
+  ;;   "rl" 'org-roam
+  ;;   "rt" 'org-roam-today
+  ;;   "rb" 'org-roam-switch-to-buffer
+  ;;   "rf" 'org-roam-find-file
+  ;;   "ri" 'org-roam-insert
+  ;;   "rg" 'org-roam-show-graph)
+
+;; (setq org-todo-keywords
+;;       '((sequence "PENDING" "TODO" "|" "DONE" "WONTDO")))
 )
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (projectile yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unfill toml-mode toc-org tide tagedit stickyfunc-enhance srefactor sql-indent spaceline smeargle slim-mode shell-pop scss-mode sass-mode restart-emacs rainbow-delimiters racer pyvenv pytest pyenv-mode py-isort pug-mode popwin pip-requirements persp-mode pcre2el paradox orgit org-projectile org-present org-pomodoro org-mime org-download org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint json-mode js2-refactor js-doc indent-guide hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio go-guru go-eldoc gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md fuzzy flyspell-correct-helm flycheck-rust flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help erc-yt erc-view-log erc-social-graph erc-image erc-hl-nicks emmet-mode elisp-slime-nav dumb-jump disaster diminish diff-hl define-word cython-mode company-web company-tern company-statistics company-go company-c-headers company-anaconda column-enforce-mode coffee-mode cmake-mode clean-aindent-mode clang-format cargo auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
