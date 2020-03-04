@@ -361,14 +361,14 @@ you should place your code here."
            ((agenda ""
                     ((org-agenda-span 'day)
                      (org-deadline-warning-days 365)))
-            (todo "TODO"
+            (tags-todo "-@home-@work-@mobile"
                   ((org-agenda-overriding-header "To Refile")
                    (org-agenda-files '("~/Dropbox/org/inbox.org"))
-                   (org-agenda-todo-ignore-deadlines)_
-                   (org-agenda-todo-ignore-scheduled)_
+                   (org-agenda-todo-ignore-deadlines t)_
+                   (org-agenda-todo-ignore-scheduled t)_
                    (org-agenda-sorting-strategy '(priority-down tag-up))
                    ))
-            (tags-todo "life"
+            (tags-todo "life+@home|@mobile"
                   ((org-agenda-overriding-header "Life Stuff")
                    (org-agenda-files '("~/Dropbox/org/inbox.org"))
                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
@@ -468,24 +468,6 @@ you should place your code here."
   (spacemacs/set-leader-keys "oc" 'org-projectile-capture-for-current-project)
   (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
 
-  ;; (spacemacs/declare-prefix "ar" "org-roam")
-  ;; (spacemacs/set-leader-keys
-  ;;   "arl" 'org-roam
-  ;;   "art" 'org-roam-today
-  ;;   "arf" 'org-roam-find-file
-  ;;   "arg" 'org-roam-show-graph)
-
-  ;; (spacemacs/declare-prefix-for-mode 'org-mode "mr" "org-roam")
-  ;; (spacemacs/set-leader-keys-for-major-mode 'org-mode
-  ;;   "rl" 'org-roam
-  ;;   "rt" 'org-roam-today
-  ;;   "rb" 'org-roam-switch-to-buffer
-  ;;   "rf" 'org-roam-find-file
-  ;;   "ri" 'org-roam-insert
-  ;;   "rg" 'org-roam-show-graph)
-
-;; (setq org-todo-keywords
-;;       '((sequence "PENDING" "TODO" "|" "DONE" "WONTDO")))
 )
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
