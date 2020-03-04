@@ -340,6 +340,7 @@ you should place your code here."
 (setq org-directory "~/Dropbox/org")
 
 (with-eval-after-load 'org
+  (require 'org-agenda)
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
   (setq org-default-notes-file (concat org-directory "/inbox.org"))
   (setq org-agenda-files '("~/Dropbox/org/"))
@@ -362,14 +363,20 @@ you should place your code here."
                      (org-deadline-warning-days 365)))
             (todo "TODO"
                   ((org-agenda-overriding-header "To Refile")
-                   (org-agenda-files '("~/Dropbox/org/inbox.org"))))
-            (todo "TODO"
+                   (org-agenda-files '("~/Dropbox/org/inbox.org"))
+                   (org-agenda-todo-ignore-deadlines)_
+                   (org-agenda-todo-ignore-scheduled)_
+                   (org-agenda-sorting-strategy '(priority-down tag-up))
+                   ))
+            (tags-todo "life"
                   ((org-agenda-overriding-header "Life Stuff")
-                   (org-agenda-files '("~/Dropbox/org/Life.org"))
+                   (org-agenda-files '("~/Dropbox/org/inbox.org"))
+                   (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                    ))
             (todo "TODO"
                   ((org-agenda-overriding-header "Projects")
                    (org-agenda-files '("~/Dropbox/org/projects.org"))
+                   (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                    ))
             nil
             )
@@ -394,6 +401,8 @@ you should place your code here."
               )
              )
            )
+
+
   (add-to-list 'org-agenda-custom-commands `,q-view)
   (add-to-list 'org-agenda-custom-commands `,w-view)
 
