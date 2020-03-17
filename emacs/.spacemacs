@@ -50,7 +50,8 @@ values."
      emacs-lisp
      git
      markdown
-     org
+     (org :variables
+          org-enable-org-journal-support t)
      (shell :variables
            shell-default-height 30
            shell-default-position 'bottom)
@@ -71,7 +72,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(org-super-agenda)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -149,6 +150,15 @@ values."
                          vscode-default-high-contrast
 			 spacemacs-dark
        )
+   ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
+   ;; `all-the-icons', `custom', `doom', `vim-powerline' and `vanilla'. The
+   ;; first three are spaceline themes. `doom' is the doom-emacs mode-line.
+   ;; `vanilla' is default Emacs mode-line. `custom' is a user defined themes,
+   ;; refer to the DOCUMENTATION.org for more info on how to create your own
+   ;; spaceline theme. Value can be a symbol or list with additional properties.
+   ;; (default '(spacemacs :separator wave :separator-scale 1.5))
+   dotspacemacs-mode-line-theme '(spacemacs :separator wave :separator-scale 1.5)
+
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
@@ -349,6 +359,10 @@ you should place your code here."
   (setq org-capture-templates
         `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %?")
+          ("j" "Journal entry" entry (function org-journal-find-location)
+           "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?")
+          ("n" "Timestampped Note" entry (file+olp+datetree ,(concat org-directory "/notes.org"))
+          "* %?")
           ))
 
   (setq org-refile-targets '(
@@ -386,26 +400,39 @@ you should place your code here."
            `("W" "Work"
              (
               (agenda ""
-                      ((org-agenda-span 'day)
+                      (
+                       (org-super-agenda-groups
+                        '((:discard (:not (:tag ("work")))))
+                        )
+                       (org-agenda-span 'day)
                        (org-deadline-warning-days 365)
                        ))
-              (tags-todo "@work"
+              (tags-todo "work"
                          ((org-agenda-overriding-header "All Work")
                           (org-agenda-files '("~/Dropbox/org/inbox.org"))
+                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                           ))
-              (tags-todo "@work"
+              (tags-todo "work"
                          ((org-agenda-overriding-header "Work Projects")
                           (org-agenda-files '("~/Dropbox/org/projects.org"))
+                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                           ))
               nil
               )
              )
            )
 
+  (add-to-list 'org-agenda-custom-commands
+               '("w" "Work agenda" agenda ""
+                 ((org-super-agenda-groups
+                   '((:discard (:not (:tag ("work"))))
+                     ))
+                  )
+                 ))
 
   (add-to-list 'org-agenda-custom-commands `,q-view)
   (add-to-list 'org-agenda-custom-commands `,w-view)
-
+  (setq org-journal-dir "~/Dropbox/org/journal/")
   )
   (setq typescript-indent-level 2)
   (setq js-indent-level 2)
@@ -413,11 +440,6 @@ you should place your code here."
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
 
-;; ;; Fixes error with spacemacs using wrong org mode function
-;; (with-eval-after-load 'org
-;;   ;; Replace org-set-tags with org-set-tags-command in keybinding
-;;   (spacemacs/set-leader-keys-for-major-mode 'org-mode ":" 'org-set-tags-command)
-;; )
 (defun my-web-mode-hook ()
   "Hooks for Web mode."
   (setq web-mode-markup-indent-offset 2)
@@ -469,5 +491,3 @@ you should place your code here."
   (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
 
 )
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
