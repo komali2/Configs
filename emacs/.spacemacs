@@ -67,6 +67,7 @@ values."
      typescript
      erc
      org-roam
+     mu4e
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -148,7 +149,7 @@ values."
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(
                          vscode-default-high-contrast
-			 spacemacs-dark
+                         spacemacs-dark
        )
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
    ;; `all-the-icons', `custom', `doom', `vim-powerline' and `vanilla'. The
@@ -440,6 +441,11 @@ you should place your code here."
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
 
+;; ;; Fixes error with spacemacs using wrong org mode function
+;; (with-eval-after-load 'org
+;;   ;; Replace org-set-tags with org-set-tags-command in keybinding
+;;   (spacemacs/set-leader-keys-for-major-mode 'org-mode ":" 'org-set-tags-command)
+;; )
 (defun my-web-mode-hook ()
   "Hooks for Web mode."
   (setq web-mode-markup-indent-offset 2)
@@ -455,39 +461,107 @@ you should place your code here."
   (visual-line-mode -1 )
   (spacemacs/disable-smooth-scrolling)
   )
-  (defvar org-current-effort "1:00" "Current effort for agenda items.")
-  (defun my-org-agenda-set-effort (effort)
-    "Set the effort property for the current headline."
-    (interactive
-     (list (read-string (format "Effort [%s]: " org-current-effort) nil nil org-current-effort)))
-    (setq jethro/org-current-effort effort)
-    (org-agenda-check-no-diary)
-    (let* ((hdmarker (or (org-get-at-bol 'org-hd-marker)
-                         (org-agenda-error)))
-           (buffer (marker-buffer hdmarker))
-           (pos (marker-position hdmarker))
-           (inhibit-read-only t)
-           newhead)
-      (org-with-remote-undo buffer
-        (with-current-buffer buffer
-          (widen)
-          (goto-char pos)
-          (org-show-context 'agenda)
-          (funcall-interactively 'org-set-effort nil org-current-effort)
-          (end-of-line 1)
-          (setq newhead (org-get-heading)))
-        (org-agenda-change-all-lines newhead hdmarker))))
+(defvar org-current-effort "1:00" "Current effort for agenda items.")
+(defun my-org-agenda-set-effort (effort)
+  "Set the effort property for the current headline."
+  (interactive
+   (list (read-string (format "Effort [%s]: " org-current-effort) nil nil org-current-effort)))
+  (setq jethro/org-current-effort effort)
+  (org-agenda-check-no-diary)
+  (let* ((hdmarker (or (org-get-at-bol 'org-hd-marker)
+                       (org-agenda-error)))
+         (buffer (marker-buffer hdmarker))
+         (pos (marker-position hdmarker))
+         (inhibit-read-only t)
+         newhead)
+    (org-with-remote-undo buffer
+      (with-current-buffer buffer
+        (widen)
+        (goto-char pos)
+        (org-show-context 'agenda)
+        (funcall-interactively 'org-set-effort nil org-current-effort)
+        (end-of-line 1)
+        (setq newhead (org-get-heading)))
+      (org-agenda-change-all-lines newhead hdmarker))))
 
-  (defun org-agenda-process-inbox-item ()
-    "Process a single item in the org-agenda."
-    (org-with-wide-buffer
-     (org-agenda-set-tags)
-     (org-agenda-priority)
-     (call-interactively 'my-org-agenda-set-effort)
-     (org-agenda-refile nil nil t)))
+(defun org-agenda-process-inbox-item ()
+  "Process a single item in the org-agenda."
+  (org-with-wide-buffer
+   (org-agenda-set-tags)
+   (org-agenda-priority)
+   (call-interactively 'my-org-agenda-set-effort)
+   (org-agenda-refile nil nil t)))
 
-  (spacemacs/declare-prefix "o" "custom")
-  (spacemacs/set-leader-keys "oc" 'org-projectile-capture-for-current-project)
-  (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
+(spacemacs/declare-prefix "o" "custom")
+(spacemacs/set-leader-keys "oc" 'org-projectile-capture-for-current-project)
+(spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
 
+
+(with-eval-after-load 'mu4e
+    (setq smtpmail-stream-type 'starttls)
+    (setq smtpmail-default-smtp-server "smtp.gmail.com")
+    (setq smtpmail-smtp-server "smtp.gmail.com")
+    (setq smtpmail-smtp-service 587)
+    (setq mail-user-agent 'mu4e-user-agent)
+    (setq message-kill-buffer-on-exit t)
+    ;; (setq message-send-mail-function 'smtpmail-send-it )
+    (setq mu4e-sent-messages-behavior 'delete )
+    (setq mu4e-get-mail-command "offlineimap" )
+    (setq mu4e-user-mail-address-list '("rogersjcaleb@gmail.com"
+                                        "caleb@potatolondon.com"
+                                        "caleb@potatosanfrancisco.com"
+                                        "caleb.rogers@potatosanfrancisco.com"
+                                        "caleb.rogers@p.ota.to.com"
+                                        "caleb@p.ota.to.com"
+                                        "caleb.rogers@potatolondon.com")
+          )
+    (setq mu4e-maildir "~/Mail")
+
+    (setq mu4e-context-policy 'ask)
+    (setq mu4e-contexts
+          `( ,(make-mu4e-context
+               :name "Personal"
+               :enter-func (lambda () (mu4e-message "Entering Personal context"))
+               :leave-func (lambda () (mu4e-message "Leaving Personal context"))
+               ;; we match based on the contact-fields of the message
+               :match-func (lambda (msg)
+                             (when msg
+                               (string-match-p "^/gmailhome" (mu4e-message-field msg :maildir))))
+               :vars '( ( user-mail-address	    . "rogersjcaleb@gmail.com"  )
+                        ( user-full-name	    . "Caleb Rogers" )
+                        ( mu4e-drafts-folder . "/gmailhome/[Gmail].Drafts" )
+                        ( mu4e-sent-folder   . "/gmailhome/[Gmail].Sent Mail" )
+                        ( mu4e-trash-folder  . "/gmailhome/[Gmail].Trash" )
+                        ( mu4e-maildir-shortcuts .
+                                                 (
+                                                  ("/INBOX"  . ?i)
+                                                  ;; ("/Sent"   . ?s)
+                                                  ;; ("/Trash"  . ?t)
+                                                  )
+                                                 )
+                        ))
+             ,(make-mu4e-context
+               :name "Work"
+               :enter-func (lambda () (mu4e-message "Switch to the Work context"))
+               :leave-func (lambda () (mu4e-message "Leaving Work context"))
+               ;; we match based on the maildir of the message
+               ;; this matches maildir /Arkham and its sub-directories
+               :match-func (lambda (msg)
+                             (when msg
+                               (string-match-p "^/gmailwork" (mu4e-message-field msg :maildir))))
+               :vars '( ( user-mail-address	     . "caleb.rogers@potatolondon.com" )
+                        ( user-full-name	     . "Caleb Rogers" )
+                        ( mu4e-drafts-folder . "/gmailwork/[Gmail].Drafts" )
+                        ( mu4e-sent-folder   . "/gmailwork/[Gmail].Sent Mail" )
+                        ( mu4e-trash-folder  . "/gmailwork/[Gmail].Trash" )
+                        ( mu4e-maildir-shortcuts .
+                                                 (
+                                                  ("/INBOX"  . ?i)
+                                                  ;; ("/Sent"   . ?s)
+                                                  ;; ("/Trash"  . ?t)
+                                                  )
+                                                 )
+                        ))
+             ))
+    )
 )
