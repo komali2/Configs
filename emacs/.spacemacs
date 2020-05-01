@@ -495,13 +495,18 @@ you should place your code here."
 (spacemacs/declare-prefix "o" "custom")
 (spacemacs/set-leader-keys "oc" 'org-projectile-capture-for-current-project)
 (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
-
+(setq smtpmail-stream-type 'starttls)
+(setq smtpmail-default-smtp-server "smtp.gmail.com")
+(setq smtpmail-smtp-server "smtp.gmail.com")
+(setq smtpmail-smtp-service 587)
+(setq smtpmail-debug-info t)
+(setq message-send-mail-function 'smtpmail-send-it )
+(auth-source-pass-enable)
+(setq auth-sources '(password-store))
+(setq auth-source-debug t)
+(setq auth-source-do-cache nil)
 
 (with-eval-after-load 'mu4e
-    (setq smtpmail-stream-type 'starttls)
-    (setq smtpmail-default-smtp-server "smtp.gmail.com")
-    (setq smtpmail-smtp-server "smtp.gmail.com")
-    (setq smtpmail-smtp-service 587)
     (setq mail-user-agent 'mu4e-user-agent)
     (setq message-kill-buffer-on-exit t)
     ;; (setq message-send-mail-function 'smtpmail-send-it )
@@ -534,11 +539,12 @@ you should place your code here."
                         ( mu4e-trash-folder  . "/gmailhome/[Gmail].Trash" )
                         ( mu4e-maildir-shortcuts .
                                                  (
-                                                  ("/INBOX"  . ?i)
+                                                  ("/gmailhome/INBOX"  . ?i)
                                                   ;; ("/Sent"   . ?s)
                                                   ;; ("/Trash"  . ?t)
                                                   )
                                                  )
+                        (smtpmail-smtp-user . "rogersjcaleb@gmail.com")
                         ))
              ,(make-mu4e-context
                :name "Work"
@@ -561,6 +567,7 @@ you should place your code here."
                                                   ;; ("/Trash"  . ?t)
                                                   )
                                                  )
+                        (smtpmail-smtp-user . "caleb.rogers@potatolondon.com")
                         ))
              ))
     )
