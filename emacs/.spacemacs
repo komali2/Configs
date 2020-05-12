@@ -364,6 +364,9 @@ you should place your code here."
            "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?")
           ("n" "Timestampped Note" entry (file+olp+datetree ,(concat org-directory "/notes.org"))
           "* %?")
+          ("m" "Meeting Notes" entry (file+olp+datetree ,(concat org-directory "/meeting_notes.org"))
+           "* %?")
+
           ))
 
   (setq org-refile-targets '(
@@ -378,15 +381,19 @@ you should place your code here."
                      (org-deadline-warning-days 365)))
             (tags-todo "-@home-@work-@mobile"
                   ((org-agenda-overriding-header "To Refile")
-                   (org-agenda-files '("~/Dropbox/org/inbox.org"))
+                   ;; (org-agenda-files (directory-files-recursively "~/Dropbox/org/" "\.org$"))
+                   (org-agenda-files '("~/Dropbox/org/"))
                    (org-agenda-todo-ignore-deadlines t)_
                    (org-agenda-todo-ignore-scheduled t)_
                    (org-agenda-sorting-strategy '(priority-down tag-up))
                    ))
             (tags-todo "life+@home|@mobile"
                   ((org-agenda-overriding-header "Life Stuff")
-                   (org-agenda-files '("~/Dropbox/org/inbox.org"))
-                   (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
+                   (org-agenda-files '("~/Dropbox/org/"))
+                   ;; (org-agenda-files (directory-files-recursively "~/Dropbox/org/" "\.org$"))
+                   (org-agenda-todo-ignore-deadlines t)_
+                   (org-agenda-todo-ignore-scheduled t)_
+                   (org-agenda-sorting-strategy '(priority-down tag-up))
                    ))
             (todo "TODO"
                   ((org-agenda-overriding-header "Projects")
@@ -398,7 +405,7 @@ you should place your code here."
            )
           )
   (setq w-view
-           `("W" "Work"
+           `("w" "Work"
              (
               (agenda ""
                       (
@@ -410,12 +417,14 @@ you should place your code here."
                        ))
               (tags-todo "work"
                          ((org-agenda-overriding-header "All Work")
-                          (org-agenda-files '("~/Dropbox/org/inbox.org"))
-                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
-                          ))
-              (tags-todo "work"
-                         ((org-agenda-overriding-header "Work Projects")
-                          (org-agenda-files '("~/Dropbox/org/projects.org"))
+                          (org-agenda-files '("~/Dropbox/org/"))
+                          (org-super-agenda-groups
+                           '((:name "All Work Todos"
+                                    :and (:tag ("work"))
+                                    )
+                             (:discard (:anything t))
+                             )
+                           )
                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                           ))
               nil
@@ -423,18 +432,76 @@ you should place your code here."
              )
            )
 
-  (add-to-list 'org-agenda-custom-commands
-               '("w" "Work agenda" agenda ""
-                 ((org-super-agenda-groups
-                   '((:discard (:not (:tag ("work"))))
-                     ))
-                  )
-                 ))
+  (setq l-view
+           `("l" "Life "
+             (
+              (agenda ""
+                      (
+                       (org-agenda-files '("~/Dropbox/org/"))
+                       (org-agenda-span 'day)
+                       (org-deadline-warning-days 365)
+                       (org-super-agenda-groups
+                        '((:name "Life Agenda"
+                                 :and (:tag ("life"))
+                                 )
+                          (:discard (:anything t))
+                          )
+                        )
 
+                       ))
+
+              (todo "TODO"
+                         ((org-agenda-overriding-header "")
+                          (org-agenda-files '("~/Dropbox/org/"))
+                          (org-super-agenda-groups
+                           '((:name "Needs Filing"
+                                    :and (:not(:tag ("life" "work" "project" "read")))
+                                    )
+                             (:discard (:anything t))
+                             )
+                             )
+                           )
+                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
+                          )
+              (todo "TODO"
+                    ((org-agenda-overriding-header "")
+                     (org-agenda-files '("~/Dropbox/org/"))
+                     (org-super-agenda-groups
+                      '((:name "Reading"
+                               :and (:tag ("read"))
+                               )
+                        (:discard (:anything t))
+                        )
+                      )
+                     )
+                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
+                    )
+              (todo "TODO"
+                    ((org-agenda-overriding-header "")
+                     (org-agenda-files '("~/Dropbox/org/"))
+                     (org-super-agenda-groups
+                      '((:name "All Life Todos"
+                               :and (:tag ("life"))
+                               )
+                        (:discard (:anything t))
+                        )
+                      )
+                     )
+                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
+                    )
+              )
+              nil
+              )
+           )
   (add-to-list 'org-agenda-custom-commands `,q-view)
   (add-to-list 'org-agenda-custom-commands `,w-view)
-  (setq org-journal-dir "~/Dropbox/org/journal/")
+  (add-to-list 'org-agenda-custom-commands `,l-view)
+
   )
+
+
+
+  (setq org-journal-dir "~/Dropbox/org/journal/")
   (setq typescript-indent-level 2)
   (setq js-indent-level 2)
   (indent-guide-global-mode)
@@ -512,6 +579,7 @@ you should place your code here."
     ;; (setq message-send-mail-function 'smtpmail-send-it )
     (setq mu4e-sent-messages-behavior 'delete )
     (setq mu4e-get-mail-command "offlineimap" )
+    (setq mu4e-update-interval 300 )
     (setq mu4e-user-mail-address-list '("rogersjcaleb@gmail.com"
                                         "caleb@potatolondon.com"
                                         "caleb@potatosanfrancisco.com"
@@ -537,6 +605,7 @@ you should place your code here."
                         ( mu4e-drafts-folder . "/gmailhome/[Gmail].Drafts" )
                         ( mu4e-sent-folder   . "/gmailhome/[Gmail].Sent Mail" )
                         ( mu4e-trash-folder  . "/gmailhome/[Gmail].Trash" )
+                        ( mu4e-refile-folder . "/gmailhome/[Gmail].Archive")
                         ( mu4e-maildir-shortcuts .
                                                  (
                                                   ("/gmailhome/INBOX"  . ?i)
@@ -560,9 +629,10 @@ you should place your code here."
                         ( mu4e-drafts-folder . "/gmailwork/[Gmail].Drafts" )
                         ( mu4e-sent-folder   . "/gmailwork/[Gmail].Sent Mail" )
                         ( mu4e-trash-folder  . "/gmailwork/[Gmail].Trash" )
+                        (mu4e-refile-folder . "/gmailwork/[Gmail].Archive")
                         ( mu4e-maildir-shortcuts .
                                                  (
-                                                  ("/INBOX"  . ?i)
+                                                  ("/gmailwork/INBOX"  . ?i)
                                                   ;; ("/Sent"   . ?s)
                                                   ;; ("/Trash"  . ?t)
                                                   )
