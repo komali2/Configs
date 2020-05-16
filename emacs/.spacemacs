@@ -362,9 +362,9 @@ you should place your code here."
            "* TODO %?")
           ("j" "Journal entry" entry (function org-journal-find-location)
            "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?")
-          ("n" "Timestampped Note" entry (file+olp+datetree ,(concat org-directory "/notes.org"))
-          "* %?")
           ("m" "Meeting Notes" entry (file+olp+datetree ,(concat org-directory "/meeting_notes.org"))
+           "* %?")
+          ("r" "Roam Notes" entry (file ,(concat org-directory "/notes/notes.org"))
            "* %?")
 
           ))
@@ -586,7 +586,8 @@ you should place your code here."
                                         "caleb.rogers@potatosanfrancisco.com"
                                         "caleb.rogers@p.ota.to.com"
                                         "caleb@p.ota.to.com"
-                                        "caleb.rogers@potatolondon.com")
+                                        "caleb.rogers@potatolondon.com"
+                                        "caleb@calebjay.com")
           )
     (setq mu4e-maildir "~/Mail")
 
@@ -638,7 +639,36 @@ you should place your code here."
                                                   )
                                                  )
                         (smtpmail-smtp-user . "caleb.rogers@potatolondon.com")
+
                         ))
+             ,(make-mu4e-context
+               :name "Caleb"
+               :enter-func (lambda () (mu4e-message "Switch to the Caleb context"))
+               :leave-func (lambda () (mu4e-message "Leaving Caleb context"))
+               ;; we match based on the maildir of the message
+               ;; this matches maildir /Arkham and its sub-directories
+               :match-func (lambda (msg)
+                             (when msg
+                               (string-match-p "^/calebjay" (mu4e-message-field msg :maildir))))
+               :vars '( ( user-mail-address	     . "caleb@calebjay.com" )
+                        ( user-full-name	     . "Caleb Rogers" )
+                        ( mu4e-drafts-folder . "/calebjay/INBOX.Drafts" )
+                        ( mu4e-sent-folder   . "/calebjay/INBOX.Sent" )
+                        ( mu4e-trash-folder  . "/calebjay/INBOX.Trash" )
+                        (mu4e-refile-folder . "/calebjay/INBOX.Archive")
+                        ( mu4e-maildir-shortcuts .
+                                                 (
+                                                  ("/calebjay/INBOX"  . ?i)
+                                                  ;; ("/Sent"   . ?s)
+                                                  ;; ("/Trash"  . ?t)
+                                                  )
+                                                 )
+                        (smtpmail-smtp-user . "caleb@calebjay.com")
+                        (smtpmail-default-smtp-server . "mail.calebjay.com")
+                        (smtpmail-smtp-server . "mail.calebjay.com")
+                        (smtpmail-smtp-service . 465)
+                        (smtpmail-stream-type . ssl)
+                       ))
              ))
     )
 )
