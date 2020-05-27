@@ -369,6 +369,7 @@ you should place your code here."
 
           ))
 
+  (push (org-projectile-project-todo-entry) org-capture-templates)
   (setq org-refile-targets '(
                              ("projects.org" :maxlevel . 1)))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
@@ -497,6 +498,7 @@ you should place your code here."
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
 
+  (setq org-agenda-window-setup 'current-window)
   )
 
 
@@ -668,6 +670,7 @@ you should place your code here."
                         (smtpmail-smtp-server . "mail.calebjay.com")
                         (smtpmail-smtp-service . 465)
                         (smtpmail-stream-type . ssl)
+                        (mu4e-sent-messages-behavior . sent )
                        ))
              ))
     )
