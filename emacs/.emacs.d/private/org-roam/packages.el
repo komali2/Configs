@@ -1,7 +1,7 @@
 (configuration-layer/declare-layer 'org)
 (defconst org-roam-packages
   '((org-roam :location
-              (recipe :fetcher github :repo "jethrokuan/org-roam" :branch "develop"))))
+              (recipe :fetcher github :repo "org-roam/org-roam" :branch "master"))))
 
 (defun org-roam/init-org-roam ()
   (use-package org-roam
