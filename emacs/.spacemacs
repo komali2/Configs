@@ -51,6 +51,7 @@ values."
      git
      markdown
      (org :variables
+          org-projectile-file "~/Dropbox/org/projects.org"
           org-enable-org-journal-support t)
      (shell :variables
            shell-default-height 30
@@ -350,13 +351,12 @@ you should place your code here."
 (setq create-lockfiles nil)
 (setq org-directory "~/Dropbox/org")
 
+
 (with-eval-after-load 'org
   (require 'org-agenda)
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
   (setq org-default-notes-file (concat org-directory "/inbox.org"))
   (setq org-agenda-files '("~/Dropbox/org/"))
-  (setq org-projectile-projects-file
-        (concat org-directory "/projects.org"))
   (setq org-capture-templates
         `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %?")
@@ -368,10 +368,6 @@ you should place your code here."
            "* %?")
 
           ))
-
-  (push (org-projectile-project-todo-entry) org-capture-templates)
-  (setq org-refile-targets '(
-                             ("projects.org" :maxlevel . 1)))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
 
 
@@ -421,6 +417,7 @@ you should place your code here."
                           (org-agenda-files '("~/Dropbox/org/"))
                           (org-super-agenda-groups
                            '((:name "All Work Todos"
+                                    (:auto-category t)
                                     :and (:tag ("work"))
                                     )
                              (:discard (:anything t))
@@ -443,6 +440,7 @@ you should place your code here."
                        (org-deadline-warning-days 365)
                        (org-super-agenda-groups
                         '((:name "Life Agenda"
+                                 (:auto-category t)
                                  :and (:tag ("life"))
                                  )
                           (:discard (:anything t))
@@ -477,6 +475,7 @@ you should place your code here."
                      )
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                     )
+
               (todo "TODO"
                     ((org-agenda-overriding-header "")
                      (org-agenda-files '("~/Dropbox/org/"))
@@ -487,6 +486,14 @@ you should place your code here."
                         (:discard (:anything t))
                         )
                       )
+                     )
+                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
+                    )
+              (tags-todo "personal"
+                    ((org-agenda-overriding-header "")
+                     (org-agenda-files '("~/Dropbox/org/"))
+                     (org-super-agenda-groups
+                      '((:auto-category t)))
                      )
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                     )
@@ -562,7 +569,8 @@ you should place your code here."
    (org-agenda-refile nil nil t)))
 
 (spacemacs/declare-prefix "o" "custom")
-(spacemacs/set-leader-keys "oc" 'org-projectile-capture-for-current-project)
+(spacemacs/set-leader-keys "opc" 'org-projectile-project-todo-completing-read)
+(spacemacs/set-leader-keys "opC" 'org-projectile-project-todo-entry)
 (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
 (setq smtpmail-stream-type 'starttls)
 (setq smtpmail-default-smtp-server "smtp.gmail.com")
