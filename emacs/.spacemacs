@@ -355,6 +355,7 @@ you should place your code here."
 (with-eval-after-load 'org
   (require 'org-agenda)
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
+  (setq org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org")
   (setq org-default-notes-file (concat org-directory "/inbox.org"))
   (setq org-agenda-files '("~/Dropbox/org/"))
   (setq org-capture-templates
@@ -585,6 +586,7 @@ you should place your code here."
 
 (with-eval-after-load 'mu4e
     (setq mail-user-agent 'mu4e-user-agent)
+    (setq mu4e-compose-format-flowed t)
     (setq message-kill-buffer-on-exit t)
     ;; (setq message-send-mail-function 'smtpmail-send-it )
     (setq mu4e-sent-messages-behavior 'delete )
