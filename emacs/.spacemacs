@@ -418,7 +418,6 @@ you should place your code here."
                           (org-agenda-files '("~/Dropbox/org/"))
                           (org-super-agenda-groups
                            '((:name "All Work Todos"
-                                    (:auto-category t)
                                     :and (:tag ("work"))
                                     )
                              (:discard (:anything t))
@@ -441,7 +440,6 @@ you should place your code here."
                        (org-deadline-warning-days 365)
                        (org-super-agenda-groups
                         '((:name "Life Agenda"
-                                 (:auto-category t)
                                  :and (:tag ("life"))
                                  )
                           (:discard (:anything t))
@@ -491,7 +489,7 @@ you should place your code here."
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
                     )
               (tags-todo "personal"
-                    ((org-agenda-overriding-header "")
+                    ((org-agenda-overriding-header "Projects")
                      (org-agenda-files '("~/Dropbox/org/"))
                      (org-super-agenda-groups
                       '((:auto-category t)))
