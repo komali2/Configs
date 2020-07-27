@@ -1,0 +1,56 @@
+[general]
+pythonfile = ~/.offlineimap.py
+accounts = gmailwork, gmailhome, calebjay
+maxsyncaccounts = 3
+
+[Account gmailwork]
+localrepository = gmailworklocal
+remoterepository = gmailworkremote
+
+[Account gmailhome]
+localrepository = gmailhomelocal
+remoterepository = gmailhomeremote
+
+[Account calebjay]
+localrepository = calebjaylocal
+remoterepository = calebjayremote
+
+
+[Repository gmailworklocal]
+type = Maildir
+localfolders = ~/Mail/gmailwork
+
+[Repository gmailworkremote]
+type = Gmail
+remoteuser = caleb.rogers@potatolondon.com
+remotepasseval = get_pass("Gmailwork")
+createfolders = False
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/.Archive']
+
+[Repository gmailhomelocal]
+type = Maildir
+localfolders = ~/Mail/gmailhome
+
+
+[Repository gmailhomeremote]
+type = Gmail
+remoteuser = rogersjcaleb@gmail.com
+remotepasseval = get_pass("Gmailhome")
+createfolders = False
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/.Archive']
+
+[Repository calebjaylocal]
+type = Maildir
+localfolders = ~/Mail/calebjay
+
+[Repository calebjayremote]
+type = IMAP
+remotehost = mail.calebjay.com
+ssl = yes
+remoteuser = caleb@calebjay.com
+remotepasseval = get_pass("calebjay")
+createfolders = True
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
