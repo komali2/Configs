@@ -66,7 +66,14 @@ values."
      sql
      html
      typescript
-     erc
+     (erc :variables
+          erc-server-list
+          '(("irc.freenode.net"
+             :port "6697"
+             :ssl t
+             :nick "komali2"
+             :password (password-store-get "freenode.net"))
+            ))
      org-roam
      mu4e
      )
@@ -516,73 +523,69 @@ you should place your code here."
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
 
-;; ;; Fixes error with spacemacs using wrong org mode function
-;; (with-eval-after-load 'org
-;;   ;; Replace org-set-tags with org-set-tags-command in keybinding
-;;   (spacemacs/set-leader-keys-for-major-mode 'org-mode ":" 'org-set-tags-command)
-;; )
-(defun my-web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-script-padding 0)
-  )
-(with-eval-after-load 'web-mode
-  (my-web-mode-hook))
-(defun big-fat-json-file ()
-  "Hit this when u got a fatty file"
-  (interactive)
-  (visual-line-mode -1 )
-  (spacemacs/disable-smooth-scrolling)
-  )
-(defvar org-current-effort "1:00" "Current effort for agenda items.")
-(defun my-org-agenda-set-effort (effort)
-  "Set the effort property for the current headline."
-  (interactive
-   (list (read-string (format "Effort [%s]: " org-current-effort) nil nil org-current-effort)))
-  (setq jethro/org-current-effort effort)
-  (org-agenda-check-no-diary)
-  (let* ((hdmarker (or (org-get-at-bol 'org-hd-marker)
-                       (org-agenda-error)))
-         (buffer (marker-buffer hdmarker))
-         (pos (marker-position hdmarker))
-         (inhibit-read-only t)
-         newhead)
-    (org-with-remote-undo buffer
-      (with-current-buffer buffer
-        (widen)
-        (goto-char pos)
-        (org-show-context 'agenda)
-        (funcall-interactively 'org-set-effort nil org-current-effort)
-        (end-of-line 1)
-        (setq newhead (org-get-heading)))
-      (org-agenda-change-all-lines newhead hdmarker))))
+  (with-eval-after-load 'web-mode
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
+    (setq web-mode-css-indent-offset 2)
+    )
 
-(defun org-agenda-process-inbox-item ()
-  "Process a single item in the org-agenda."
-  (org-with-wide-buffer
-   (org-agenda-set-tags)
-   (org-agenda-priority)
-   (call-interactively 'my-org-agenda-set-effort)
-   (org-agenda-refile nil nil t)))
 
-(spacemacs/declare-prefix "o" "custom")
-(spacemacs/set-leader-keys "opc" 'org-projectile-project-todo-completing-read)
-(spacemacs/set-leader-keys "opC" 'org-projectile-project-todo-entry)
-(spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
-(setq smtpmail-stream-type 'starttls)
-(setq smtpmail-default-smtp-server "smtp.gmail.com")
-(setq smtpmail-smtp-server "smtp.gmail.com")
-(setq smtpmail-smtp-service 587)
-(setq smtpmail-debug-info t)
-(setq message-send-mail-function 'smtpmail-send-it )
-(auth-source-pass-enable)
-(setq auth-sources '(password-store))
-(setq auth-source-debug t)
-(setq auth-source-do-cache nil)
 
-(with-eval-after-load 'mu4e
+  (defun big-fat-json-file ()
+    "Hit this when u got a fatty file"
+    (interactive)
+    (visual-line-mode -1 )
+    (spacemacs/disable-smooth-scrolling)
+    )
+  (defvar org-current-effort "1:00" "Current effort for agenda items.")
+  (defun my-org-agenda-set-effort (effort)
+    "Set the effort property for the current headline."
+    (interactive
+     (list (read-string (format "Effort [%s]: " org-current-effort) nil nil org-current-effort)))
+    (setq jethro/org-current-effort effort)
+    (org-agenda-check-no-diary)
+    (let* ((hdmarker (or (org-get-at-bol 'org-hd-marker)
+                         (org-agenda-error)))
+           (buffer (marker-buffer hdmarker))
+           (pos (marker-position hdmarker))
+           (inhibit-read-only t)
+           newhead)
+      (org-with-remote-undo buffer
+        (with-current-buffer buffer
+          (widen)
+          (goto-char pos)
+          (org-show-context 'agenda)
+          (funcall-interactively 'org-set-effort nil org-current-effort)
+          (end-of-line 1)
+          (setq newhead (org-get-heading)))
+        (org-agenda-change-all-lines newhead hdmarker))))
+
+  ;; (defun org-agenda-process-inbox-item ()
+  ;;   "Process a single item in the org-agenda."
+  ;;   (org-with-wide-buffer
+  ;;    (org-agenda-set-tags)
+  ;;    (org-agenda-priority)
+  ;;    (call-interactively 'my-org-agenda-set-effort)
+  ;;    (org-agenda-refile nil nil t)))
+
+  (spacemacs/declare-prefix "o" "custom")
+  (spacemacs/set-leader-keys "opc" 'org-projectile-project-todo-completing-read)
+  (spacemacs/set-leader-keys "opC" 'org-projectile-project-todo-entry)
+  (spacemacs/set-leader-keys "ori" 'org-roam-jump-to-index)
+  ;; (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
+
+  (setq smtpmail-stream-type 'starttls)
+  (setq smtpmail-default-smtp-server "smtp.gmail.com")
+  (setq smtpmail-smtp-server "smtp.gmail.com")
+  (setq smtpmail-smtp-service 587)
+  (setq smtpmail-debug-info t)
+  (setq message-send-mail-function 'smtpmail-send-it )
+  (auth-source-pass-enable)
+  (setq auth-sources '(password-store))
+  (setq auth-source-debug t)
+  (setq auth-source-do-cache nil)
+
+  (with-eval-after-load 'mu4e
     (setq mail-user-agent 'mu4e-user-agent)
     (setq mu4e-compose-format-flowed t)
     (setq message-kill-buffer-on-exit t)
@@ -682,4 +685,5 @@ you should place your code here."
                        ))
              ))
     )
-)
+
+  )
