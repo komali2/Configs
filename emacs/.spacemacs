@@ -897,7 +897,7 @@ you should place your code here."
            "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?")
           ("m" "Meeting Notes" entry (file+olp+datetree ,(concat org-directory "/meeting_notes.org"))
            "* %?")
-          ("r" "Roam Notes" entry (file ,(concat org-directory "/notes/notes.org"))
+          ("r" "Roam Notes" entry (file+olp+datetree ,(concat org-directory "/notes/notes.org"))
            "* %?")
 
           ))
