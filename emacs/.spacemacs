@@ -76,6 +76,8 @@ values."
             ))
      org-roam
      mu4e
+     tern
+     common-lisp
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -1200,7 +1202,49 @@ you should place your code here."
              ))
     )
 
-  )
+;;; runs eslint --fix on the current file after save
+;;; alpha quality -- use at your own risk
 
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
+  (defun eslint-fix-file ()
+    (interactive)
+    (message "eslint --fixing the file" (buffer-file-name))
+    (let* ((root (locate-dominating-file
+                  (or (buffer-file-name) default-directory)
+                  "node_modules"))
+           (eslint (and root
+                        (expand-file-name "node_modules/.bin/eslint"
+                                          root))))
+      (when (and eslint (file-executable-p eslint))
+        (shell-command (concat eslint " --fix " (buffer-file-name))))))
+
+  (defun eslint-fix-file-and-revert ()
+    (interactive)
+    (eslint-fix-file)
+    (revert-buffer t t))
+
+  (add-hook 'js2-mode-hook
+            (lambda ()
+              (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+  (add-hook 'web-mode-hook
+            (lambda ()
+              (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+
+  )
+;; use the locally installed eslint
+(defun configure-flycheck-web-mode ()
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint (and root
+                      (expand-file-name "node_modules/.bin/eslint"
+                                        root))))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flycheck-javascript-eslint-executable eslint)))
+  )
+(add-hook 'web-mode-hook
+          #'configure-flycheck-web-mode)
+(add-hook 'js2-mode-hook
+          #'configure-flycheck-web-mode)
+
+
+;; (flycheck-select-checker checker)
