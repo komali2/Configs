@@ -904,7 +904,7 @@ you should place your code here."
           ("r" "Roam Notes" entry (file+olp+datetree ,(concat org-directory "/notes/notes.org"))
            "* %?")
           ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
-           "* TODO %? :work:\n- [ ] MR Prep\n  - [ ] Set eslint warn to error\n  - [ ] Run lint.sh\n  - [ ] Check that images have been optimized\n  - [ ] Ensure eslint error set back to warn\n  - [ ] Ensure meets ticket acceptance criteria\n  - [ ] App opened and change visually confirmed\n  - [ ] Tested in different browsers and devices\n  - [ ] Lighthouse Accessibility Audit\n  - [ ] Checked all locales\n  - [ ] Wrote Unit Tests\n  - [ ] Wrote Story component\n  - [ ] Checked if staging needed for client\n  - [ ] Updated Buganizer ticket\n  - [ ] Good MR title and description\n  - [ ] Updated Jira Ticket\n")
+           "* TODO %? :work:\n- [ ] MR Prep\n  - [ ] Set eslint warn to error\n  - [ ] Run lint.sh\n  - [ ] Check that images have been optimized\n  - [ ] Ensure eslint error set back to warn\n  - [ ] Check every changed file in vscode\n - [ ] Ensure meets ticket acceptance criteria\n  - [ ] App opened and change visually confirmed\n  - [ ] Tested in different browsers and devices\n  - [ ] Lighthouse Accessibility Audit\n  - [ ] Checked all locales\n  - [ ] Wrote Unit Tests\n  - [ ] Wrote Story component\n  - [ ] Checked if staging needed for client\n  - [ ] Updated Buganizer ticket\n  - [ ] Good MR title and description\n  - [ ] Updated Jira Ticket\n")
 
           ))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
