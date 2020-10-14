@@ -429,6 +429,8 @@ This function should only modify configuration layer settings."
             ))
      org-roam
      mu4e
+     (vue :variables vue-backend 'lsp)
+     (node :variables node-add-modules-path t)
      )
 
    ;; List of additional packages that will be installed without being
