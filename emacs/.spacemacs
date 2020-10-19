@@ -451,7 +451,17 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(org-super-agenda)
+   dotspacemacs-additional-packages '(org-super-agenda
+                                      color-theme-sanityinc-tomorrow
+                                      leuven-theme
+                                      monokai
+                                      ample-theme
+                                      moe-theme
+                                      alect-themes
+                                      flatland-theme
+                                      gruber-darker-theme
+                                      cyberpunk-theme
+                                      solarized-theme)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
 
@@ -1278,4 +1288,14 @@ you should place your code here."
           #'configure-flycheck-web-mode)
 (add-hook 'js2-mode-hook
           #'configure-flycheck-web-mode)
+(use-package org-super-agenda)
+(use-package color-theme-sanityinc-tomorrow)
+(use-package leuven-theme)
+(use-package ample-theme)
+(use-package moe-theme)
+(use-package alect-themes)
+(use-package flatland-theme)
+(use-package gruber-darker-theme)
+(use-package cyberpunk-theme)
+(use-package cyberpunk-theme)
 )
