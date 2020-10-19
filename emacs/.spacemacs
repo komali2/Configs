@@ -415,6 +415,7 @@ This function should only modify configuration layer settings."
      markdown
      (org :variables
           org-projectile-file "~/Dropbox/org/projects.org"
+          org-enable-roam-support t
           org-enable-org-journal-support t)
      (shell :variables
            shell-default-height 30
@@ -437,7 +438,6 @@ This function should only modify configuration layer settings."
              :nick "komali2"
              :password (password-store-get "freenode.net"))
             ))
-     org-roam
      mu4e
      (vue :variables vue-backend 'lsp)
      (node :variables node-add-modules-path t)
@@ -1278,6 +1278,4 @@ you should place your code here."
           #'configure-flycheck-web-mode)
 (add-hook 'js2-mode-hook
           #'configure-flycheck-web-mode)
-
-
 )
