@@ -85,6 +85,8 @@ This function should only modify configuration layer settings."
      (vue :variables vue-backend 'lsp)
      (node :variables node-add-modules-path t)
      racket
+     tern
+     common-lisp
      )
 
    ;; List of additional packages that will be installed without being
