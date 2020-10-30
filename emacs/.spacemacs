@@ -40,7 +40,7 @@ This function should only modify configuration layer settings."
      ;; ----------------------------------------------------------------
      emacs-lisp
      helm
-     lsp
+     ;; lsp
      multiple-cursors
      treemacs
      rust
@@ -527,6 +527,7 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
+  (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
   )
 
 (defun dotspacemacs/user-load ()
@@ -797,15 +798,16 @@ you should place your code here."
     (setq mu4e-sent-messages-behavior 'delete )
     (setq mu4e-get-mail-command "offlineimap" )
     (setq mu4e-update-interval 300 )
-    (setq mu4e-user-mail-address-list '("rogersjcaleb@gmail.com"
-                                        "caleb@potatolondon.com"
-                                        "caleb@potatosanfrancisco.com"
-                                        "caleb.rogers@potatosanfrancisco.com"
-                                        "caleb.rogers@p.ota.to.com"
-                                        "caleb@p.ota.to.com"
-                                        "caleb.rogers@potatolondon.com"
-                                        "caleb@calebjay.com")
-          )
+    ;; Apparently this is defunct now?
+    ;; (setq mu4e-user-mail-address-list '("rogersjcaleb@gmail.com"
+    ;;                                     "caleb@potatolondon.com"
+    ;;                                     "caleb@potatosanfrancisco.com"
+    ;;                                     "caleb.rogers@potatosanfrancisco.com"
+    ;;                                     "caleb.rogers@p.ota.to.com"
+    ;;                                     "caleb@p.ota.to.com"
+    ;;                                     "caleb.rogers@potatolondon.com"
+    ;;                                     "caleb@calebjay.com")
+    ;;       )
     (setq mu4e-maildir "~/Mail")
 
     (setq mu4e-context-policy 'ask)
