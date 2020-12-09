@@ -1,5 +1,5 @@
 # Configs
-I was tired of copying my configs all over the place on each of my new OS installs. So, they're all here now. 
+I was tired of copying my configs all over the place on each of my new OS installs. So, they're all here now.
 
 # Reinstall Steps
 
@@ -7,7 +7,7 @@ I was tired of copying my configs all over the place on each of my new OS instal
 2. In the directory of secret.gpg, run gpg2 --import /path/to/secret.gpg (probably will need to install gnupg)
 3. Install a bunch of shit:
 ```
-sudo apt install wget curl git gnome-tweak-tool npm xclip gdebi-core pipenv offlineimap silversearcher-ag pass
+sudo apt install wget curl git gnome-tweak-tool npm xclip gdebi-core pipenv offlineimap silversearcher-ag pass sqlite3
 ```
 4. Get an ssh sorted:
 
