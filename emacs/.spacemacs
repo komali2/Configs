@@ -40,7 +40,7 @@ This function should only modify configuration layer settings."
      ;; ----------------------------------------------------------------
      emacs-lisp
      helm
-     ;; lsp
+     lsp
      multiple-cursors
      treemacs
      rust
@@ -53,7 +53,6 @@ This function should only modify configuration layer settings."
      ;;                  auto-completion-enable-help-tooltip 'manual
      ;;                  auto-completion-private-snippets-directory nil )
      better-defaults
-     emacs-lisp
      git
      markdown
      (org :variables
@@ -87,6 +86,7 @@ This function should only modify configuration layer settings."
      racket
      tern
      common-lisp
+     colors
      )
 
    ;; List of additional packages that will be installed without being
@@ -215,7 +215,7 @@ It should only modify the values of Spacemacs settings."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   dotspacemacs-startup-banner 'official
+   dotspacemacs-startup-banner '"~/Downloads/cyberpunk1.png"
 
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
@@ -254,7 +254,7 @@ It should only modify the values of Spacemacs settings."
    ;; refer to the DOCUMENTATION.org for more info on how to create your own
    ;; spaceline theme. Value can be a symbol or list with additional properties.
    ;; (default '(spacemacs :separator wave :separator-scale 1.5))
-   dotspacemacs-mode-line-theme '(spacemacs :separator wave :separator-scale 1.5)
+   dotspacemacs-mode-line-theme '(spacemacs :separator slant :separator-scale 1.5)
 
    ;; If non-nil the cursor color matches the state color in GUI Emacs.
    ;; (default t)
@@ -330,7 +330,7 @@ It should only modify the values of Spacemacs settings."
    ;; If non-nil, the paste transient-state is enabled. While enabled, after you
    ;; paste something, pressing `C-j' and `C-k' several times cycles through the
    ;; elements in the `kill-ring'. (default nil)
-   dotspacemacs-enable-paste-transient-state nil
+   dotspacemacs-enable-paste-transient-state 1
 
    ;; Which-key delay in seconds. The which-key buffer is the popup listing
    ;; the commands bound to the current keystroke sequence. (default 0.4)
@@ -356,7 +356,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil the frame is fullscreen when Emacs starts up. (default nil)
    ;; (Emacs 24.4+ only)
-   dotspacemacs-fullscreen-at-startup nil
+   dotspacemacs-fullscreen-at-startup 1
 
    ;; If non-nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
    ;; Use to disable fullscreen animations in OSX. (default nil)
@@ -473,7 +473,7 @@ It should only modify the values of Spacemacs settings."
    ;; %z - mnemonics of buffer, terminal, and keyboard coding systems
    ;; %Z - like %z, but including the end-of-line format
    ;; (default "%I@%S")
-   dotspacemacs-frame-title-format "%I@%S"
+   dotspacemacs-frame-title-format "%a:%t"
 
    ;; Format specification for setting the icon title format
    ;; (default nil - same as frame-title-format)
@@ -484,7 +484,7 @@ It should only modify the values of Spacemacs settings."
    ;; `trailing' to delete only the whitespace at end of lines, `changed' to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
-   dotspacemacs-whitespace-cleanup nil
+   dotspacemacs-whitespace-cleanup 'trailing
 
    ;; If non nil activate `clean-aindent-mode' which tries to correct
    ;; virtual indentation of simple modes. This can interfer with mode specific
@@ -546,7 +546,8 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
 
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+;; Removed to try out new dotspacemacs-whitepsace-cleanup
+;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (setq make-backup-files nil) ; stop creating backup~ files
 (setq auto-save-default nil) ; stop creating #autosave# files
 (setq create-lockfiles nil)
@@ -564,49 +565,19 @@ you should place your code here."
   (setq org-capture-templates
         `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %?")
-          ("j" "Journal entry" entry (function org-journal-find-location)
-           "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?")
           ("m" "Meeting Notes" entry (file+olp+datetree ,(concat org-directory "/meeting_notes.org"))
            "* %?")
           ("r" "Roam Notes" entry (file+olp+datetree ,(concat org-directory "/notes/notes.org"))
            "* %?")
           ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
-           "* TODO %? :work:\n- [ ] MR Prep\n  - [ ] Lint files in vscode\n  - [ ] Run lint.sh\n  - [ ] Check that images have been optimized\n  - [ ] Ensure meets ticket acceptance criteria\n  - [ ] App opened and change visually confirmed\n  - [ ] Tested in different browsers and devices\n  - [ ] Lighthouse Accessibility Audit\n  - [ ] Checked all locales\n  - [ ] Wrote Unit Tests\n  - [ ] Wrote Story component\n  - [ ] Checked if staging needed for client\n  - [ ] Updated Buganizer ticket\n  - [ ] Good MR title and description\n  - [ ] Updated Jira Ticket\n")
+           "* TODO %? :work:\n")
+          ("l" "Life Todo" entry (file ,(concat org-directory "/inbox.org"))
+           "* TODO %? :life:\n")
 
           ))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
 
 
-  (setq q-view
-          `("Q" "Agenda"
-           ((agenda ""
-                    ((org-agenda-span 'day)
-                     (org-deadline-warning-days 365)))
-            (tags-todo "-@home-@work-@mobile"
-                  ((org-agenda-overriding-header "To Refile")
-                   ;; (org-agenda-files (directory-files-recursively "~/Dropbox/org/" "\.org$"))
-                   (org-agenda-files '("~/Dropbox/org/"))
-                   (org-agenda-todo-ignore-deadlines t)_
-                   (org-agenda-todo-ignore-scheduled t)_
-                   (org-agenda-sorting-strategy '(priority-down tag-up))
-                   ))
-            (tags-todo "life+@home|@mobile"
-                  ((org-agenda-overriding-header "Life Stuff")
-                   (org-agenda-files '("~/Dropbox/org/"))
-                   ;; (org-agenda-files (directory-files-recursively "~/Dropbox/org/" "\.org$"))
-                   (org-agenda-todo-ignore-deadlines t)_
-                   (org-agenda-todo-ignore-scheduled t)_
-                   (org-agenda-sorting-strategy '(priority-down tag-up))
-                   ))
-            (todo "TODO"
-                  ((org-agenda-overriding-header "Projects")
-                   (org-agenda-files '("~/Dropbox/org/projects.org"))
-                   (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
-                   ))
-            nil
-            )
-           )
-          )
   (setq w-view
            `("w" "Work"
              (
@@ -705,21 +676,18 @@ you should place your code here."
               nil
               )
            )
-  (add-to-list 'org-agenda-custom-commands `,q-view)
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
 
   (setq org-agenda-window-setup 'current-window)
   )
 
-
-
   (setq org-journal-dir "~/Dropbox/org/journal/")
   (setq typescript-indent-level 2)
   (setq js-indent-level 2)
   (indent-guide-global-mode)
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
+  ;; (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
   ;; (add-to-list 'web-mode-content-types-alist '("vue". "\\.vue?\\'"))
 
 
@@ -728,56 +696,16 @@ you should place your code here."
     (setq web-mode-markup-indent-offset 2)
     (setq web-mode-code-indent-offset 2)
     (setq web-mode-css-indent-offset 2)
-    (setq web-mode-content-types-alist
-          '(("vue" . "\\.vue?\\’")
-            ))
-    (flycheck-add-mode 'javascript-eslint 'web-mode)
+    ;; (setq web-mode-content-types-alist
+    ;;       '(("vue" . "\\.vue?\\’")
+    ;;         ))
     )
 
-
-
-  (defun big-fat-json-file ()
-    "Hit this when u got a fatty file"
-    (interactive)
-    (visual-line-mode -1 )
-    (spacemacs/disable-smooth-scrolling)
-    )
-  (defvar org-current-effort "1:00" "Current effort for agenda items.")
-  (defun my-org-agenda-set-effort (effort)
-    "Set the effort property for the current headline."
-    (interactive
-     (list (read-string (format "Effort [%s]: " org-current-effort) nil nil org-current-effort)))
-    (setq jethro/org-current-effort effort)
-    (org-agenda-check-no-diary)
-    (let* ((hdmarker (or (org-get-at-bol 'org-hd-marker)
-                         (org-agenda-error)))
-           (buffer (marker-buffer hdmarker))
-           (pos (marker-position hdmarker))
-           (inhibit-read-only t)
-           newhead)
-      (org-with-remote-undo buffer
-        (with-current-buffer buffer
-          (widen)
-          (goto-char pos)
-          (org-show-context 'agenda)
-          (funcall-interactively 'org-set-effort nil org-current-effort)
-          (end-of-line 1)
-          (setq newhead (org-get-heading)))
-        (org-agenda-change-all-lines newhead hdmarker))))
-
-  ;; (defun org-agenda-process-inbox-item ()
-  ;;   "Process a single item in the org-agenda."
-  ;;   (org-with-wide-buffer
-  ;;    (org-agenda-set-tags)
-  ;;    (org-agenda-priority)
-  ;;    (call-interactively 'my-org-agenda-set-effort)
-  ;;    (org-agenda-refile nil nil t)))
 
   (spacemacs/declare-prefix "o" "custom")
   (spacemacs/set-leader-keys "opc" 'org-projectile-project-todo-completing-read)
   (spacemacs/set-leader-keys "opC" 'org-projectile-project-todo-entry)
   (spacemacs/set-leader-keys "ori" 'org-roam-jump-to-index)
-  ;; (spacemacs/set-leader-keys "oe" 'org-agenda-process-inbox-item)
 
   (setq smtpmail-stream-type 'starttls)
   (setq smtpmail-default-smtp-server "smtp.gmail.com")
@@ -798,16 +726,6 @@ you should place your code here."
     (setq mu4e-sent-messages-behavior 'delete )
     (setq mu4e-get-mail-command "offlineimap" )
     (setq mu4e-update-interval 300 )
-    ;; Apparently this is defunct now?
-    ;; (setq mu4e-user-mail-address-list '("rogersjcaleb@gmail.com"
-    ;;                                     "caleb@potatolondon.com"
-    ;;                                     "caleb@potatosanfrancisco.com"
-    ;;                                     "caleb.rogers@potatosanfrancisco.com"
-    ;;                                     "caleb.rogers@p.ota.to.com"
-    ;;                                     "caleb@p.ota.to.com"
-    ;;                                     "caleb.rogers@potatolondon.com"
-    ;;                                     "caleb@calebjay.com")
-    ;;       )
     (setq mu4e-maildir "~/Mail")
 
     (setq mu4e-context-policy 'ask)
@@ -829,36 +747,9 @@ you should place your code here."
                         ( mu4e-maildir-shortcuts .
                                                  (
                                                   ("/gmailhome/INBOX"  . ?i)
-                                                  ;; ("/Sent"   . ?s)
-                                                  ;; ("/Trash"  . ?t)
                                                   )
                                                  )
                         (smtpmail-smtp-user . "rogersjcaleb@gmail.com")
-                        ))
-             ,(make-mu4e-context
-               :name "Work"
-               :enter-func (lambda () (mu4e-message "Switch to the Work context"))
-               :leave-func (lambda () (mu4e-message "Leaving Work context"))
-               ;; we match based on the maildir of the message
-               ;; this matches maildir /Arkham and its sub-directories
-               :match-func (lambda (msg)
-                             (when msg
-                               (string-match-p "^/gmailwork" (mu4e-message-field msg :maildir))))
-               :vars '( ( user-mail-address	     . "caleb.rogers@potatolondon.com" )
-                        ( user-full-name	     . "Caleb Rogers" )
-                        ( mu4e-drafts-folder . "/gmailwork/[Gmail].Drafts" )
-                        ( mu4e-sent-folder   . "/gmailwork/[Gmail].Sent Mail" )
-                        ( mu4e-trash-folder  . "/gmailwork/[Gmail].Trash" )
-                        (mu4e-refile-folder . "/gmailwork/[Gmail].All Mail")
-                        ( mu4e-maildir-shortcuts .
-                                                 (
-                                                  ("/gmailwork/INBOX"  . ?i)
-                                                  ;; ("/Sent"   . ?s)
-                                                  ;; ("/Trash"  . ?t)
-                                                  )
-                                                 )
-                        (smtpmail-smtp-user . "caleb.rogers@potatolondon.com")
-
                         ))
              ,(make-mu4e-context
                :name "Caleb"
@@ -878,8 +769,6 @@ you should place your code here."
                         ( mu4e-maildir-shortcuts .
                                                  (
                                                   ("/calebjay/INBOX"  . ?i)
-                                                  ;; ("/Sent"   . ?s)
-                                                  ;; ("/Trash"  . ?t)
                                                   )
                                                  )
                         (smtpmail-smtp-user . "caleb@calebjay.com")
@@ -912,12 +801,12 @@ you should place your code here."
     (eslint-fix-file)
     (revert-buffer t t))
 
-  (add-hook 'js2-mode-hook
-            (lambda ()
-              (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
-  (add-hook 'web-mode-hook
-            (lambda ()
-              (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+  ;; (add-hook 'js2-mode-hook
+  ;;           (lambda ()
+  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
+  ;; (add-hook 'web-mode-hook
+  ;;           (lambda ()
+  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
 
 
 ;; use the locally installed eslint
@@ -931,10 +820,10 @@ you should place your code here."
     (when (and eslint (file-executable-p eslint))
       (setq-local flycheck-javascript-eslint-executable eslint)))
   )
-(add-hook 'web-mode-hook
-          #'configure-flycheck-web-mode)
-(add-hook 'js2-mode-hook
-          #'configure-flycheck-web-mode)
+;; (add-hook 'web-mode-hook
+;;           #'configure-flycheck-web-mode)
+;; (add-hook 'js2-mode-hook
+;;           #'configure-flycheck-web-mode)
 (use-package org-super-agenda)
 (use-package color-theme-sanityinc-tomorrow)
 (use-package leuven-theme)
