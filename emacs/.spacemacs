@@ -87,6 +87,7 @@ This function should only modify configuration layer settings."
      tern
      common-lisp
      colors
+     react
      )
 
    ;; List of additional packages that will be installed without being
@@ -99,7 +100,7 @@ This function should only modify configuration layer settings."
    dotspacemacs-additional-packages '(org-super-agenda
                                       color-theme-sanityinc-tomorrow
                                       leuven-theme
-                                      monokai
+                                      monokai-theme
                                       ample-theme
                                       moe-theme
                                       alect-themes
@@ -244,7 +245,8 @@ It should only modify the values of Spacemacs settings."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(spacemacs-dark
+   dotspacemacs-themes '(vscode-default-high-contrast
+                         spacemacs-dark
                          spacemacs-light)
 
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
@@ -552,6 +554,7 @@ you should place your code here."
 (setq auto-save-default nil) ; stop creating #autosave# files
 (setq create-lockfiles nil)
 (setq org-directory "~/Dropbox/org")
+(setq org-roam-directory "~/Dropbox/org/notes/")
 
 
 (with-eval-after-load 'org
@@ -571,6 +574,10 @@ you should place your code here."
            "* %?")
           ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? :work:\n")
+          ("u" "Curative Todo" entry (file+headline ,(concat org-directory "/curative.org") "Tasks")
+           "* TODO %? \n")
+          ("a" "Captec Todo" entry (file+headline ,(concat org-directory "/captec.org") "Tasks")
+           "* TODO %? \n")
           ("l" "Life Todo" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? :life:\n")
 
@@ -579,7 +586,7 @@ you should place your code here."
 
 
   (setq w-view
-           `("w" "Work"
+           `("ww" "Work"
              (
               (agenda ""
                       (
@@ -605,7 +612,56 @@ you should place your code here."
               )
              )
            )
+  (setq captec-view
+           `("wa" "Captec"
+             (
+              (agenda ""
+                      (
+                       (org-super-agenda-groups
+                        '((:discard (:not (:tag ("captec")))))
+                        )
+                       (org-agenda-span 'day)
+                       (org-deadline-warning-days 365)))
+              (tags-todo "captec"
+                         ((org-agenda-overriding-header "All Captec")
+                          (org-agenda-prefix-format "  %?-12t% s")
+                          (org-agenda-files '("~/Dropbox/org/"))
+                          (org-super-agenda-groups
+                           '((:auto-property "CATEGORY")))
+                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
+              nil)))
 
+  (setq curative-view
+           `("wu" "Curative"
+             (
+              (agenda ""(
+                         (org-super-agenda-groups
+                          '((:discard (:not (:tag ("curative")))))
+                          )
+                         (org-agenda-span 'day)
+                         (org-deadline-warning-days 365)))
+              (tags-todo "curative"
+                         ((org-agenda-overriding-header "All Curative")
+                          (org-agenda-prefix-format "  %?-12t% s")
+                          (org-agenda-files '("~/Dropbox/org/"))
+                          (org-super-agenda-groups
+                           '((:auto-property "CATEGORY")))
+                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
+              nil)))
+
+
+  ;; (setq d-view
+  ;;       `("d" "Daily"
+  ;;         (
+  ;;          (agenda ""
+  ;;                  (
+  ;;                   (org-agenda-files '("~/Dropbox/org/"))
+  ;;                   (org-agenda-span 'day)
+  ;;                   (org-deadline-warning-days 365)
+  ;;                   (org-super-agenda-groups
+  ;;                    '((:name "Dailies"
+  ;;                             :and (:tag ("daily")))
+  ;;                      (:discard (:anything t)))))))))
   (setq l-view
            `("l" "Life "
              (
@@ -678,6 +734,9 @@ you should place your code here."
            )
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
+  (add-to-list 'org-agenda-custom-commands `,captec-view)
+  (add-to-list 'org-agenda-custom-commands `,curative-view)
+  ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
   (setq org-agenda-window-setup 'current-window)
   )
@@ -777,6 +836,49 @@ you should place your code here."
                         (smtpmail-smtp-service . 465)
                         (smtpmail-stream-type . ssl)
                         (mu4e-sent-messages-behavior . sent )
+                       ))
+             ,(make-mu4e-context
+               :name "UCurative"
+               :enter-func (lambda () (mu4e-message "Entering Curative context"))
+               :leave-func (lambda () (mu4e-message "Leaving Curative context"))
+               ;; we match based on the contact-fields of the message
+               :match-func (lambda (msg)
+                             (when msg
+                               (string-match-p "^/gmailcurative" (mu4e-message-field msg :maildir))))
+               :vars '( ( user-mail-address	    . "calebrogers@curative.com"  )
+                        ( user-full-name	    . "Caleb Rogers" )
+                        ( mu4e-drafts-folder . "/gmailcurative/[Gmail].Drafts" )
+                        ( mu4e-sent-folder   . "/gmailcurative/[Gmail].Sent Mail" )
+                        ( mu4e-trash-folder  . "/gmailcurative/[Gmail].Trash" )
+                        ( mu4e-refile-folder . "/gmailcurative/[Gmail].All Mail")
+                        ( mu4e-maildir-shortcuts .
+                                                 (
+                                                  ("/gmailcurative/INBOX"  . ?i)
+                                                  )
+                                                 )
+                        (smtpmail-smtp-user . "calebrogers@curative.com")
+                        ))
+             ,(make-mu4e-context
+               :name "ACaptec"
+               :enter-func (lambda () (mu4e-message "Switch to the Captec context"))
+               :leave-func (lambda () (mu4e-message "Leaving Captec context"))
+               ;; we match based on the maildir of the message
+               ;; this matches maildir /Arkham and its sub-directories
+               :match-func (lambda (msg)
+                             (when msg
+                               (string-match-p "^/gmailcaptec" (mu4e-message-field msg :maildir))))
+               :vars '( ( user-mail-address	     . "caleb@captec.io" )
+                        ( user-full-name	     . "Caleb Rogers" )
+                        ( mu4e-drafts-folder . "/gmailcurative/[Gmail].Drafts" )
+                        ( mu4e-sent-folder   . "/gmailcurative/[Gmail].Sent Mail" )
+                        ( mu4e-trash-folder  . "/gmailcurative/[Gmail].Trash" )
+                        ( mu4e-refile-folder . "/gmailcurative/[Gmail].All Mail")
+                        ( mu4e-maildir-shortcuts .
+                                                 (
+                                                  ("/gmailcaptec/INBOX"  . ?i)
+                                                  )
+                                                 )
+                        (smtpmail-smtp-user . "caleb@captec.io")
                        ))
              ))
     )
