@@ -32,6 +32,3 @@
   (spacemacs/setup-startup-hook)
   (require 'server)
   (unless (server-running-p) (server-start)))
-
-(setq typescript-indent-level 2)
-(setq js-indent-level 2)
