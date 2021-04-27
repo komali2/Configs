@@ -216,7 +216,7 @@ It should only modify the values of Spacemacs settings."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   dotspacemacs-startup-banner '"~/Downloads/cyberpunk1.png"
+   dotspacemacs-startup-banner '"~/Downloads/Pics/cyberpunk1.png"
 
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
@@ -672,66 +672,41 @@ you should place your code here."
                        (org-deadline-warning-days 365)
                        (org-super-agenda-groups
                         '((:name "Life Agenda"
-                                 :and (:tag ("life"))
-                                 )
-                          (:discard (:anything t))
-                          )
-                        )
-
-                       ))
+                                 :and (:tag ("life")))
+                          (:discard (:anything t))))))
 
               (todo "TODO"
                          ((org-agenda-overriding-header "")
                           (org-agenda-files '("~/Dropbox/org/"))
                           (org-super-agenda-groups
                            '((:name "Needs Filing"
-                                    :and (:not(:tag ("life" "work" "project" "read")))
-                                    )
-                             (:discard (:anything t))
-                             )
-                             )
-                           )
-                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
-                          )
+                                    :and (:not(:tag ("life" "work" "project" "read"))))
+                             (:discard (:anything t)))))
+                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
               (todo "TODO"
                     ((org-agenda-overriding-header "")
                      (org-agenda-files '("~/Dropbox/org/"))
                      (org-super-agenda-groups
                       '((:name "Reading"
-                               :and (:tag ("read"))
-                               )
-                        (:discard (:anything t))
-                        )
-                      )
-                     )
-                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
-                    )
+                               :and (:tag ("read")))
+                        (:discard (:anything t)))))
+                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
 
               (todo "TODO"
                     ((org-agenda-overriding-header "")
                      (org-agenda-files '("~/Dropbox/org/"))
                      (org-super-agenda-groups
                       '((:name "All Life Todos"
-                               :and (:tag ("life"))
-                               )
-                        (:discard (:anything t))
-                        )
-                      )
-                     )
-                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
-                    )
+                               :and (:tag ("life")))
+                        (:discard (:anything t)))))
+                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
               (tags-todo "personal"
                     ((org-agenda-overriding-header "Projects")
                      (org-agenda-files '("~/Dropbox/org/"))
                      (org-super-agenda-groups
-                      '((:auto-category t)))
-                     )
-                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
-                    )
-              )
-              nil
-              )
-           )
+                      '((:auto-category t))))
+                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
+              nil))
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,captec-view)
