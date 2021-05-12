@@ -559,6 +559,7 @@ you should place your code here."
 
 (with-eval-after-load 'org
   (require 'org-agenda)
+  (org-super-agenda-mode)
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
   (setq org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org")
   (setq org-default-notes-file (concat org-directory "/inbox.org"))
@@ -649,6 +650,23 @@ you should place your code here."
                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
               nil)))
 
+  (setq gov-view
+        `("g" "G0v"
+          (
+           (agenda ""(
+                      (org-super-agenda-groups
+                       '((:discard (:not (:tag ("g0v")))))
+                       )
+                      (org-agenda-span 'day)
+                      (org-deadline-warning-days 365)))
+           (tags-todo "g0v"
+                      ((org-agenda-overriding-header "All G0v")
+                       (org-agenda-prefix-format "  %?-12t% s")
+                       (org-agenda-files '("~/Dropbox/org/"))
+                       (org-super-agenda-groups
+                        '((:auto-property "CATEGORY")))
+                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
+           nil)))
 
   ;; (setq d-view
   ;;       `("d" "Daily"
@@ -887,74 +905,80 @@ you should place your code here."
 
 
 ;; use the locally installed eslint
-(defun configure-flycheck-web-mode ()
-  (let* ((root (locate-dominating-file
-                (or (buffer-file-name) default-directory)
-                "node_modules"))
-         (eslint (and root
-                      (expand-file-name "node_modules/.bin/eslint"
-                                        root))))
-    (when (and eslint (file-executable-p eslint))
-      (setq-local flycheck-javascript-eslint-executable eslint)))
-  )
-;; (add-hook 'web-mode-hook
-;;           #'configure-flycheck-web-mode)
-;; (add-hook 'js2-mode-hook
-;;           #'configure-flycheck-web-mode)
-(use-package org-super-agenda)
-(use-package color-theme-sanityinc-tomorrow)
-(use-package leuven-theme)
-(use-package ample-theme)
-(use-package moe-theme)
-(use-package alect-themes)
-(use-package flatland-theme)
-(use-package gruber-darker-theme)
-(use-package cyberpunk-theme)
-(use-package cyberpunk-theme)
+  (defun configure-flycheck-web-mode ()
+    (let* ((root (locate-dominating-file
+                  (or (buffer-file-name) default-directory)
+                  "node_modules"))
+           (eslint (and root
+                        (expand-file-name "node_modules/.bin/eslint"
+                                          root))))
+      (when (and eslint (file-executable-p eslint))
+        (setq-local flycheck-javascript-eslint-executable-executable eslint)))
+    )
+  ;; (add-hook 'web-mode-hook
+  ;;           #'configure-flycheck-web-mode)
+  ;; (add-hook 'js2-mode-hook
+  ;;           #'configure-flycheck-web-mode)
+  (use-package org-super-agenda)
+  (use-package color-theme-sanityinc-tomorrow)
+  (use-package leuven-theme)
+  (use-package ample-theme)
+  (use-package moe-theme)
+  (use-package alect-themes)
+  (use-package flatland-theme)
+  (use-package gruber-darker-theme)
+  (use-package cyberpunk-theme)
+  (use-package cyberpunk-theme)
 
-(use-package composite
-  :defer t
-  :init
-  (defvar composition-ligature-table (make-char-table nil))
-  :hook
-  (((prog-mode conf-mode nxml-mode markdown-mode help-mode)
-    . (lambda () (setq-local composition-function-table composition-ligature-table))))
-  :config
-  ;; support ligatures, some toned down to prevent hang
-  (when (version<= "27.0" emacs-version)
-    (let ((alist
-           '((33 . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
-             (35 . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
-             (36 . ".\\(?:\\(>\\)>?\\)")
-             (37 . ".\\(?:\\(%\\)%?\\)")
-             (38 . ".\\(?:\\(&\\)&?\\)")
-             (42 . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
-             ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
-             (43 . ".\\(?:\\([>]\\)>?\\)")
-             ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
-             (45 . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
-             ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
-             (46 . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
-             (47 . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
-             ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
-             (48 . ".\\(?:\\(x[a-fA-F0-9]\\).?\\)")
-             (58 . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
-             (59 . ".\\(?:\\(;\\);?\\)")
-             (60 . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
-             (61 . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
-             (62 . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
-             (63 . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
-             (91 . ".\\(?:\\(|\\)[]|]?\\)")
-             ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
-             (94 . ".\\(?:\\(=\\)=?\\)")
-             (95 . ".\\(?:\\(|_\\|[_]\\)_?\\)")
-             (119 . ".\\(?:\\(ww\\)w?\\)")
-             (123 . ".\\(?:\\(|\\)[|}]?\\)")
-             (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
-             (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
-      (dolist (char-regexp alist)
-        (set-char-table-range composition-ligature-table (car char-regexp)
-                              `([,(cdr char-regexp) 0 font-shape-gstring]))))
-    (set-char-table-parent composition-ligature-table composition-function-table))
-  )
+  (use-package composite
+    :defer t
+    :init
+    (defvar composition-ligature-table (make-char-table nil))
+    :hook
+    (((prog-mode conf-mode nxml-mode markdown-mode help-mode)
+      . (lambda () (setq-local composition-function-table composition-ligature-table))))
+    :config
+    ;; support ligatures, some toned down to prevent hang
+    (when (version<= "27.0" emacs-version)
+      (let ((alist
+             '((33 . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
+               (35 . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
+               (36 . ".\\(?:\\(>\\)>?\\)")
+               (37 . ".\\(?:\\(%\\)%?\\)")
+               (38 . ".\\(?:\\(&\\)&?\\)")
+               (42 . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
+               ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
+               (43 . ".\\(?:\\([>]\\)>?\\)")
+               ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
+               (45 . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
+               ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
+               (46 . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
+               (47 . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
+               ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
+               (48 . ".\\(?:\\(x[a-fA-F0-9]\\).?\\)")
+               (58 . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
+               (59 . ".\\(?:\\(;\\);?\\)")
+               (60 . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
+               (61 . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
+               (62 . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
+               (63 . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
+               (91 . ".\\(?:\\(|\\)[]|]?\\)")
+               ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
+               (94 . ".\\(?:\\(=\\)=?\\)")
+               (95 . ".\\(?:\\(|_\\|[_]\\)_?\\)")
+               (119 . ".\\(?:\\(ww\\)w?\\)")
+               (123 . ".\\(?:\\(|\\)[|}]?\\)")
+               (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
+               (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
+        (dolist (char-regexp alist)
+          (set-char-table-range composition-ligature-table (car char-regexp)
+                                `([,(cdr char-regexp) 0 font-shape-gstring]))))
+      (set-char-table-parent composition-ligature-table composition-function-table))
+    )
+  (with-eval-after-load 'lsp-mode
+    (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.node_modules\\'")
+    ;; or
+    (setq lsp-file-watch-threshold 3000)
+    )
+
 )
