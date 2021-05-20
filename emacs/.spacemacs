@@ -577,8 +577,6 @@ you should place your code here."
            "* TODO %? :work:\n")
           ("u" "Curative Todo" entry (file+headline ,(concat org-directory "/curative.org") "Tasks")
            "* TODO %? \n")
-          ("a" "Captec Todo" entry (file+headline ,(concat org-directory "/captec.org") "Tasks")
-           "* TODO %? \n")
           ("l" "Life Todo" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? :life:\n")
 
@@ -613,24 +611,6 @@ you should place your code here."
               )
              )
            )
-  (setq captec-view
-           `("wa" "Captec"
-             (
-              (agenda ""
-                      (
-                       (org-super-agenda-groups
-                        '((:discard (:not (:tag ("captec")))))
-                        )
-                       (org-agenda-span 'day)
-                       (org-deadline-warning-days 365)))
-              (tags-todo "captec"
-                         ((org-agenda-overriding-header "All Captec")
-                          (org-agenda-prefix-format "  %?-12t% s")
-                          (org-agenda-files '("~/Dropbox/org/"))
-                          (org-super-agenda-groups
-                           '((:auto-property "CATEGORY")))
-                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
-              nil)))
 
   (setq curative-view
            `("wu" "Curative"
@@ -727,7 +707,6 @@ you should place your code here."
               nil))
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
-  (add-to-list 'org-agenda-custom-commands `,captec-view)
   (add-to-list 'org-agenda-custom-commands `,curative-view)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
@@ -851,28 +830,6 @@ you should place your code here."
                                                  )
                         (smtpmail-smtp-user . "calebrogers@curative.com")
                         ))
-             ,(make-mu4e-context
-               :name "ACaptec"
-               :enter-func (lambda () (mu4e-message "Switch to the Captec context"))
-               :leave-func (lambda () (mu4e-message "Leaving Captec context"))
-               ;; we match based on the maildir of the message
-               ;; this matches maildir /Arkham and its sub-directories
-               :match-func (lambda (msg)
-                             (when msg
-                               (string-match-p "^/gmailcaptec" (mu4e-message-field msg :maildir))))
-               :vars '( ( user-mail-address	     . "caleb@captec.io" )
-                        ( user-full-name	     . "Caleb Rogers" )
-                        ( mu4e-drafts-folder . "/gmailcurative/[Gmail].Drafts" )
-                        ( mu4e-sent-folder   . "/gmailcurative/[Gmail].Sent Mail" )
-                        ( mu4e-trash-folder  . "/gmailcurative/[Gmail].Trash" )
-                        ( mu4e-refile-folder . "/gmailcurative/[Gmail].All Mail")
-                        ( mu4e-maildir-shortcuts .
-                                                 (
-                                                  ("/gmailcaptec/INBOX"  . ?i)
-                                                  )
-                                                 )
-                        (smtpmail-smtp-user . "caleb@captec.io")
-                       ))
              ))
     )
 
@@ -977,8 +934,7 @@ you should place your code here."
     )
   (with-eval-after-load 'lsp-mode
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.node_modules\\'")
-    ;; or
-    (setq lsp-file-watch-threshold 3000)
+    (setq lsp-file-watch-threshold 5000)
     )
 
 )
