@@ -698,7 +698,7 @@ you should place your code here."
                                :and (:tag ("life")))
                         (:discard (:anything t)))))
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-              (tags-todo "personal"
+              (tags-todo "project"
                     ((org-agenda-overriding-header "Projects")
                      (org-agenda-files '("~/Dropbox/org/"))
                      (org-super-agenda-groups
