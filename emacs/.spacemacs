@@ -32,7 +32,7 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(
+   '(lua
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -88,6 +88,27 @@ This function should only modify configuration layer settings."
      common-lisp
      colors
      react
+     (elfeed :variables
+             elfeed-feeds '("https://researchbuzz.me/feed/"
+                            "http://n-gate.com/index.rss"
+                            "https://mjtsai.com/blog/feed/"
+                            "https://craphound.com/feed/"
+                            "https://pluralistic.net/feed/"
+                            "http://www.fudzilla.com/?format=feed"
+                            "http://semiengineering.com/feed/"
+                            "https://www.eff.org/rss/pressrelease"
+                            "http://news.mit.edu/rss/topic/nanotech"
+                            "http://news.mit.edu/rss/topic/electrical-engineering"
+                            "http://www.pocketables.com/feed"
+                            "https://www.quantamagazine.org/feed"
+                            "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml"
+                            "https://machinelearningmastery.com/blog/feed/"
+                            "http://news.mit.edu/rss/topic/artificial-intelligence2"
+                            "https://bair.berkeley.edu/blog/feed.xml"
+                            "https://openai.com/blog/rss/"
+                            "https://www.technologyreview.com/topic/artificial-intelligence/feed"
+                            "https://www.jefftk.com/news.rss"
+                             ))
      )
 
    ;; List of additional packages that will be installed without being
@@ -935,6 +956,29 @@ you should place your code here."
   (with-eval-after-load 'lsp-mode
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.node_modules\\'")
     (setq lsp-file-watch-threshold 5000)
+    (setq lsp-enable-file-watchers nil)
     )
+(defun elfeed-goodies/search-header-draw ()
+  "Returns the string to be used as the Elfeed header."
+  (if (zerop (elfeed-db-last-update))
+      (elfeed-search--intro-header)
+    (let* ((separator-left (intern (format "powerline-%s-%s"
+                                           elfeed-goodies/powerline-default-separator
+                                           (car powerline-default-separator-dir))))
+           (separator-right (intern (format "powerline-%s-%s"
+                                            elfeed-goodies/powerline-default-separator
+                                            (cdr powerline-default-separator-dir))))
+           (db-time (seconds-to-time (elfeed-db-last-update)))
+           (stats (-elfeed/feed-stats))
+           (search-filter (cond
+                           (elfeed-search-filter-active
+                            "")
+                           (elfeed-search-filter
+                            elfeed-search-filter)
+                           (""))))
+      (if (>= (window-width) (* (frame-width) elfeed-goodies/wide-threshold))
+          (search-header/draw-wide separator-left separator-right search-filter stats db-time)
+        (search-header/draw-tight separator-left separator-right search-filter stats db-time)))))
+
 
 )
