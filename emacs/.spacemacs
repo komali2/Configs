@@ -56,9 +56,14 @@ This function should only modify configuration layer settings."
      git
      markdown
      (org :variables
+          org-directory "~/Dropbox/org"
           org-projectile-file "~/Dropbox/org/projects.org"
           org-enable-roam-support t
-          org-enable-org-journal-support t)
+          org-enable-org-journal-support t
+          org-roam-directory "~/Dropbox/org/notes/"
+          org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org"
+          org-default-notes-file (concat org-directory "/inbox.org")
+          )
      (shell :variables
            shell-default-height 30
            shell-default-position 'bottom)
@@ -128,7 +133,8 @@ This function should only modify configuration layer settings."
                                       flatland-theme
                                       gruber-darker-theme
                                       cyberpunk-theme
-                                      solarized-theme)
+                                      solarized-theme
+                                      anki-editor)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
 
@@ -574,16 +580,16 @@ you should place your code here."
 (setq make-backup-files nil) ; stop creating backup~ files
 (setq auto-save-default nil) ; stop creating #autosave# files
 (setq create-lockfiles nil)
-(setq org-directory "~/Dropbox/org")
-(setq org-roam-directory "~/Dropbox/org/notes/")
+;; (setq org-directory "~/Dropbox/org")
+;; (setq org-roam-directory "~/Dropbox/org/notes/")
 
 
 (with-eval-after-load 'org
   (require 'org-agenda)
   (org-super-agenda-mode)
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
-  (setq org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org")
-  (setq org-default-notes-file (concat org-directory "/inbox.org"))
+  ;; (setq org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org")
+  ;; (setq org-default-notes-file (concat org-directory "/inbox.org"))
   (setq org-agenda-files '("~/Dropbox/org/"))
   (setq org-todo-keywords
         '((sequence "TODO" "DOING" "WAITING" "|" "DONE")))
