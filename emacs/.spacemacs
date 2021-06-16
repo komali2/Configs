@@ -987,4 +987,7 @@ you should place your code here."
         (search-header/draw-tight separator-left separator-right search-filter stats db-time)))))
 
 
+(fset 'vue-wrap-intl
+   (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
+
 )
