@@ -32,16 +32,17 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(lua
+   '(
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
+     lua
      emacs-lisp
      helm
      lsp
-     multiple-cursors
+     ;; multiple-cursors
      treemacs
      rust
      yaml
@@ -63,11 +64,12 @@ This function should only modify configuration layer settings."
           org-roam-directory "~/Dropbox/org/notes/"
           org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org"
           org-default-notes-file (concat org-directory "/inbox.org")
+          org-roam-v2-ack t
           )
      (shell :variables
            shell-default-height 30
            shell-default-position 'bottom)
-     spell-checking
+     (spell-checking :variables spell-checking-enable-by-default nil)
      c-c++
      semantic
      syntax-checking
@@ -113,6 +115,8 @@ This function should only modify configuration layer settings."
                             "https://openai.com/blog/rss/"
                             "https://www.technologyreview.com/topic/artificial-intelligence/feed"
                             "https://www.jefftk.com/news.rss"
+                            "https://cprss.s3.amazonaws.com/javascriptweekly.com.xml"
+                            "https://www.smashingmagazine.com/feed"
                              ))
      )
 
@@ -134,7 +138,9 @@ This function should only modify configuration layer settings."
                                       gruber-darker-theme
                                       cyberpunk-theme
                                       solarized-theme
-                                      anki-editor)
+                                      anki-editor
+                                      ;; emacsql-sqlite3
+                                      )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
 
@@ -301,7 +307,7 @@ It should only modify the values of Spacemacs settings."
    ;; refer to the DOCUMENTATION.org for more info on how to create your own
    ;; spaceline theme. Value can be a symbol or list with additional properties.
    ;; (default '(spacemacs :separator wave :separator-scale 1.5))
-   dotspacemacs-mode-line-theme '(spacemacs :separator slant :separator-scale 1.5)
+   dotspacemacs-mode-line-theme '(spacemacs :separator nil )
 
    ;; If non-nil the cursor color matches the state color in GUI Emacs.
    ;; (default t)
@@ -447,7 +453,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Show the scroll bar while scrolling. The auto hide time can be configured
    ;; by setting this variable to a number. (default t)
-   dotspacemacs-scroll-bar-while-scrolling t
+   dotspacemacs-scroll-bar-while-scrolling nil
 
    ;; Control line numbers activation.
    ;; If set to `t', `relative' or `visual' then line numbers are enabled in all
@@ -619,17 +625,18 @@ you should place your code here."
 (setq make-backup-files nil) ; stop creating backup~ files
 (setq auto-save-default nil) ; stop creating #autosave# files
 (setq create-lockfiles nil)
-;; (setq org-directory "~/Dropbox/org")
-;; (setq org-roam-directory "~/Dropbox/org/notes/")
+(add-hook 'text-mode-hook #'visual-line-mode)
 
 
 (with-eval-after-load 'org
   (require 'org-agenda)
   (org-super-agenda-mode)
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
-  ;; (setq org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org")
-  ;; (setq org-default-notes-file (concat org-directory "/inbox.org"))
-  (setq org-agenda-files '("~/Dropbox/org/"))
+
+  (setq org-agenda-files
+        (seq-filter (lambda(x) (not (string-match "/.git/"(file-name-directory x))))
+                    (directory-files-recursively "~/Dropbox/org" "\\.org$")
+                    ))
   (setq org-todo-keywords
         '((sequence "TODO" "DOING" "WAITING" "|" "DONE")))
   (setq org-capture-templates
@@ -696,6 +703,24 @@ you should place your code here."
                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
               nil)))
 
+  (setq prosper-view
+        `("wp" "Prosper"
+          (
+           (agenda ""(
+                      (org-super-agenda-groups
+                       '((:discard (:not (:tag ("prosper")))))
+                       )
+                      (org-agenda-span 'day)
+                      (org-deadline-warning-days 365)))
+           (tags-todo "prosper"
+                      ((org-agenda-overriding-header "All Prosper")
+                       (org-agenda-prefix-format "  %?-12t% s")
+                       (org-agenda-files '("~/Dropbox/org/"))
+                       (org-super-agenda-groups
+                        '((:auto-property "CATEGORY")))
+                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
+           nil)))
+
   (setq gov-view
         `("g" "G0v"
           (
@@ -731,7 +756,6 @@ you should place your code here."
              (
               (agenda ""
                       (
-                       (org-agenda-files '("~/Dropbox/org/"))
                        (org-agenda-span 'day)
                        (org-deadline-warning-days 365)
                        (org-super-agenda-groups
@@ -739,34 +763,34 @@ you should place your code here."
                                  :and (:tag ("life")))
                           (:discard (:anything t))))))
 
-              (todo "TODO"
-                         ((org-agenda-overriding-header "")
-                          (org-agenda-files '("~/Dropbox/org/"))
+              (todo "TODO|DOING|WAITING"
+                    (
+                     (org-agenda-overriding-header "")
                           (org-super-agenda-groups
                            '((:name "Needs Filing"
-                                    :and (:not(:tag ("life" "work" "project" "read"))))
+                                    :and (:not(:tag ("life" "work" "project" "read" "g0v"))))
                              (:discard (:anything t)))))
                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-              (todo "TODO"
-                    ((org-agenda-overriding-header "")
-                     (org-agenda-files '("~/Dropbox/org/"))
+              (todo "TODO|DOING|WAITING"
+                    (
+                     (org-agenda-overriding-header "")
                      (org-super-agenda-groups
                       '((:name "Reading"
                                :and (:tag ("read")))
                         (:discard (:anything t)))))
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
 
-              (todo "TODO"
-                    ((org-agenda-overriding-header "")
-                     (org-agenda-files '("~/Dropbox/org/"))
+              (todo "TODO|DOING|WAITING"
+                    (
+                     (org-agenda-overriding-header "")
                      (org-super-agenda-groups
                       '((:name "All Life Todos"
                                :and (:tag ("life")))
                         (:discard (:anything t)))))
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
               (tags-todo "project"
-                    ((org-agenda-overriding-header "Projects")
-                     (org-agenda-files '("~/Dropbox/org/"))
+                         (
+                          (org-agenda-overriding-header "Projects")
                      (org-super-agenda-groups
                       '((:auto-category t))))
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
@@ -774,9 +798,11 @@ you should place your code here."
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,curative-view)
+  (add-to-list 'org-agenda-custom-commands `,prosper-view)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
   (setq org-agenda-window-setup 'current-window)
+  (spacemacs/set-leader-keys "aordc" 'org-roam-dailies-capture-today)
   )
 
   (setq org-journal-dir "~/Dropbox/org/journal/")
@@ -953,51 +979,51 @@ you should place your code here."
   (use-package cyberpunk-theme)
   (use-package cyberpunk-theme)
 
-  (use-package composite
-    :defer t
-    :init
-    (defvar composition-ligature-table (make-char-table nil))
-    :hook
-    (((prog-mode conf-mode nxml-mode markdown-mode help-mode)
-      . (lambda () (setq-local composition-function-table composition-ligature-table))))
-    :config
-    ;; support ligatures, some toned down to prevent hang
-    (when (version<= "27.0" emacs-version)
-      (let ((alist
-             '((33 . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
-               (35 . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
-               (36 . ".\\(?:\\(>\\)>?\\)")
-               (37 . ".\\(?:\\(%\\)%?\\)")
-               (38 . ".\\(?:\\(&\\)&?\\)")
-               (42 . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
-               ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
-               (43 . ".\\(?:\\([>]\\)>?\\)")
-               ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
-               (45 . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
-               ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
-               (46 . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
-               (47 . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
-               ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
-               (48 . ".\\(?:\\(x[a-fA-F0-9]\\).?\\)")
-               (58 . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
-               (59 . ".\\(?:\\(;\\);?\\)")
-               (60 . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
-               (61 . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
-               (62 . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
-               (63 . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
-               (91 . ".\\(?:\\(|\\)[]|]?\\)")
-               ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
-               (94 . ".\\(?:\\(=\\)=?\\)")
-               (95 . ".\\(?:\\(|_\\|[_]\\)_?\\)")
-               (119 . ".\\(?:\\(ww\\)w?\\)")
-               (123 . ".\\(?:\\(|\\)[|}]?\\)")
-               (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
-               (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
-        (dolist (char-regexp alist)
-          (set-char-table-range composition-ligature-table (car char-regexp)
-                                `([,(cdr char-regexp) 0 font-shape-gstring]))))
-      (set-char-table-parent composition-ligature-table composition-function-table))
-    )
+  ;; (use-package composite
+  ;;   :defer t
+  ;;   :init
+  ;;   (defvar composition-ligature-table (make-char-table nil))
+  ;;   :hook
+  ;;   (((prog-mode conf-mode nxml-mode markdown-mode help-mode)
+  ;;     . (lambda () (setq-local composition-function-table composition-ligature-table))))
+  ;;   :config
+  ;;   ;; support ligatures, some toned down to prevent hang
+  ;;   (when (version<= "27.0" emacs-version)
+  ;;     (let ((alist
+  ;;            '((33 . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
+  ;;              (35 . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
+  ;;              (36 . ".\\(?:\\(>\\)>?\\)")
+  ;;              (37 . ".\\(?:\\(%\\)%?\\)")
+  ;;              (38 . ".\\(?:\\(&\\)&?\\)")
+  ;;              (42 . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
+  ;;              ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
+  ;;              (43 . ".\\(?:\\([>]\\)>?\\)")
+  ;;              ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
+  ;;              (45 . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
+  ;;              ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
+  ;;              (46 . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
+  ;;              (47 . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
+  ;;              ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
+  ;;              (48 . ".\\(?:\\(x[a-fA-F0-9]\\).?\\)")
+  ;;              (58 . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
+  ;;              (59 . ".\\(?:\\(;\\);?\\)")
+  ;;              (60 . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
+  ;;              (61 . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
+  ;;              (62 . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
+  ;;              (63 . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
+  ;;              (91 . ".\\(?:\\(|\\)[]|]?\\)")
+  ;;              ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
+  ;;              (94 . ".\\(?:\\(=\\)=?\\)")
+  ;;              (95 . ".\\(?:\\(|_\\|[_]\\)_?\\)")
+  ;;              (119 . ".\\(?:\\(ww\\)w?\\)")
+  ;;              (123 . ".\\(?:\\(|\\)[|}]?\\)")
+  ;;              (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
+  ;;              (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
+  ;;       (dolist (char-regexp alist)
+  ;;         (set-char-table-range composition-ligature-table (car char-regexp)
+  ;;                               `([,(cdr char-regexp) 0 font-shape-gstring]))))
+  ;;     (set-char-table-parent composition-ligature-table composition-function-table))
+  ;;   )
   (with-eval-after-load 'lsp-mode
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.node_modules\\'")
     (setq lsp-file-watch-threshold 5000)
@@ -1029,4 +1055,13 @@ you should place your code here."
 (fset 'vue-wrap-intl
    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
 
+(defun find-face-at-mouse (event)
+  (interactive "e")
+  (let* ((mouse-pos  (event-start event))
+         (mouse-buf  (window-buffer (posn-window mouse-pos)))
+         (pos-pt     (posn-point mouse-pos)))
+    (with-current-buffer mouse-buf (describe-char pos-pt))))
+
+(global-set-key [C-down-mouse-3] #'find-face-at-mouse)
+(global-set-key [mode-line C-mouse-3] #'find-face-at-mouse)
 )
