@@ -634,7 +634,7 @@ you should place your code here."
   (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
 
   (setq org-agenda-files
-        (seq-filter (lambda(x) (not (string-match "/.git/"(file-name-directory x))))
+        (seq-filter (lambda(x) (not (string-match "/notes/"(file-name-directory x))))
                     (directory-files-recursively "~/Dropbox/org" "\\.org$")
                     ))
   (setq org-todo-keywords
