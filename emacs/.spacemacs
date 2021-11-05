@@ -637,6 +637,10 @@ you should place your code here."
         (seq-filter (lambda(x) (not (string-match "/notes/"(file-name-directory x))))
                     (directory-files-recursively "~/Dropbox/org" "\\.org$")
                     ))
+  (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t%-6e% s")
+                                   (todo . " %i %-12:c %-6e")
+                                   (tags . " %i %-12:c")
+                                   (search . " %i %-12:c")))
   (setq org-todo-keywords
         '((sequence "TODO" "DOING" "WAITING" "|" "DONE")))
   (setq org-capture-templates
@@ -655,6 +659,16 @@ you should place your code here."
 
           ))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
+
+  (setq agenda-view
+        `("d" "Daily Agenda"
+          (
+           (agenda ""
+                   (
+                    (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                    (org-agenda-span 'week)
+                    (org-super-agenda-groups
+                     '((:auto-category t :time-grid t))))))))
 
 
   (setq w-view
@@ -795,10 +809,53 @@ you should place your code here."
                       '((:auto-category t))))
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
               nil))
+  (add-to-list 'org-agenda-custom-commands
+               '("bd" agenda "Today's Deadlines"
+                 ((org-agenda-span 'day)
+                  (org-agenda-skip-function '(org-agenda-skip-deadline-if-not-today))
+                  (org-agenda-entry-types '(:deadline))
+                  (org-agenda-overriding-header "Today's Deadlines "))))
+  (add-to-list 'org-agenda-custom-commands
+               '("bs" agenda "Today's Schedule"
+                 ((org-agenda-span 'day)
+                  (org-agenda-skip-function '(org-agenda-skip-schedule-if-not-today))
+                  (org-agenda-entry-types '(:schedule))
+                  (org-agenda-overriding-header "Today's Schedule "))))
+
+  (defun org-agenda-skip-deadline-if-not-today ()
+    "If this function returns nil, the current match should not be skipped.
+Otherwise, the function must return a position from where the search
+should be continued."
+    (ignore-errors
+      (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+            (deadline-day
+             (time-to-days
+              (org-time-string-to-time
+               (org-entry-get nil "DEADLINE"))))
+            (now (time-to-days (current-time))))
+        (and deadline-day
+             (not (= deadline-day now))
+             subtree-end))))
+
+  (defun org-agenda-skip-schedule-if-not-today ()
+    "If this function returns nil, the current match should not be skipped.
+Otherwise, the function must return a position from where the search
+should be continued."
+    (ignore-errors
+      (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+            (schedule-day
+             (time-to-days
+              (org-time-string-to-time
+               (org-entry-get nil "SCHEDULE"))))
+            (now (time-to-days (current-time))))
+        (and schedule-day
+             (not (= deadline-day now))
+             subtree-end))))
+
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,curative-view)
-  (add-to-list 'org-agenda-custom-commands `,prosper-view)
+  (add-to-list 'org-agenda-custom-commands `,agenda-view)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
   (setq org-agenda-window-setup 'current-window)
