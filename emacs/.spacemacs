@@ -602,6 +602,13 @@ configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+  (add-to-list 'load-path "~/lisp")
+  (require 'gitignore-mode)
+  (fset 'evil-redirect-digit-argument 'ignore)
+
+  (add-to-list 'evil-digit-bound-motions 'evil-org-beginning-of-line)
+  (evil-define-key 'motion 'evil-org-mode
+    (kbd "0") 'evil-org-beginning-of-line)
   )
 
 (defun dotspacemacs/user-load ()
