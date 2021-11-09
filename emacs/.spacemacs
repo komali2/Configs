@@ -667,17 +667,28 @@ you should place your code here."
           ))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
 
-  (setq agenda-view
-        `("d" "Daily Agenda"
+  (setq daily-agenda-view
+        `("dd" "Daily Agenda"
+          (
+           (agenda ""
+                   (
+                    (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                    (org-agenda-span 'day)
+                    (org-deadline-warning-days 5)
+                    (org-super-agenda-groups
+                     '((:auto-category t :time-grid t))))))))
+
+
+  (setq weekly-agenda-view
+        `("dw" "Weekly Agenda"
           (
            (agenda ""
                    (
                     (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
                     (org-agenda-span 'week)
+                    (org-deadline-warning-days 5)
                     (org-super-agenda-groups
                      '((:auto-category t :time-grid t))))))))
-
-
   (setq w-view
            `("ww" "Work"
              (
@@ -687,7 +698,7 @@ you should place your code here."
                         '((:discard (:not (:tag ("work")))))
                         )
                        (org-agenda-span 'day)
-                       (org-deadline-warning-days 365)
+                       (org-deadline-warning-days 5)
                        ))
               (tags-todo "work"
                          ((org-agenda-overriding-header "All Work")
@@ -714,7 +725,7 @@ you should place your code here."
                           '((:discard (:not (:tag ("curative")))))
                           )
                          (org-agenda-span 'day)
-                         (org-deadline-warning-days 365)))
+                         (org-deadline-warning-days 5)))
               (tags-todo "curative"
                          ((org-agenda-overriding-header "All Curative")
                           (org-agenda-prefix-format "  %?-12t% s")
@@ -732,7 +743,7 @@ you should place your code here."
                        '((:discard (:not (:tag ("prosper")))))
                        )
                       (org-agenda-span 'day)
-                      (org-deadline-warning-days 365)))
+                      (org-deadline-warning-days 5)))
            (tags-todo "prosper"
                       ((org-agenda-overriding-header "All Prosper")
                        (org-agenda-prefix-format "  %?-12t% s")
@@ -750,7 +761,7 @@ you should place your code here."
                        '((:discard (:not (:tag ("g0v")))))
                        )
                       (org-agenda-span 'day)
-                      (org-deadline-warning-days 365)))
+                      (org-deadline-warning-days 5)))
            (tags-todo "g0v"
                       ((org-agenda-overriding-header "All G0v")
                        (org-agenda-prefix-format "  %?-12t% s")
@@ -778,7 +789,7 @@ you should place your code here."
               (agenda ""
                       (
                        (org-agenda-span 'day)
-                       (org-deadline-warning-days 365)
+                       (org-deadline-warning-days 5)
                        (org-super-agenda-groups
                         '((:name "Life Agenda"
                                  :and (:tag ("life")))
@@ -853,7 +864,7 @@ should be continued."
             (schedule-day
              (time-to-days
               (org-time-string-to-time
-               (org-entry-get nil "SCHEDULE"))))
+               (org-entry-get nil "SCHEDULED"))))
             (now (time-to-days (current-time))))
         (and schedule-day
              (not (= deadline-day now))
@@ -862,7 +873,8 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,curative-view)
-  (add-to-list 'org-agenda-custom-commands `,agenda-view)
+  (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
+  (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
   (setq org-agenda-window-setup 'current-window)
