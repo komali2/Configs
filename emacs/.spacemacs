@@ -735,24 +735,6 @@ you should place your code here."
                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
               nil)))
 
-  (setq prosper-view
-        `("wp" "Prosper"
-          (
-           (agenda ""(
-                      (org-super-agenda-groups
-                       '((:discard (:not (:tag ("prosper")))))
-                       )
-                      (org-agenda-span 'day)
-                      (org-deadline-warning-days 5)))
-           (tags-todo "prosper"
-                      ((org-agenda-overriding-header "All Prosper")
-                       (org-agenda-prefix-format "  %?-12t% s")
-                       (org-agenda-files '("~/Dropbox/org/"))
-                       (org-super-agenda-groups
-                        '((:auto-property "CATEGORY")))
-                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
-           nil)))
-
   (setq gov-view
         `("g" "G0v"
           (
