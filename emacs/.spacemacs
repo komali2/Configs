@@ -646,8 +646,8 @@ you should place your code here."
                     ))
   (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t%-6e% s")
                                    (todo . " %i %-12:c %-6e")
-                                   (tags . " %i %-12:c")
-                                   (search . " %i %-12:c")))
+                                   (tags . " %i %-12:c %-6e")
+                                   (search . " %i %-12:c%-6e")))
   (setq org-todo-keywords
         '((sequence "TODO" "DOING" "WAITING" "|" "DONE")))
   (setq org-capture-templates
