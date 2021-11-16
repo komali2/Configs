@@ -753,20 +753,8 @@ you should place your code here."
                        (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
            nil)))
 
-  ;; (setq d-view
-  ;;       `("d" "Daily"
-  ;;         (
-  ;;          (agenda ""
-  ;;                  (
-  ;;                   (org-agenda-files '("~/Dropbox/org/"))
-  ;;                   (org-agenda-span 'day)
-  ;;                   (org-deadline-warning-days 365)
-  ;;                   (org-super-agenda-groups
-  ;;                    '((:name "Dailies"
-  ;;                             :and (:tag ("daily")))
-  ;;                      (:discard (:anything t)))))))))
   (setq l-view
-           `("l" "Life "
+           `("ll" "All Life "
              (
               (agenda ""
                       (
@@ -806,9 +794,40 @@ you should place your code here."
                          (
                           (org-agenda-overriding-header "Projects")
                      (org-super-agenda-groups
-                      '((:auto-category t))))
+                      '((:auto-category t :time-grid t))))
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
               nil))
+
+  (add-to-list 'org-agenda-custom-commands
+               '("lc" "Life Clean"
+                 (
+                 (todo "TODO|DOING|WAITING"
+                       (
+                        (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+                        (org-agenda-overriding-header "")
+                        (org-super-agenda-groups
+                         '((:name "Reading"
+                                  :and (:tag ("read")))
+                           (:discard (:anything t)))))
+                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
+                 (todo "TODO|DOING|WAITING"
+                       (
+                        (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+                        (org-agenda-overriding-header "")
+                        (org-super-agenda-groups
+                         '((:name "All Life Todos"
+                                  :and (:tag ("life")))
+                           (:discard (:anything t)))))
+                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
+                 (tags-todo "project"
+                            (
+                             (org-agenda-overriding-header "Projects")
+                             (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+                             (org-super-agenda-groups
+                              '((:auto-category t :time-grid t))))
+                            (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
+                 ))
+               )
   (add-to-list 'org-agenda-custom-commands
                '("bd" agenda "Today's Deadlines"
                  ((org-agenda-span 'day)
