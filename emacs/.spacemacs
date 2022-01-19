@@ -1,3 +1,4 @@
+
 ;; -*- mode: emacs-lisp; lexical-binding: t -*-
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
@@ -755,6 +756,12 @@ you should place your code here."
                        (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
            nil)))
 
+  (setq d-view
+        `("dD" "All Doing"
+          ( (todo "DOING"
+                ((org-agenda-overriding-header"")
+                 (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+
   (setq l-view
            `("ll" "All Life "
              (
@@ -939,6 +946,7 @@ should be continued."
 
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
+  (add-to-list 'org-agenda-custom-commands `,d-view)
   (add-to-list 'org-agenda-custom-commands `,curative-view)
   (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
   (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
