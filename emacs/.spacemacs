@@ -139,7 +139,7 @@ This function should only modify configuration layer settings."
                                       cyberpunk-theme
                                       solarized-theme
                                       anki-editor
-                                      ;; emacsql-sqlite3
+                                      sml-mode
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -633,7 +633,9 @@ you should place your code here."
 (setq auto-save-default nil) ; stop creating #autosave# files
 (setq create-lockfiles nil)
 (add-hook 'text-mode-hook #'visual-line-mode)
-
+(autoload 'sml-mode "sml-mode" "Major mode for editing SML." t)
+(autoload 'run-sml "sml-proc" "Run an inferior SML process." t)
+(add-to-list 'auto-mode-alist '("\\.\\(sml\\|sig\\)\\'" . sml-mode))
 
 (with-eval-after-load 'org
   (require 'org-agenda)
@@ -841,6 +843,70 @@ you should place your code here."
                   (org-agenda-entry-types '(:schedule))
                   (org-agenda-overriding-header "Today's Schedule "))))
 
+;; define "R" as the prefix key for reviewing what happened in various
+;; time periods
+(add-to-list 'org-agenda-custom-commands
+             '("R" . "Review" )
+             )
+
+;; Common settings for all reviews
+(setq efs/org-agenda-review-settings
+      '((org-agenda-files '("~/Dropbox/org"))
+        (org-super-agenda-groups
+         '((:auto-property "CATEGORY")))
+        (org-agenda-show-all-dates t)
+        (org-agenda-start-with-log-mode t)
+        (org-agenda-start-with-clockreport-mode t)
+        (org-agenda-archives-mode t)
+        ;; I don't care if an entry was archived
+        (org-agenda-hide-tags-regexp
+         (concat org-agenda-hide-tags-regexp
+                 "\\|ARCHIVE"))
+      ))
+;; Show the agenda with the log turn on, the clock table show and
+;; archived entries shown.  These commands are all the same exept for
+;; the time period.
+(add-to-list 'org-agenda-custom-commands
+             `("Rw" "Week in review"
+                agenda ""
+                ;; agenda settings
+                ,(append
+                  efs/org-agenda-review-settings
+                  '((org-agenda-span 'week)
+                    (org-agenda-start-on-weekday 0)
+                    (org-agenda-overriding-header "Week in Review"))
+                  )
+                ("~/org/review/week.html")
+                ))
+
+
+(add-to-list 'org-agenda-custom-commands
+             `("Rd" "Day in review"
+                agenda ""
+                ;; agenda settings
+                ,(append
+                  efs/org-agenda-review-settings
+                  '((org-agenda-span 'day)
+                    (org-agenda-overriding-header "Day in Review"))
+                  )
+                ("~/org/review/day.html")
+                ))
+
+(add-to-list 'org-agenda-custom-commands
+             `("Rm" "Month in review"
+                agenda ""
+                ;; agenda settings
+                ,(append
+                  efs/org-agenda-review-settings
+                  '((org-agenda-span 'month)
+                    (org-agenda-start-day "01")
+                    (org-read-date-prefer-future nil)
+                    (org-agenda-overriding-header "Month in Review"))
+                  )
+                ("~/org/review/month.html")
+                ))
+
+
   (defun org-agenda-skip-deadline-if-not-today ()
     "If this function returns nil, the current match should not be skipped.
 Otherwise, the function must return a position from where the search
@@ -876,6 +942,7 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,curative-view)
   (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
   (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
+  (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
   (setq org-agenda-window-setup 'current-window)
