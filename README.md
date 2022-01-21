@@ -21,9 +21,10 @@ xclip -sel clip < ~/.ssh/id_rsa.pub
 Add the ssh key to github, gitlab, anywhere else.
 5. Install emacs
 ```
-sudo add-apt-repository ppa:kelleyk/emacs
-sudo apt update
-sudo apt install emacs27
+wget https://ftp.gnu.org/gnu/emacs/emacs-27.2.tar.xz
+tar -xf emacs-27.2.tar.xz 
+
+
 ```
 6. Install spacemacs
 
