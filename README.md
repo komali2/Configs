@@ -23,6 +23,12 @@ Add the ssh key to github, gitlab, anywhere else.
 ```
 wget https://ftp.gnu.org/gnu/emacs/emacs-27.2.tar.xz
 tar -xf emacs-27.2.tar.xz 
+sudo apt  install build-essential texinfo libx11-dev libxpm-dev libjpeg-dev libpng-dev libgif-dev libtiff-dev libgtk-3-dev libncurses-dev libgnutls28-dev
+sudo apt install xaw3dg-dev
+sudo apt install librsvg2-dev
+sudo apt install liblcms2-dev imagemagick libgpm-dev libxml2-dev libotf-dev libjansson-dev
+
+
 
 
 ```
