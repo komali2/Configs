@@ -53,11 +53,7 @@ sudo gdebi google-chrome-stable_current_amd64.deb
 * Clone pass repo into ~/.password-store
 
 ```
-git clone git@github.com:djcb/mu.git
-sudo mkdir /usr/local/share/emacs
-sudo mkdir /usr/local/share/emacs/site-lisp
-sudo cp mu4e /usr/local/share/emacs/site-lisp/ -r
-
+sudo apt install mu mu4e
 
 ```
 9. Get gtile
