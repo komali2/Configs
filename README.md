@@ -8,6 +8,8 @@ I was tired of copying my configs all over the place on each of my new OS instal
 3. Install a bunch of shit:
 ```
 sudo apt install wget curl git gnome-tweak-tool npm xclip gdebi-core pipenv offlineimap silversearcher-ag pass sqlite3 nvim net-tools
+git config --global user.name "Caleb Rogers"
+git config --global user.email "caleb@calebjay.com"
 ```
 4. Get an ssh sorted:
 
