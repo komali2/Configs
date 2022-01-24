@@ -29,10 +29,6 @@ sudo apt  install build-essential texinfo libx11-dev libxpm-dev libjpeg-dev libp
 sudo apt install xaw3dg-dev
 sudo apt install librsvg2-dev
 sudo apt install liblcms2-dev imagemagick libgpm-dev libxml2-dev libotf-dev libjansson-dev
-
-
-
-
 ```
 6. Install spacemacs
 
@@ -71,6 +67,9 @@ echo "deb [signed-by=/usr/share/keyrings/syncthing-archive-keyring.gpg] https://
 sudo apt-get update
 sudo apt-get install syncthing
 ```
+
+11. Trust gpg keys 
+* https://stackoverflow.com/questions/33361068/gnupg-there-is-no-assurance-this-key-belongs-to-the-named-user
 
 ## Useful Articles
 
