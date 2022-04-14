@@ -33,7 +33,8 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(
+   '(nginx
+     csv
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -603,8 +604,8 @@ configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+  (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
   (add-to-list 'load-path "~/lisp")
-  (require 'gitignore-mode)
   (fset 'evil-redirect-digit-argument 'ignore)
 
   (add-to-list 'evil-digit-bound-motions 'evil-org-beginning-of-line)
@@ -667,6 +668,8 @@ you should place your code here."
           ("l" "Life Todo" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? :life:\n")
           ("5" "508 Todo" entry (file+headline ,(concat org-directory "/508.org") "tasks")
+           "* TODO %? \n")
+          ("o" "Cofactr Todo" entry (file+olp ,(concat org-directory "/work.org") "cofactr" "tasks")
            "* TODO %? \n")
 
           ))
