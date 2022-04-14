@@ -666,6 +666,8 @@ you should place your code here."
            "* TODO %? \n")
           ("l" "Life Todo" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? :life:\n")
+          ("5" "508 Todo" entry (file+headline ,(concat org-directory "/508.org") "tasks")
+           "* TODO %? \n")
 
           ))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
