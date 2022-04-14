@@ -7,7 +7,9 @@ I was tired of copying my configs all over the place on each of my new OS instal
 2. In the directory of secret.gpg, run gpg2 --import /path/to/secret.gpg (probably will need to install gnupg)
 3. Install a bunch of shit:
 ```
-sudo apt install wget curl git gnome-tweak-tool npm xclip gdebi-core pipenv offlineimap silversearcher-ag pass sqlite3
+sudo apt install wget curl git gnome-tweak-tool npm xclip gdebi-core pipenv offlineimap silversearcher-ag pass sqlite3 nvim net-tools
+git config --global user.name "Caleb Rogers"
+git config --global user.email "caleb@calebjay.com"
 ```
 4. Get an ssh sorted:
 
@@ -23,8 +25,10 @@ Add the ssh key to github, gitlab, anywhere else.
 ```
 wget https://ftp.gnu.org/gnu/emacs/emacs-27.2.tar.xz
 tar -xf emacs-27.2.tar.xz 
-
-
+sudo apt  install build-essential texinfo libx11-dev libxpm-dev libjpeg-dev libpng-dev libgif-dev libtiff-dev libgtk-3-dev libncurses-dev libgnutls28-dev
+sudo apt install xaw3dg-dev
+sudo apt install librsvg2-dev
+sudo apt install liblcms2-dev imagemagick libgpm-dev libxml2-dev libotf-dev libjansson-dev
 ```
 6. Install spacemacs
 
@@ -47,12 +51,25 @@ sudo gdebi google-chrome-stable_current_amd64.deb
 * Clone pass repo into ~/.password-store
 
 ```
+sudo apt install mu mu4e
+
 ```
 9. Get gtile
 
 * https://github.com/gTile/gTile
 
-10. Install dropbox
+10. Install syncthing
+
+```
+sudo curl -s -o /usr/share/keyrings/syncthing-archive-keyring.gpg https://syncthing.net/release-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable" | sudo tee /etc/apt/sources.list.d/syncthing.list
+echo "deb [signed-by=/usr/share/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing candidate" | sudo tee /etc/apt/sources.list.d/syncthing.list
+sudo apt-get update
+sudo apt-get install syncthing
+```
+
+11. Trust gpg keys 
+* https://stackoverflow.com/questions/33361068/gnupg-there-is-no-assurance-this-key-belongs-to-the-named-user
 
 ## Useful Articles
 
