@@ -1066,7 +1066,50 @@ should be continued."
                                                  )
                         (smtpmail-smtp-user . "calebrogers@curative.com")
                         ))
+             ,(make-mu4e-context
+               :name "508"
+               :enter-func (lambda () (mu4e-message "Entering 508 context"))
+               :leave-func (lambda () (mu4e-message "Leaving 508 context"))
+               ;; we match based on the contact-fields of the message
+               :match-func (lambda (msg)
+                             (when msg
+                               (string-match-p "^/gmail508" (mu4e-message-field msg :maildir))))
+               :vars '( ( user-mail-address	    . "caleb@508.dev"  )
+                        ( user-full-name	    . "Caleb Rogers" )
+                        ( mu4e-drafts-folder . "/gmail508/[Gmail].Drafts" )
+                        ( mu4e-sent-folder   . "/gmail508/[Gmail].Sent Mail" )
+                        ( mu4e-trash-folder  . "/gmail508/[Gmail].Trash" )
+                        ( mu4e-refile-folder . "/gmail508/[Gmail].All Mail")
+                        ( mu4e-maildir-shortcuts .
+                                                 (
+                                                  ("/gmail508/INBOX"  . ?i)
+                                                  )
+                                                 )
+                        (smtpmail-smtp-user . "caleb@508.dev")
+                        ))
+             ,(make-mu4e-context
+               :name "OCofactr"
+               :enter-func (lambda () (mu4e-message "Entering Cofactr context"))
+               :leave-func (lambda () (mu4e-message "Leaving Cofactr context"))
+               ;; we match based on the contact-fields of the message
+               :match-func (lambda (msg)
+                             (when msg
+                               (string-match-p "^/gmailcofactr" (mu4e-message-field msg :maildir))))
+               :vars '( ( user-mail-address	    . "caleb@cofactr.com"  )
+                        ( user-full-name	    . "Caleb Rogers" )
+                        ( mu4e-drafts-folder . "/gmailcofactr/[Gmail].Drafts" )
+                        ( mu4e-sent-folder   . "/gmailcofactr/[Gmail].Sent Mail" )
+                        ( mu4e-trash-folder  . "/gmailcofactr/[Gmail].Trash" )
+                        ( mu4e-refile-folder . "/gmailcofactr/[Gmail].All Mail")
+                        ( mu4e-maildir-shortcuts .
+                                                 (
+                                                  ("/gmailcofactr/INBOX"  . ?i)
+                                                  )
+                                                 )
+                        (smtpmail-smtp-user . "caleb@cofactr.com")
+                        ))
              ))
+
     )
 
 ;;; runs eslint --fix on the current file after save
@@ -1173,6 +1216,8 @@ should be continued."
     (setq lsp-file-watch-threshold 5000)
     (setq lsp-enable-file-watchers nil)
     )
+  (with-eval-after-load 'undo-tree
+    (setq undo-tree-auto-save-history nil))
 (defun elfeed-goodies/search-header-draw ()
   "Returns the string to be used as the Elfeed header."
   (if (zerop (elfeed-db-last-update))
