@@ -1,11 +1,11 @@
 [general]
 pythonfile = ~/.offlineimap.py
-accounts = gmailwork, gmailhome, calebjay
-maxsyncaccounts = 3
+accounts = gmailcurative, gmailhome, calebjay, gmail508, gmailcofactr
+maxsyncaccounts = 5
 
-[Account gmailwork]
-localrepository = gmailworklocal
-remoterepository = gmailworkremote
+[Account gmailcurative]
+localrepository = gmailcurativelocal
+remoterepository = gmailcurativeremote
 
 [Account gmailhome]
 localrepository = gmailhomelocal
@@ -15,23 +15,30 @@ remoterepository = gmailhomeremote
 localrepository = calebjaylocal
 remoterepository = calebjayremote
 
+[Account gmail508]
+localrepository = gmail508local
+remoterepository = gmail508remote
 
-[Repository gmailworklocal]
+[Account gmailcofactr]
+localrepository = gmailcofactrlocal
+remoterepository = gmailcofactrremote
+
+
+[Repository gmailcurativelocal]
 type = Maildir
-localfolders = ~/Mail/gmailwork
-
-[Repository gmailworkremote]
-type = Gmail
-remoteuser = caleb.rogers@potatolondon.com
-remotepasseval = get_pass("Gmailwork")
-createfolders = False
-sslcacertfile = /etc/ssl/certs/ca-certificates.crt
-folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/.Archive']
+localfolders = ~/Mail/gmailcurative
 
 [Repository gmailhomelocal]
 type = Maildir
 localfolders = ~/Mail/gmailhome
 
+[Repository gmail508local]
+type = Maildir
+localfolders = ~/Mail/gmail508
+
+[Repository gmailcofactrlocal]
+type = Maildir
+localfolders = ~/Mail/gmailcofactr
 
 [Repository gmailhomeremote]
 type = Gmail
@@ -39,7 +46,33 @@ remoteuser = rogersjcaleb@gmail.com
 remotepasseval = get_pass("Gmailhome")
 createfolders = False
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
-folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/.Archive']
+folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/All Mail']
+
+[Repository gmailcurativeremote]
+type = Gmail
+remoteuser = calebrogers@curative.com
+remotepasseval = get_pass("Gmailcurative")
+createfolders = False
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/All Mail']
+
+[Repository gmail508remote]
+type = Gmail
+remoteuser = caleb@508.dev
+remotepasseval = get_pass("Gmail508")
+createfolders = False
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/All Mail']
+
+[Repository gmailcofactrremote]
+type = Gmail
+remoteuser = caleb@cofactr.com
+remotepasseval = get_pass("GmailCofactr")
+createfolders = False
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Drafts', '[Gmail]/Sent Mail', '[Gmail]/All Mail']
+
+
 
 [Repository calebjaylocal]
 type = Maildir
@@ -53,4 +86,3 @@ remoteuser = caleb@calebjay.com
 remotepasseval = get_pass("calebjay")
 createfolders = True
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
-
