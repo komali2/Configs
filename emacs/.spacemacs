@@ -43,7 +43,8 @@ This function should only modify configuration layer settings."
      lua
      emacs-lisp
      helm
-     lsp
+     (lsp :variables
+          lsp-idle-delay 1.000)
      ;; multiple-cursors
      treemacs
      rust
@@ -67,6 +68,8 @@ This function should only modify configuration layer settings."
           org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org"
           org-default-notes-file (concat org-directory "/inbox.org")
           org-roam-v2-ack t
+          org-enable-hugo-support t
+          org-enable-roam-ui
           )
      (shell :variables
            shell-default-height 30
@@ -80,7 +83,8 @@ This function should only modify configuration layer settings."
      python
      sql
      html
-     typescript
+     ( typescript :variables
+       typescript-indent-level 2)
      (erc :variables
           erc-server-list
           '(("irc.freenode.net"
@@ -603,14 +607,16 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
+  ;; (setq read-process-output-max (* 1024 1024)) ;; 1mb
   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
   (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
   (add-to-list 'load-path "~/lisp")
   (fset 'evil-redirect-digit-argument 'ignore)
 
-  (add-to-list 'evil-digit-bound-motions 'evil-org-beginning-of-line)
-  (evil-define-key 'motion 'evil-org-mode
-    (kbd "0") 'evil-org-beginning-of-line)
+  ;; (add-to-list 'evil-digit-bound-motions 'evil-org-beginning-of-line)
+  ;; (evil-define-key 'motion 'evil-org-mode
+  ;;   (kbd "0") 'evil-org-beginning-of-line)
+  (setq inhibit-compacting-font-caches t)
   )
 
 (defun dotspacemacs/user-load ()
@@ -638,7 +644,7 @@ you should place your code here."
 (autoload 'sml-mode "sml-mode" "Major mode for editing SML." t)
 (autoload 'run-sml "sml-proc" "Run an inferior SML process." t)
 (add-to-list 'auto-mode-alist '("\\.\\(sml\\|sig\\)\\'" . sml-mode))
-
+(require 'org-roam-export)
 (with-eval-after-load 'org
   (require 'org-agenda)
   (org-super-agenda-mode)
@@ -725,23 +731,6 @@ you should place your code here."
              )
            )
 
-  (setq curative-view
-           `("wu" "Curative"
-             (
-              (agenda ""(
-                         (org-super-agenda-groups
-                          '((:discard (:not (:tag ("curative")))))
-                          )
-                         (org-agenda-span 'day)
-                         (org-deadline-warning-days 5)))
-              (tags-todo "curative"
-                         ((org-agenda-overriding-header "All Curative")
-                          (org-agenda-prefix-format "  %?-12t% s")
-                          (org-agenda-files '("~/Dropbox/org/"))
-                          (org-super-agenda-groups
-                           '((:auto-property "CATEGORY")))
-                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
-              nil)))
 
   (setq gov-view
         `("g" "G0v"
@@ -918,6 +907,14 @@ you should place your code here."
                 ("~/org/review/month.html")
                 ))
 
+(add-to-list 'org-agenda-custom-commands
+             `("bm" "Meetings"
+               agenda ""
+               (
+                (tags "")
+                (org-agenda-files (directory-files-recursively "~/Dropbox/org" "\\.org$"))
+                )
+               ))
 
   (defun org-agenda-skip-deadline-if-not-today ()
     "If this function returns nil, the current match should not be skipped.
@@ -952,7 +949,6 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,d-view)
-  (add-to-list 'org-agenda-custom-commands `,curative-view)
   (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
   (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
   (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
@@ -1240,6 +1236,12 @@ should be continued."
           (search-header/draw-wide separator-left separator-right search-filter stats db-time)
         (search-header/draw-tight separator-left separator-right search-filter stats db-time)))))
 
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  )
+(add-hook 'web-mode-hook  'my-web-mode-hook)
 
 (fset 'vue-wrap-intl
    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
