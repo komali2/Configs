@@ -70,6 +70,7 @@ This function should only modify configuration layer settings."
           org-roam-v2-ack t
           org-enable-hugo-support t
           org-enable-roam-ui
+          org-agenda-log-mode-items (closed clock state)
           )
      (shell :variables
            shell-default-height 30
@@ -662,7 +663,7 @@ you should place your code here."
         '((sequence "TODO" "DOING" "WAITING" "|" "DONE")))
   (setq org-capture-templates
         `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
-           "* TODO %?")
+           "* TODO %? \nSCHEDULED: %T")
           ("m" "Meeting Notes" entry (file+olp+datetree ,(concat org-directory "/meeting_notes.org"))
            "* %?")
           ("r" "Roam Notes" entry (file+olp+datetree ,(concat org-directory "/notes/notes.org"))
@@ -690,7 +691,10 @@ you should place your code here."
                     (org-agenda-span 'day)
                     (org-deadline-warning-days 5)
                     (org-super-agenda-groups
-                     '((:auto-category t :time-grid t))))))))
+                     '(
+                       ( :time-grid t)
+                       ( :auto-category t)
+                       )))))))
 
 
   (setq weekly-agenda-view
