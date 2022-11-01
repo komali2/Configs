@@ -23,12 +23,21 @@ xclip -sel clip < ~/.ssh/id_rsa.pub
 Add the ssh key to github, gitlab, anywhere else.
 5. Install emacs
 ```
-wget https://ftp.gnu.org/gnu/emacs/emacs-27.2.tar.xz
-tar -xf emacs-27.2.tar.xz 
-sudo apt  install build-essential texinfo libx11-dev libxpm-dev libjpeg-dev libpng-dev libgif-dev libtiff-dev libgtk-3-dev libncurses-dev libgnutls28-dev
+git clone git://git.savannah.gnu.org/emacs.git
+cd emacs
+git checkout emacs-28
+sudo apt  install build-essential texinfo libx11-dev libxpm-dev libjpeg-dev libpng-dev libgif-dev libtiff-dev libgtk-3-dev libncurses-dev libgnutls28-dev 
+sudo apt install libxpm-dev libgif-dev libjpeg-dev libpng-dev libtiff-dev libx11-dev libncurses5-dev automake autoconf texinfo libgtk2.0-dev
+sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+sudo apt install gcc-10 g++-10 libgccjit0 libgccjit-10-dev libjansson4 libjansson-dev
 sudo apt install xaw3dg-dev
 sudo apt install librsvg2-dev
 sudo apt install liblcms2-dev imagemagick libgpm-dev libxml2-dev libotf-dev libjansson-dev
+export CC=/usr/bin/gcc-10 CXX=/usr/bin/gcc-10
+./autogen.sh
+./configure --with-cairo --with-modules --without-compress-install --with-gnutls --with-mailutils --with-native-compilation --with-json --with-harfbuzz --with-imagemagick --with-jpeg --with-png --with-rsvg --with-tiff --with-wide-int --with-xft --with-xml2 --with-xpm CFLAGS="-O3 -mtune=native -march=native -fomit-frame-pointer" prefix=/usr/local
+make -j$(nproc)
+
 ```
 6. Install spacemacs
 
@@ -74,3 +83,5 @@ sudo apt-get install syncthing
 ## Useful Articles
 
 * https://medium.com/@chasinglogic/the-definitive-guide-to-password-store
+
+
