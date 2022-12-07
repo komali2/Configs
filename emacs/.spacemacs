@@ -667,21 +667,18 @@ you should place your code here."
   (setq org-capture-templates
         `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? \nSCHEDULED: %T")
-          ("m" "Meeting Notes" entry (file+olp+datetree ,(concat org-directory "/meeting_notes.org"))
-           "* %?")
-          ("r" "Roam Notes" entry (file+olp+datetree ,(concat org-directory "/notes/notes.org"))
-           "* %?")
           ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? :work:\n")
-          ("u" "Curative Todo" entry (file+headline ,(concat org-directory "/curative.org") "Tasks")
-           "* TODO %? \n")
-          ("l" "Life Todo" entry (file ,(concat org-directory "/inbox.org"))
-           "* TODO %? :life:\n")
           ("5" "508 Todo" entry (file+headline ,(concat org-directory "/508.org") "tasks")
            "* TODO %? \n")
           ("o" "Cofactr Todo" entry (file+olp ,(concat org-directory "/work.org") "cofactr" "tasks")
            "* TODO %? \n")
-
+          ("b" "Blog Post Idea" entry (file+headline ,(concat org-directory "/projects.org") "blog" "Pending Articles")
+          "* TODO %? \n"
+          :prepend t)
+          ("p" "Project idea" entry (file+headline ,(concat org-directory "/projects.org") "Project ideas")
+           "* TODO %? \n"
+           :prepend t)
           ))
   (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
 
