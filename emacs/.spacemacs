@@ -61,17 +61,82 @@ This function should only modify configuration layer settings."
      git
      markdown
      (org :variables
-          org-directory "~/Dropbox/org"
-          org-projectile-file "~/Dropbox/org/projects.org"
+          org-directory "~/Org"
+          org-projectile-file "~/Org/projects.org"
           org-enable-roam-support t
           org-enable-org-journal-support t
-          org-roam-directory "~/Dropbox/org/notes/"
-          org-roam-index-file "~/Dropbox/org/notes/20200526213916-index.org"
+          org-roam-directory "~/Org/notes/"
+          org-roam-index-file "~/Org/notes/20200526213916-index.org"
           org-default-notes-file (concat org-directory "/inbox.org")
           org-roam-v2-ack t
           org-enable-hugo-support t
           org-startup-indented t
+          org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel .9))
+          org-outline-path-complete-in-steps nil ; Refile in a single go
+          org-refile-use-outline-path t ; Show full paths for refiling
+          org-tags-exclude-from-inheritance '("GTD" "Control" "Persp" "Context" "Task" "Action" "Project" "AOF" "Goal" "Vision" "Life")
+          org-tag-alist '((:startgrouptag)
+                          ("GTD")
+                          (:grouptags)
+                          ("Control")
+                          ("Persp")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("Control")
+                          (:grouptags)
+                          ("Context")
+                          ("Task")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("Persp")
+                          (:grouptags)
+                          ("Action")
+                          ("Project")
+                          ("AOF")
+                          ("Goal")
+                          ("Vision")
+                          ("Life")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("Context")
+                          (:grouptags)
+                          ("@home")
+                          ("@phone")
+                          ("@laptop")
+                          ("@comp")
+                          ("@people")
+                          ("@out")
+                          ("@material")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("Project")
+                          (:grouptags)
+                          ("{P@.+}")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("AOF")
+                          (:grouptags)
+                          ("{AOF@.+}")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("Goal")
+                          (:grouptags)
+                          ("{G@.+}")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("Vision")
+                          (:grouptags)
+                          ("{V@.+}")
+                          (:endgrouptag)
+                          (:startgrouptag)
+                          ("@material")
+                          (:grouptags)
+                          ("{mats@.+}")
+                          (:endgrouptag)
+
+                          )
           )
+     ; GTD (control ( context ( @home @phone @laptop @comp @people @out) persp (Action Project AOF Goal Vision Life) )
      (shell :variables
            shell-default-height 30
            shell-default-position 'bottom)
@@ -736,29 +801,62 @@ you should place your code here."
            )
 
 
-  (setq gov-view
-        `("g" "G0v"
-          (
-           (agenda ""(
-                      (org-super-agenda-groups
-                       '((:discard (:not (:tag ("g0v")))))
-                       )
-                      (org-agenda-span 'day)
-                      (org-deadline-warning-days 5)))
-           (tags-todo "g0v"
-                      ((org-agenda-overriding-header "All G0v")
-                       (org-agenda-prefix-format "  %?-12t% s")
-                       (org-agenda-files '("~/Dropbox/org/"))
-                       (org-super-agenda-groups
-                        '((:auto-property "CATEGORY")))
-                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
-           nil)))
-
   (setq d-view
         `("dD" "All Doing"
           ( (todo "DOING"
-                ((org-agenda-overriding-header"")
+                ((org-agenda-overriding-header "All Doing")
                  (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (setq wait-view
+        `("dW" "All Waiting"
+          ( (todo "WAITING"
+                  ((org-agenda-overriding-header "All Waiting")
+                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+
+  (setq big-view
+        `("dB" "All Big"
+          ( (todo "BIG"
+                  ((org-agenda-overriding-header "All Big")
+                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+
+  (setq everything-view
+        `("dA" "Everything"
+          ( (todo "TODO|DOING|WAITING|BIG"
+                  ((org-agenda-overriding-header "Everything")
+                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+
+  (setq needs-filing-view
+        `("dF" "Needs Filing"
+          ( (tags-todo "-@home|-@phone|-@laptop|-@comp|-@me|-@people|-@out|-eventually"
+                  ((org-agenda-overriding-header "Needs Filing")
+                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+
+  (setq gtd-view
+        `("gG" "All GTD"
+          ( (tags-todo "GTD"
+                  ((org-agenda-overriding-header "All GTD")
+                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (setq gtd-persp-view
+        `("gP" "All GTD Perspectives"
+          ( (tags-todo "Persp"
+                       ((org-agenda-overriding-header "All GTD Perspectives")
+                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+
+  (setq gtd-context-view
+        `("gC" "All GTD Contexts"
+          ( (tags-todo "Context"
+                       ((org-agenda-overriding-header "All GTD Contexts")
+                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (setq gtd-project-view
+        `("gP" "All GTD Projects"
+          ( (tags-todo "Project"
+                       ((org-agenda-overriding-header "All GTD Projects")
+                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (setq gtd-file-view
+        `("gf" "GTD Needs Filing"
+          ( (tags-todo "-GTD"
+                       ((org-agenda-overriding-header "Needs GTD filing")
+                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+
 
   (setq l-view
            `("ll" "All Life "
@@ -953,8 +1051,20 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,w-view)
   (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,d-view)
+  (add-to-list 'org-agenda-custom-commands `,wait-view)
+  (add-to-list 'org-agenda-custom-commands `,big-view)
+  (add-to-list 'org-agenda-custom-commands `,everything-view)
+  (add-to-list 'org-agenda-custom-commands `,needs-filing-view)
   (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
   (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
+
+
+  (add-to-list 'org-agenda-custom-commands `,gtd-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-context-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-project-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-file-view)
+
   (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
