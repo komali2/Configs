@@ -673,10 +673,10 @@ you should place your code here."
            "* TODO %? \n")
           ("o" "Cofactr Todo" entry (file+olp ,(concat org-directory "/work.org") "cofactr" "tasks")
            "* TODO %? \n")
-          ("b" "Blog Post Idea" entry (file+headline ,(concat org-directory "/projects.org") "blog" "Pending Articles")
+          ("b" "Blog Post Idea" entry (file+olp ,(concat org-directory "/projects.org") "blog" "Pending Articles")
           "* TODO %? \n"
           :prepend t)
-          ("p" "Project idea" entry (file+headline ,(concat org-directory "/projects.org") "Project ideas")
+          ("p" "Project idea" entry (file+olp ,(concat org-directory "/projects.org") "Project ideas")
            "* TODO %? \n"
            :prepend t)
           ))
@@ -962,7 +962,6 @@ should be continued."
   (spacemacs/set-leader-keys "aordc" 'org-roam-dailies-capture-today)
   )
 
-  (setq org-journal-dir "~/Dropbox/org/journal/")
   (indent-guide-global-mode)
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   ;; (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
@@ -991,7 +990,7 @@ should be continued."
     (setq message-kill-buffer-on-exit t)
     ;; (setq message-send-mail-function 'smtpmail-send-it )
     (setq mu4e-sent-messages-behavior 'delete )
-    (setq mu4e-get-mail-command "offlineimap" )
+    ;; (setq mu4e-get-mail-command "offlineimap" )
     (setq mu4e-update-interval 300 )
     (setq mu4e-maildir "~/Mail")
 
