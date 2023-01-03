@@ -773,11 +773,22 @@ you should place your code here."
           ( (tags-todo "Project"
                        ((org-agenda-overriding-header "All GTD Projects")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-  (setq gtd-file-view
-        `("gf" "GTD Needs Filing"
+  (setq gtd-file-bad-view
+        `("gF" "GTD Needs Filing Bad"
           ( (tags-todo "-GTD"
-                       ((org-agenda-overriding-header "Needs GTD filing")
+                       ((org-agenda-overriding-header "Needs GTD filing badly")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (setq gtd-need-file-inbox
+        `("gF"  ;; key
+          "GTD Needs Filing Inbox" ;; description
+          todo ;; type
+          "TODO" ;; match
+          ;; local settings
+          ((
+            org-agenda-files '("~/Org/inbox.org")
+            org-agenda-overriding-header "Needs GTD filing")
+           (org-super-agenda-groups '((:auto-property "CATEGORY")))))  )
+
   (setq gtd-aof-view
         `("ga" "GTD Areas of Focus"
           ( (tags-todo "AOF"
@@ -1038,7 +1049,8 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,gtd-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-project-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-file-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-file-bad-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-need-file-inbox)
   (add-to-list 'org-agenda-custom-commands `,gtd-aof-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
