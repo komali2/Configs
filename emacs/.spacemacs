@@ -74,7 +74,8 @@ This function should only modify configuration layer settings."
           org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9))
           org-outline-path-complete-in-steps nil ; Refile in a single go
           org-refile-use-outline-path t ; Show full paths for refiling
-          org-agenda-use-tag-inheritance nil
+          ;; org-agenda-use-tag-inheritance nil
+          ;; org-use-tag-inheritance nil
           ;; wasn't working for some reason with regex
           ;; org-tags-exclude-from-inheritance '("GTD" "Control" "Persp" "Context" "Task" "Action" "Project" "AOF" "Goal" "Vision" "Life" "{p@.+}" "{aof@.+}" "{goal@.+}" "{vision@.+}" )
           )
@@ -662,14 +663,14 @@ you should place your code here."
 
   (setq org-agenda-files
         (seq-filter (lambda(x) (not (string-match "/notes/"(file-name-directory x))))
-                    (directory-files-recursively "~/Dropbox/org" "\\.org$")
+                    (directory-files-recursively "~/Org" "\\.org$")
                     ))
   (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t%-6e% s")
                                    (todo . " %i %-12:c %-6e")
                                    (tags . " %i %-12:c %-6e")
                                    (search . " %i %-12:c%-6e")))
   (setq org-todo-keywords
-        '((sequence "TODO" "DOING" "WAITING" "|" "DONE")))
+        '((sequence "TODO" "NEXT" "PROJECT" "DOING" "WAITING" "|" "DONE")))
   (setq org-capture-templates
         `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? \nSCHEDULED: %T")
@@ -753,24 +754,6 @@ you should place your code here."
                   ((org-agenda-overriding-header "All Waiting")
                    (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
-  (setq big-view
-        `("dB" "All Big"
-          ( (todo "BIG"
-                  ((org-agenda-overriding-header "All Big")
-                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-
-  (setq everything-view
-        `("dA" "Everything"
-          ( (todo "TODO|DOING|WAITING|BIG"
-                  ((org-agenda-overriding-header "Everything")
-                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-
-  (setq needs-filing-view
-        `("dF" "Needs Filing"
-          ( (tags-todo "-@home|-@phone|-@laptop|-@comp|-@me|-@people|-@out|-eventually"
-                  ((org-agenda-overriding-header "Needs Filing")
-                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-
   (setq gtd-view
         `("gG" "All GTD"
           ( (tags-todo "GTD"
@@ -799,16 +782,16 @@ you should place your code here."
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
   (setq gtd-context-home-view
-        `("ch" "Home Context Tasks"
+        `("xh" "Home Context Tasks"
           ( (tags-todo "Context"
                        ((org-agenda-overriding-header "Home Context")
                         (org-super-agenda-groups '(
-                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out") ))
-                                                   (:name "Requires laptop" :tag "@laptop")
-                                                   (:name "Requires phone" :tag "@phone")
+                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out" :scheduled)))
+                                                   (:name "Requires laptop" :and (:tag "@laptop" :not (:scheduled)))
+                                                   (:name "Requires phone" :and ( :tag "@phone" :not (:scheduled)))
                                                    )))))))
   (setq gtd-context-laptop-view
-        `("cl" "Laptop Context Tasks"
+        `("xl" "Laptop Context Tasks"
           ( (tags-todo "Context"
                        ((org-agenda-overriding-header "Laptop Context")
                         (org-super-agenda-groups '(
@@ -817,13 +800,29 @@ you should place your code here."
                                                    )))))))
 
   (setq gtd-context-out-view
-        `("co" "Out Context Tasks"
+        `("xo" "Out Context Tasks"
           ( (tags-todo "Context"
                        ((org-agenda-overriding-header "Out Context")
                         (org-super-agenda-groups '(
                                                    (:name "Requires out" :and (:tag "@out" :not ( :tag "@home")))
                                                    (:name "Can be out" :and ( ( :tag  "@out" ) ( :tag "@home" ) ))
                                                    )))))))
+
+  (setq gtd-next-only-view
+        `("fh" "Next at Home"
+          ( (todo "NEXT"
+                       ((org-agenda-overriding-header "Next at Home")
+                        (org-super-agenda-groups '(
+                                                   (:name "Next at Home" :tag ( "@home" "@laptop" "@phone" )  )
+                                                   )))))))
+  (setq gtd-next-project-view
+        `("fp" "Next and Projects at Home"
+          ( (todo "NEXT|PROJECT"
+                  ((org-agenda-overriding-header "Next or Projects at Home")
+                   (org-super-agenda-groups '(
+                                              (:name "Next at Home" :and (   :tag ( "@home" "@laptop" "@phone" )   :todo "NEXT"   )  )
+                                              (:name "Projects at Home" :and (  :tag ( "@home" "@laptop" "@phone" )   :todo "PROJECT"   )  )
+                                              )))))))
 
   (setq l-view
            `("ll" "All Life "
@@ -870,36 +869,37 @@ you should place your code here."
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
               nil))
 
-  (add-to-list 'org-agenda-custom-commands
-               '("lc" "Life Clean"
-                 (
-                 (todo "TODO|DOING|WAITING"
-                       (
-                        (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-                        (org-agenda-overriding-header "")
-                        (org-super-agenda-groups
-                         '((:name "Reading"
-                                  :and (:tag ("read")))
-                           (:discard (:anything t)))))
-                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-                 (todo "TODO|DOING|WAITING"
-                       (
-                        (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-                        (org-agenda-overriding-header "")
-                        (org-super-agenda-groups
-                         '((:name "All Life Todos"
-                                  :and (:tag ("life")))
-                           (:discard (:anything t)))))
-                       (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-                 (tags-todo "project"
-                            (
-                             (org-agenda-overriding-header "Projects")
-                             (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-                             (org-super-agenda-groups
-                              '((:auto-category t :time-grid t))))
-                            (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-                 ))
-               )
+  ;; (add-to-list 'org-agenda-custom-commands
+  ;;              '("lc" "Life Clean"
+  ;;                (
+  ;;                (todo "TODO|DOING|WAITING"
+  ;;                      (
+  ;;                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+  ;;                       (org-agenda-overriding-header "")
+  ;;                       (org-super-agenda-groups
+  ;;                        '((:name "Reading"
+  ;;                                 :and (:tag ("read")))
+  ;;                          (:discard (:anything t)))))
+  ;;                      (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
+  ;;                (todo "TODO|DOING|WAITING"
+  ;;                      (
+  ;;                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+  ;;                       (org-agenda-overriding-header "")
+  ;;                       (org-super-agenda-groups
+  ;;                        '((:name "All Life Todos"
+  ;;                                 :and (:tag ("life")))
+  ;;                          (:discard (:anything t)))))
+  ;;                      (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
+  ;;                (tags-todo "project"
+  ;;                           (
+  ;;                            (org-agenda-overriding-header "Projects")
+  ;;                            (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+  ;;                            (org-super-agenda-groups
+  ;;                             '((:auto-category t :time-grid t))))
+  ;;                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
+  ;;                ))
+  ;;              )
+
   (add-to-list 'org-agenda-custom-commands
                '("bd" agenda "Today's Deadlines"
                  ((org-agenda-span 'day)
@@ -918,10 +918,19 @@ you should place your code here."
 (add-to-list 'org-agenda-custom-commands
              '("R" . "Review" )
              )
+(add-to-list 'org-agenda-custom-commands
+             '("g" . "GTD" )
+             )
+(add-to-list 'org-agenda-custom-commands
+             '("d" . "Calendar Agendas" )
+             )
+(add-to-list 'org-agenda-custom-commands
+             '("x" . "Contexts" )
+             )
 
 ;; Common settings for all reviews
 (setq efs/org-agenda-review-settings
-      '((org-agenda-files '("~/Dropbox/org"))
+      '((org-agenda-files '("~/Org"))
         (org-super-agenda-groups
          '((:auto-property "CATEGORY")))
         (org-agenda-show-all-dates t)
@@ -1015,26 +1024,25 @@ should be continued."
              (not (= deadline-day now))
              subtree-end))))
 
-  (add-to-list 'org-agenda-custom-commands `,w-view)
-  (add-to-list 'org-agenda-custom-commands `,l-view)
+  ;; (add-to-list 'org-agenda-custom-commands `,w-view)
+  ;; (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,d-view)
   (add-to-list 'org-agenda-custom-commands `,wait-view)
-  (add-to-list 'org-agenda-custom-commands `,big-view)
-  (add-to-list 'org-agenda-custom-commands `,everything-view)
-  (add-to-list 'org-agenda-custom-commands `,needs-filing-view)
   (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
   (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
 
 
   (add-to-list 'org-agenda-custom-commands `,gtd-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-project-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-file-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-aof-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-context-out-view)
+
+  (add-to-list 'org-agenda-custom-commands `,gtd-next-only-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-next-project-view)
 
   (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
