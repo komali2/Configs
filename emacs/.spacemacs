@@ -71,72 +71,13 @@ This function should only modify configuration layer settings."
           org-roam-v2-ack t
           org-enable-hugo-support t
           org-startup-indented t
-          org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel .9))
+          org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9))
           org-outline-path-complete-in-steps nil ; Refile in a single go
           org-refile-use-outline-path t ; Show full paths for refiling
-          org-tags-exclude-from-inheritance '("GTD" "Control" "Persp" "Context" "Task" "Action" "Project" "AOF" "Goal" "Vision" "Life")
-          org-tag-alist '((:startgrouptag)
-                          ("GTD")
-                          (:grouptags)
-                          ("Control")
-                          ("Persp")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("Control")
-                          (:grouptags)
-                          ("Context")
-                          ("Task")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("Persp")
-                          (:grouptags)
-                          ("Action")
-                          ("Project")
-                          ("AOF")
-                          ("Goal")
-                          ("Vision")
-                          ("Life")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("Context")
-                          (:grouptags)
-                          ("@home")
-                          ("@phone")
-                          ("@laptop")
-                          ("@comp")
-                          ("@people")
-                          ("@out")
-                          ("@material")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("Project")
-                          (:grouptags)
-                          ("{P@.+}")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("AOF")
-                          (:grouptags)
-                          ("{AOF@.+}")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("Goal")
-                          (:grouptags)
-                          ("{G@.+}")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("Vision")
-                          (:grouptags)
-                          ("{V@.+}")
-                          (:endgrouptag)
-                          (:startgrouptag)
-                          ("@material")
-                          (:grouptags)
-                          ("{mats@.+}")
-                          (:endgrouptag)
-
-                          )
+          org-agenda-use-tag-inheritance nil
+          ;; wasn't working for some reason with regex
+          ;; org-tags-exclude-from-inheritance '("GTD" "Control" "Persp" "Context" "Task" "Action" "Project" "AOF" "Goal" "Vision" "Life" "{p@.+}" "{aof@.+}" "{goal@.+}" "{vision@.+}" )
           )
-     ; GTD (control ( context ( @home @phone @laptop @comp @people @out) persp (Action Project AOF Goal Vision Life) )
      (shell :variables
            shell-default-height 30
            shell-default-position 'bottom)
@@ -734,7 +675,7 @@ you should place your code here."
            "* TODO %? \nSCHEDULED: %T")
           ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? :work:\n")
-          ("5" "508 Todo" entry (file+headline ,(concat org-directory "/508.org") "tasks")
+          ("5" "508 Todo" entry (file+headline ,(concat org-directory "/work.org") "508" "tasks")
            "* TODO %? \n")
           ("o" "Cofactr Todo" entry (file+olp ,(concat org-directory "/work.org") "cofactr" "tasks")
            "* TODO %? \n")
@@ -841,13 +782,8 @@ you should place your code here."
                        ((org-agenda-overriding-header "All GTD Perspectives")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
-  (setq gtd-context-view
-        `("gC" "All GTD Contexts"
-          ( (tags-todo "Context"
-                       ((org-agenda-overriding-header "All GTD Contexts")
-                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
   (setq gtd-project-view
-        `("gP" "All GTD Projects"
+        `("gp" "All GTD Projects"
           ( (tags-todo "Project"
                        ((org-agenda-overriding-header "All GTD Projects")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
@@ -856,7 +792,38 @@ you should place your code here."
           ( (tags-todo "-GTD"
                        ((org-agenda-overriding-header "Needs GTD filing")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (setq gtd-aof-view
+        `("ga" "GTD Areas of Focus"
+          ( (tags-todo "AOF"
+                       ((org-agenda-overriding-header "Areas of Focus")
+                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
+  (setq gtd-context-home-view
+        `("ch" "Home Context Tasks"
+          ( (tags-todo "Context"
+                       ((org-agenda-overriding-header "Home Context")
+                        (org-super-agenda-groups '(
+                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out") ))
+                                                   (:name "Requires laptop" :tag "@laptop")
+                                                   (:name "Requires phone" :tag "@phone")
+                                                   )))))))
+  (setq gtd-context-laptop-view
+        `("cl" "Laptop Context Tasks"
+          ( (tags-todo "Context"
+                       ((org-agenda-overriding-header "Laptop Context")
+                        (org-super-agenda-groups '(
+                                                   (:name "Requires laptop" :and (:tag "@laptop" :not ( :tag "@phone")))
+                                                   (:name "Requires phone" :tag "@phone")
+                                                   )))))))
+
+  (setq gtd-context-out-view
+        `("co" "Out Context Tasks"
+          ( (tags-todo "Context"
+                       ((org-agenda-overriding-header "Out Context")
+                        (org-super-agenda-groups '(
+                                                   (:name "Requires out" :and (:tag "@out" :not ( :tag "@home")))
+                                                   (:name "Can be out" :and ( ( :tag  "@out" ) ( :tag "@home" ) ))
+                                                   )))))))
 
   (setq l-view
            `("ll" "All Life "
@@ -1061,9 +1028,13 @@ should be continued."
 
   (add-to-list 'org-agenda-custom-commands `,gtd-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-context-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-project-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-file-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-aof-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-context-out-view)
 
   (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
@@ -1154,27 +1125,6 @@ should be continued."
                         (smtpmail-stream-type . ssl)
                         (mu4e-sent-messages-behavior . sent )
                        ))
-             ,(make-mu4e-context
-               :name "UCurative"
-               :enter-func (lambda () (mu4e-message "Entering Curative context"))
-               :leave-func (lambda () (mu4e-message "Leaving Curative context"))
-               ;; we match based on the contact-fields of the message
-               :match-func (lambda (msg)
-                             (when msg
-                               (string-match-p "^/gmailcurative" (mu4e-message-field msg :maildir))))
-               :vars '( ( user-mail-address	    . "calebrogers@curative.com"  )
-                        ( user-full-name	    . "Caleb Rogers" )
-                        ( mu4e-drafts-folder . "/gmailcurative/[Gmail].Drafts" )
-                        ( mu4e-sent-folder   . "/gmailcurative/[Gmail].Sent Mail" )
-                        ( mu4e-trash-folder  . "/gmailcurative/[Gmail].Trash" )
-                        ( mu4e-refile-folder . "/gmailcurative/[Gmail].All Mail")
-                        ( mu4e-maildir-shortcuts .
-                                                 (
-                                                  ("/gmailcurative/INBOX"  . ?i)
-                                                  )
-                                                 )
-                        (smtpmail-smtp-user . "calebrogers@curative.com")
-                        ))
              ,(make-mu4e-context
                :name "508"
                :enter-func (lambda () (mu4e-message "Entering 508 context"))
@@ -1275,51 +1225,6 @@ should be continued."
   (use-package cyberpunk-theme)
   (use-package cyberpunk-theme)
 
-  ;; (use-package composite
-  ;;   :defer t
-  ;;   :init
-  ;;   (defvar composition-ligature-table (make-char-table nil))
-  ;;   :hook
-  ;;   (((prog-mode conf-mode nxml-mode markdown-mode help-mode)
-  ;;     . (lambda () (setq-local composition-function-table composition-ligature-table))))
-  ;;   :config
-  ;;   ;; support ligatures, some toned down to prevent hang
-  ;;   (when (version<= "27.0" emacs-version)
-  ;;     (let ((alist
-  ;;            '((33 . ".\\(?:\\(==\\|[!=]\\)[!=]?\\)")
-  ;;              (35 . ".\\(?:\\(###?\\|_(\\|[(:=?[_{]\\)[#(:=?[_{]?\\)")
-  ;;              (36 . ".\\(?:\\(>\\)>?\\)")
-  ;;              (37 . ".\\(?:\\(%\\)%?\\)")
-  ;;              (38 . ".\\(?:\\(&\\)&?\\)")
-  ;;              (42 . ".\\(?:\\(\\*\\*\\|[*>]\\)[*>]?\\)")
-  ;;              ;; (42 . ".\\(?:\\(\\*\\*\\|[*/>]\\).?\\)")
-  ;;              (43 . ".\\(?:\\([>]\\)>?\\)")
-  ;;              ;; (43 . ".\\(?:\\(\\+\\+\\|[+>]\\).?\\)")
-  ;;              (45 . ".\\(?:\\(-[->]\\|<<\\|>>\\|[-<>|~]\\)[-<>|~]?\\)")
-  ;;              ;; (46 . ".\\(?:\\(\\.[.<]\\|[-.=]\\)[-.<=]?\\)")
-  ;;              (46 . ".\\(?:\\(\\.<\\|[-=]\\)[-<=]?\\)")
-  ;;              (47 . ".\\(?:\\(//\\|==\\|[=>]\\)[/=>]?\\)")
-  ;;              ;; (47 . ".\\(?:\\(//\\|==\\|[*/=>]\\).?\\)")
-  ;;              (48 . ".\\(?:\\(x[a-fA-F0-9]\\).?\\)")
-  ;;              (58 . ".\\(?:\\(::\\|[:<=>]\\)[:<=>]?\\)")
-  ;;              (59 . ".\\(?:\\(;\\);?\\)")
-  ;;              (60 . ".\\(?:\\(!--\\|\\$>\\|\\*>\\|\\+>\\|-[-<>|]\\|/>\\|<[-<=]\\|=[<>|]\\|==>?\\||>\\||||?\\|~[>~]\\|[$*+/:<=>|~-]\\)[$*+/:<=>|~-]?\\)")
-  ;;              (61 . ".\\(?:\\(!=\\|/=\\|:=\\|<<\\|=[=>]\\|>>\\|[=>]\\)[=<>]?\\)")
-  ;;              (62 . ".\\(?:\\(->\\|=>\\|>[-=>]\\|[-:=>]\\)[-:=>]?\\)")
-  ;;              (63 . ".\\(?:\\([.:=?]\\)[.:=?]?\\)")
-  ;;              (91 . ".\\(?:\\(|\\)[]|]?\\)")
-  ;;              ;; (92 . ".\\(?:\\([\\n]\\)[\\]?\\)")
-  ;;              (94 . ".\\(?:\\(=\\)=?\\)")
-  ;;              (95 . ".\\(?:\\(|_\\|[_]\\)_?\\)")
-  ;;              (119 . ".\\(?:\\(ww\\)w?\\)")
-  ;;              (123 . ".\\(?:\\(|\\)[|}]?\\)")
-  ;;              (124 . ".\\(?:\\(->\\|=>\\||[-=>]\\||||*>\\|[]=>|}-]\\).?\\)")
-  ;;              (126 . ".\\(?:\\(~>\\|[-=>@~]\\)[-=>@~]?\\)"))))
-  ;;       (dolist (char-regexp alist)
-  ;;         (set-char-table-range composition-ligature-table (car char-regexp)
-  ;;                               `([,(cdr char-regexp) 0 font-shape-gstring]))))
-  ;;     (set-char-table-parent composition-ligature-table composition-function-table))
-  ;;   )
   (with-eval-after-load 'lsp-mode
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.node_modules\\'")
     (setq lsp-file-watch-threshold 5000)
