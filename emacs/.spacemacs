@@ -770,7 +770,7 @@ you should place your code here."
 
   (setq gtd-project-view
         `("gp" "All GTD Projects"
-          ( (tags-todo "Project"
+          ( (todo "PROJECT"
                        ((org-agenda-overriding-header "All GTD Projects")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
   (setq gtd-file-bad-view
@@ -779,13 +779,13 @@ you should place your code here."
                        ((org-agenda-overriding-header "Needs GTD filing badly")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
   (setq gtd-need-file-inbox
-        `("gF"  ;; key
+        `("gf"  ;; key
           "GTD Needs Filing Inbox" ;; description
           todo ;; type
           "TODO" ;; match
           ;; local settings
           ((
-            org-agenda-files '("~/Org/inbox.org")
+            org-agenda-files '("~/Dropbox/org/inbox.org")
             org-agenda-overriding-header "Needs GTD filing")
            (org-super-agenda-groups '((:auto-property "CATEGORY")))))  )
 
@@ -793,7 +793,56 @@ you should place your code here."
         `("ga" "GTD Areas of Focus"
           ( (tags-todo "AOF"
                        ((org-agenda-overriding-header "Areas of Focus")
-                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+                        (org-super-agenda-groups
+                         '((:auto-map (lambda (item)
+                                       (-when-let* ((marker (get-text-property 0 (org-entry-get (item) "TAGS")))
+                                                    )
+                                         )
+                                       (concat "AOF: " marker)
+                                       )))
+                         ))
+                       ))))
+
+  (setq gtd-projects-with-no-next-calendar-view
+        `("gn"  ;; key
+          "Projects with no NEXT / Calendar" ;; description
+          todo ;; type
+          "PROJECT" ;; match
+          ;; local settings
+          ((
+            org-agenda-files '("~/Dropbox/org/inbox.org")
+            org-agenda-overriding-header "Projects with no NEXT and no schedule")
+           (org-super-agenda-groups '((
+                                       :name "Projects w/o NEXT or aren't scheduled" :discard (:children "NEXT" :scheduled t :deadline t)
+                                       )))))  )
+
+  (setq gtd-all-waiting
+        `("gw"  ;; key
+          "All Waiting" ;; description
+          todo ;; type
+          "WAITING" ;; match
+          ;; local settings
+          ((
+            org-agenda-files '("~/Dropbox/org/inbox.org")
+            org-agenda-overriding-header "All waiting")
+           (org-super-agenda-groups '((
+                                       :name "All Waiting" :auto-category t
+                                       )))))  )
+
+
+  (setq gtd-projects-with-no-next-view
+        `("gN"  ;; key
+          "Projects with no NEXT" ;; description
+          todo ;; type
+          "PROJECT" ;; match
+          ;; local settings
+          ((
+            org-agenda-files '("~/Dropbox/org/inbox.org")
+            org-agenda-overriding-header "Projects with no NEXT")
+           (org-super-agenda-groups '((
+                                       :name "Projects w/o NEXT" :discard (:children "NEXT")
+                                       )))))  )
+
 
   (setq gtd-context-home-view
         `("xh" "Home Context Tasks"
@@ -820,6 +869,13 @@ you should place your code here."
                         (org-super-agenda-groups '(
                                                    (:name "Requires out" :and (:tag "@out" :not ( :tag "@home")))
                                                    (:name "Can be out" :and ( ( :tag  "@out" ) ( :tag "@home" ) ))
+                                                   )))))))
+  (setq gtd-test-aof-view
+        `("xp" "Areas of Focus"
+          ( (tags-todo "AOF"
+                       ((org-agenda-overriding-header "Areas of Focus")
+                        (org-super-agenda-groups '(
+                                                   (:name "Test" :tag ("{aof@.+"}) )
                                                    )))))))
 
   (setq gtd-next-only-view
@@ -1055,6 +1111,12 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-context-out-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-test-aof-view)
+
+
+  ;; TESTING:
+  (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-calendar-view)
 
   (add-to-list 'org-agenda-custom-commands `,gtd-next-only-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-next-project-view)
