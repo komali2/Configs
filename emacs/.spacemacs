@@ -131,6 +131,7 @@ This function should only modify configuration layer settings."
                             "https://www.jefftk.com/news.rss"
                             "https://cprss.s3.amazonaws.com/javascriptweekly.com.xml"
                             "https://www.smashingmagazine.com/feed"
+                            "https://acoup.blog/feed"
                              ))
      )
 
@@ -756,6 +757,12 @@ you should place your code here."
           ( (todo "WAITING"
                   ((org-agenda-overriding-header "All Waiting")
                    (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (setq next-unscheduled-view
+        `("gn" "Next with no Scheduled"
+          ( (todo "NEXT"
+                  ((org-agenda-overriding-header "All Waiting")
+                   (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
   (setq gtd-view
         `("gG" "All GTD"
@@ -804,7 +811,7 @@ you should place your code here."
                        ))))
 
   (setq gtd-projects-with-no-next-calendar-view
-        `("gn"  ;; key
+        `("gm"  ;; key
           "Projects with no NEXT / Calendar" ;; description
           todo ;; type
           "PROJECT" ;; match
@@ -1103,6 +1110,7 @@ should be continued."
 
 
   (add-to-list 'org-agenda-custom-commands `,gtd-view)
+  (add-to-list 'org-agenda-custom-commands `,next-unscheduled-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-project-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-file-bad-view)
