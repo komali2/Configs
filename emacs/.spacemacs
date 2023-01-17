@@ -155,6 +155,8 @@ This function should only modify configuration layer settings."
                                       solarized-theme
                                       anki-editor
                                       sml-mode
+                                      ;; org-ql
+                                      ;; helm-org-ql
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -856,9 +858,11 @@ you should place your code here."
           ( (tags-todo "Context"
                        ((org-agenda-overriding-header "Home Context")
                         (org-super-agenda-groups '(
-                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out" :scheduled)))
-                                                   (:name "Requires laptop" :and (:tag "@laptop" :not (:scheduled)))
-                                                   (:name "Requires phone" :and ( :tag "@phone" :not (:scheduled)))
+                                                   (:name "Agenda" :scheduled today :time-grid t)
+                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out" :scheduled t )))
+                                                   (:name "Can be done on laptop" :and (:tag "@laptop" :not ( :tag "@out" :scheduled t )))
+                                                   (:name "Can be done on phone" :and ( :tag "@phone" :not ( :tag "@out" :scheduled t )))
+                                                   (:discard (:anything t))
                                                    )))))))
   (setq gtd-context-laptop-view
         `("xl" "Laptop Context Tasks"
@@ -866,7 +870,7 @@ you should place your code here."
                        ((org-agenda-overriding-header "Laptop Context")
                         (org-super-agenda-groups '(
                                                    (:name "Requires laptop" :and (:tag "@laptop" :not ( :tag "@phone")))
-                                                   (:name "Requires phone" :tag "@phone")
+                                                   (:name "Can be done on phone" :tag "@phone")
                                                    )))))))
 
   (setq gtd-context-out-view
@@ -1019,6 +1023,7 @@ you should place your code here."
          (concat org-agenda-hide-tags-regexp
                  "\\|ARCHIVE"))
       ))
+
 ;; Show the agenda with the log turn on, the clock table show and
 ;; archived entries shown.  These commands are all the same exept for
 ;; the time period.
