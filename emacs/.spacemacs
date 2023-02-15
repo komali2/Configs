@@ -673,7 +673,7 @@ you should place your code here."
                                    (tags . " %i %-12:c %-6e")
                                    (search . " %i %-12:c%-6e")))
   (setq org-todo-keywords
-        '((sequence "TODO" "NEXT" "PROJECT" "DOING" "WAITING" "|" "DONE")))
+        '((sequence "TODO" "NEXT" "PROJECT" "WAITING" "|" "DONE")))
   (setq org-capture-templates
         `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
            "* TODO %? \n %U"
@@ -749,11 +749,6 @@ you should place your code here."
            )
 
 
-  (setq d-view
-        `("dD" "All Doing"
-          ( (todo "DOING"
-                ((org-agenda-overriding-header "All Doing")
-                 (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
   (setq wait-view
         `("dW" "All Waiting"
           ( (todo "WAITING"
@@ -855,13 +850,11 @@ you should place your code here."
 
   (setq gtd-context-home-view
         `("xh" "Home Context Tasks"
-          ( (tags-todo "Context"
+          ( (todo "NEXT"
                        ((org-agenda-overriding-header "Home Context")
                         (org-super-agenda-groups '(
-                                                   (:name "Agenda" :scheduled today :time-grid t)
-                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out" :scheduled t )))
-                                                   (:name "Can be done on laptop" :and (:tag "@laptop" :not ( :tag "@out" :scheduled t )))
-                                                   (:name "Can be done on phone" :and ( :tag "@phone" :not ( :tag "@out" :scheduled t )))
+                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out" :scheduled t :deadline t)))
+                                                   (:name "Can be done on laptop or phone" :and (:tag ( "@laptop" "@phone" ) :not ( :tag "@out" :scheduled t :deadline t)))
                                                    (:discard (:anything t))
                                                    )))))))
   (setq gtd-context-laptop-view
@@ -869,8 +862,8 @@ you should place your code here."
           ( (tags-todo "Context"
                        ((org-agenda-overriding-header "Laptop Context")
                         (org-super-agenda-groups '(
-                                                   (:name "Requires laptop" :and (:tag "@laptop" :not ( :tag "@phone")))
-                                                   (:name "Can be done on phone" :tag "@phone")
+                                                   (:name "can be done on phone or laptop" :and (:tag ( "@laptop" "@phone" ) :not (:scheduled t :deadline t)))
+                                                   (:discard (:anything t))
                                                    )))))))
 
   (setq gtd-context-out-view
@@ -917,7 +910,7 @@ you should place your code here."
                                  :and (:tag ("life")))
                           (:discard (:anything t))))))
 
-              (todo "TODO|DOING|WAITING"
+              (todo "TODO|WAITING"
                     (
                      (org-agenda-overriding-header "")
                           (org-super-agenda-groups
@@ -925,7 +918,7 @@ you should place your code here."
                                     :and (:not(:tag ("life" "work" "project" "read" "g0v"))))
                              (:discard (:anything t)))))
                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-              (todo "TODO|DOING|WAITING"
+              (todo "TODO|WAITING"
                     (
                      (org-agenda-overriding-header "")
                      (org-super-agenda-groups
@@ -934,7 +927,7 @@ you should place your code here."
                         (:discard (:anything t)))))
                     (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
 
-              (todo "TODO|DOING|WAITING"
+              (todo "TODO|WAITING"
                     (
                      (org-agenda-overriding-header "")
                      (org-super-agenda-groups
@@ -953,7 +946,7 @@ you should place your code here."
   ;; (add-to-list 'org-agenda-custom-commands
   ;;              '("lc" "Life Clean"
   ;;                (
-  ;;                (todo "TODO|DOING|WAITING"
+  ;;                (todo "TODO|WAITING"
   ;;                      (
   ;;                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
   ;;                       (org-agenda-overriding-header "")
@@ -962,7 +955,7 @@ you should place your code here."
   ;;                                 :and (:tag ("read")))
   ;;                          (:discard (:anything t)))))
   ;;                      (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-  ;;                (todo "TODO|DOING|WAITING"
+  ;;                (todo "TODO|WAITING"
   ;;                      (
   ;;                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
   ;;                       (org-agenda-overriding-header "")
@@ -1108,7 +1101,6 @@ should be continued."
 
   ;; (add-to-list 'org-agenda-custom-commands `,w-view)
   ;; (add-to-list 'org-agenda-custom-commands `,l-view)
-  (add-to-list 'org-agenda-custom-commands `,d-view)
   (add-to-list 'org-agenda-custom-commands `,wait-view)
   (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
   (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
