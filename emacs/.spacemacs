@@ -853,8 +853,7 @@ you should place your code here."
           ( (todo "NEXT"
                        ((org-agenda-overriding-header "Home Context")
                         (org-super-agenda-groups '(
-                                                   (:name "Requires Home" :and ( :tag "@home" :not ( :tag "@out" :scheduled t :deadline t)))
-                                                   (:name "Can be done on laptop or phone" :and (:tag ( "@laptop" "@phone" ) :not ( :tag "@out" :scheduled t :deadline t)))
+                                                   (:name "Requires Home" :and ( :tag ("@home" "@laptop" "@phone") :not ( :tag "@out" :scheduled t :deadline t)))
                                                    (:discard (:anything t))
                                                    )))))))
   (setq gtd-context-laptop-view
