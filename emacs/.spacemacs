@@ -858,7 +858,7 @@ you should place your code here."
                                                    )))))))
   (setq gtd-context-laptop-view
         `("xl" "Laptop Context Tasks"
-          ( (tags-todo "Context"
+          ( (todo "NEXT"
                        ((org-agenda-overriding-header "Laptop Context")
                         (org-super-agenda-groups '(
                                                    (:name "can be done on phone or laptop" :and (:tag ( "@laptop" "@phone" ) :not (:scheduled t :deadline t)))
@@ -867,7 +867,7 @@ you should place your code here."
 
   (setq gtd-context-out-view
         `("xo" "Out Context Tasks"
-          ( (tags-todo "Context"
+          ( (todo "NEXT"
                        ((org-agenda-overriding-header "Out Context")
                         (org-super-agenda-groups '(
                                                    (:name "Requires out" :and (:tag "@out" :not ( :tag "@home")))
