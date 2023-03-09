@@ -113,10 +113,8 @@ This function should only modify configuration layer settings."
              elfeed-feeds '("https://researchbuzz.me/feed/"
                             "http://n-gate.com/index.rss"
                             "https://mjtsai.com/blog/feed/"
-                            "https://craphound.com/feed/"
                             "https://pluralistic.net/feed/"
                             "http://www.fudzilla.com/?format=feed"
-                            "http://semiengineering.com/feed/"
                             "https://www.eff.org/rss/pressrelease"
                             "http://news.mit.edu/rss/topic/nanotech"
                             "http://news.mit.edu/rss/topic/electrical-engineering"
@@ -132,6 +130,7 @@ This function should only modify configuration layer settings."
                             "https://cprss.s3.amazonaws.com/javascriptweekly.com.xml"
                             "https://www.smashingmagazine.com/feed"
                             "https://acoup.blog/feed"
+                            "https://xn--gckvb8fzb.com/index.xml"
                              ))
      )
 
