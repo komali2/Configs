@@ -85,3 +85,13 @@ sudo apt-get install syncthing
 * https://medium.com/@chasinglogic/the-definitive-guide-to-password-store
 
 
+## If Manjaro
+
+```bash
+sudo pacman -Syu 
+sudo sed -Ei '/EnableAUR/s/^#//' /etc/pamac.conf
+sudo pamac install brave-bin
+sudo pacman -Syu arandr xcape 
+
+
+```
