@@ -87,6 +87,9 @@ sudo apt-get install syncthing
 11. Trust gpg keys 
 * https://stackoverflow.com/questions/33361068/gnupg-there-is-no-assurance-this-key-belongs-to-the-named-user
 
+12. install nvm
+
+https://github.com/nvm-sh/nvm
 ## Useful Articles
 
 * https://medium.com/@chasinglogic/the-definitive-guide-to-password-store
