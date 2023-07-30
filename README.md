@@ -14,7 +14,7 @@ git config --global user.email "caleb@calebjay.com"
 4. Get an ssh sorted:
 
 ```
-ssh-keygen-t rsa -b 4096 -C "someemail@email.com"
+ssh-keygen -t ed25519 -C "your_email@example.com"
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_rsa
 xclip -sel clip < ~/.ssh/id_rsa.pub
