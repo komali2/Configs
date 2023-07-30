@@ -43,6 +43,7 @@ export CC=/usr/bin/gcc-10 CXX=/usr/bin/gcc-10
 ./autogen.sh
 ./configure --with-cairo --with-modules --without-compress-install --with-gnutls --with-mailutils --with-native-compilation --with-json --with-harfbuzz --with-imagemagick --with-jpeg --with-png --with-rsvg --with-tiff --with-wide-int --with-xft --with-xml2 --with-xpm CFLAGS="-O3 -mtune=native -march=native -fomit-frame-pointer" prefix=/usr/local
 make -j$(nproc)
+sudo make install
 
 ```
 6. Install spacemacs
@@ -97,7 +98,7 @@ sudo apt-get install syncthing
 sudo pacman -Syu 
 sudo sed -Ei '/EnableAUR/s/^#//' /etc/pamac.conf
 sudo pamac install brave-bin
-sudo pacman -Syu arandr xcape 
+sudo pacman -Syu arandr xcape libgccgit imagemagick autoconf automake build-essential
 
 
 ```
