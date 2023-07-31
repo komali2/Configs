@@ -71,7 +71,7 @@ sudo apt install mu mu4e
 cp ~/src/Configs/.offlineimaprc ~/
 cp ~/src/Configs/.offlineimap.py ~/
 offlineimap
-mu init --maildir=~/Maildir --my-address=jim@example.com 
+mu init --maildir=~/Mail --my-address=jim@example.com 
 ```
 9. Get gtile
 
