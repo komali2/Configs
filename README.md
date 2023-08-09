@@ -8,6 +8,8 @@ I was tired of copying my configs all over the place on each of my new OS instal
 
 ```bash
 gpg2 --import /path/to/secret.gpg
+gpg --edit-key KEYNAME
+trust
 git clone ssh://git@<your server's ip>:/home/git/pass-repo ~/.password-store
 ```
 
