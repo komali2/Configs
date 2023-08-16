@@ -110,3 +110,5 @@ sudo pacman -Syu arandr xcape libgccgit imagemagick autoconf automake build-esse
 
 
 ```
+
+Add ssh keys to agent and startup agent in bash profile: https://wiki.archlinux.org/title/SSH_keys
