@@ -105,8 +105,9 @@ https://github.com/nvm-sh/nvm
 ```bash
 sudo pacman -Syu 
 sudo sed -Ei '/EnableAUR/s/^#//' /etc/pamac.conf
-sudo pamac install brave-bin
+sudo pamac install brave-bin docker docker-compose
 sudo pacman -Syu arandr xcape libgccgit imagemagick autoconf automake build-essential
+sudo usermod -aG docker $USER
 
 
 ```
