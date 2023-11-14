@@ -733,7 +733,7 @@ you should place your code here."
                        ))
               (tags-todo "work"
                          ((org-agenda-overriding-header "All Work")
-                          (org-agenda-files '("~/Dropbox/org/"))
+                          (org-agenda-files '("~/Org/"))
                           (org-super-agenda-groups
                            '((:name "All Work Todos"
                                     :and (:tag ("work"))
@@ -789,7 +789,7 @@ you should place your code here."
           "TODO" ;; match
           ;; local settings
           ((
-            org-agenda-files '("~/Dropbox/org/inbox.org")
+            org-agenda-files '("~/Org/inbox.org")
             org-agenda-overriding-header "Needs GTD filing")
            (org-super-agenda-groups '((:auto-property "CATEGORY")))))  )
 
@@ -814,7 +814,7 @@ you should place your code here."
           "PROJECT" ;; match
           ;; local settings
           ((
-            org-agenda-files '("~/Dropbox/org/inbox.org")
+            org-agenda-files '("~/Org/inbox.org")
             org-agenda-overriding-header "Projects with no NEXT and no schedule")
            (org-super-agenda-groups '((
                                        :name "Projects w/o NEXT or aren't scheduled" :discard (:children "NEXT" :scheduled t :deadline t)
@@ -827,7 +827,7 @@ you should place your code here."
           "WAITING" ;; match
           ;; local settings
           ((
-            org-agenda-files '("~/Dropbox/org/inbox.org")
+            org-agenda-files '("~/Org/inbox.org")
             org-agenda-overriding-header "All waiting")
            (org-super-agenda-groups '((
                                        :name "All Waiting" :auto-category t
@@ -841,7 +841,7 @@ you should place your code here."
           "PROJECT" ;; match
           ;; local settings
           ((
-            org-agenda-files '("~/Dropbox/org/inbox.org")
+            org-agenda-files '("~/Org/inbox.org")
             org-agenda-overriding-header "Projects with no NEXT")
            (org-super-agenda-groups '((
                                        :name "Projects w/o NEXT" :discard (:children "NEXT")
@@ -1064,7 +1064,7 @@ you should place your code here."
                agenda ""
                (
                 (tags "")
-                (org-agenda-files (directory-files-recursively "~/Dropbox/org" "\\.org$"))
+                (org-agenda-files (directory-files-recursively "~/Org" "\\.org$"))
                 )
                ))
 
