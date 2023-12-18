@@ -34,7 +34,7 @@ Add the ssh key to github, gitlab, anywhere else.
 git clone git://git.savannah.gnu.org/emacs.git
 cd emacs
 git checkout emacs-28
-sudo apt  install build-essential texinfo libx11-dev libxpm-dev libjpeg-dev libpng-dev libgif-dev libtiff-dev libgtk-3-dev libncurses-dev libgnutls28-dev 
+sudo apt  install build-essential texinfo libx11-dev libxpm-dev libjpeg-dev libpng-dev libgif-dev libtiff-dev libgtk-3-dev libncurses-dev libgnutls28-dev
 sudo apt install libxpm-dev libgif-dev libjpeg-dev libpng-dev libtiff-dev libx11-dev libncurses5-dev automake autoconf texinfo libgtk2.0-dev
 sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
 sudo apt install gcc-10 g++-10 libgccjit0 libgccjit-10-dev libjansson4 libjansson-dev
@@ -73,7 +73,7 @@ sudo apt install mu mu4e
 cp ~/src/Configs/.offlineimaprc ~/
 cp ~/src/Configs/.offlineimap.py ~/
 offlineimap
-mu init --maildir=~/Mail --my-address=jim@example.com 
+mu init --maildir=~/Mail --my-address=jim@example.com
 ```
 9. Get gtile
 
@@ -89,7 +89,7 @@ sudo apt-get update
 sudo apt-get install syncthing
 ```
 
-11. Trust gpg keys 
+11. Trust gpg keys
 * https://stackoverflow.com/questions/33361068/gnupg-there-is-no-assurance-this-key-belongs-to-the-named-user
 
 12. install nvm
@@ -103,13 +103,19 @@ https://github.com/nvm-sh/nvm
 ## If Manjaro
 
 ```bash
-sudo pacman -Syu 
+sudo pacman -Syu
 sudo sed -Ei '/EnableAUR/s/^#//' /etc/pamac.conf
-sudo pamac install brave-bin docker docker-compose
+sudo pamac install brave-bin docker docker-compose bash-completion
 sudo pacman -Syu arandr xcape libgccgit imagemagick autoconf automake build-essential
 sudo usermod -aG docker $USER
+
 
 
 ```
 
 Add ssh keys to agent and startup agent in bash profile: https://wiki.archlinux.org/title/SSH_keys
+
+Set brave as default browser:
+
+For users of i3wm, in addition to editing ~/.config/mimeapps.list and ~/.i3/config, you also need to change $BROWSER from ~/.profile, set it to /usr/bin/chromium, to prevent browser sessions emerging from the terminal from opening the wrong browser.
+https://unix.stackexchange.com/a/434465/163373
