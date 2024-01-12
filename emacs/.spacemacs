@@ -33,21 +33,16 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(ruby
+   '(
+     ruby
      php
      nginx
      csv
-     ;; ----------------------------------------------------------------
-     ;; Example of useful layers you may want to use right away.
-     ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
-     ;; `M-m f e R' (Emacs style) to install them.
-     ;; ----------------------------------------------------------------
      lua
      emacs-lisp
      helm
      (lsp :variables
           lsp-idle-delay 1.000)
-     ;; multiple-cursors
      treemacs
      rust
      yaml
@@ -94,45 +89,13 @@ This function should only modify configuration layer settings."
      html
      ( typescript :variables
        typescript-indent-level 2)
-     (erc :variables
-          erc-server-list
-          '(("irc.freenode.net"
-             :port "6697"
-             :ssl t
-             :nick "komali2"
-             :password (password-store-get "freenode.net"))
-            ))
-     mu4e
-     (vue :variables vue-backend 'lsp)
+          (vue :variables vue-backend 'lsp)
      (node :variables node-add-modules-path t)
      racket
      tern
      common-lisp
      colors
      react
-     (elfeed :variables
-             elfeed-feeds '("https://researchbuzz.me/feed/"
-                            "http://n-gate.com/index.rss"
-                            "https://mjtsai.com/blog/feed/"
-                            "https://pluralistic.net/feed/"
-                            "http://www.fudzilla.com/?format=feed"
-                            "https://www.eff.org/rss/pressrelease"
-                            "http://news.mit.edu/rss/topic/nanotech"
-                            "http://news.mit.edu/rss/topic/electrical-engineering"
-                            "http://www.pocketables.com/feed"
-                            "https://www.quantamagazine.org/feed"
-                            "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml"
-                            "https://machinelearningmastery.com/blog/feed/"
-                            "http://news.mit.edu/rss/topic/artificial-intelligence2"
-                            "https://bair.berkeley.edu/blog/feed.xml"
-                            "https://openai.com/blog/rss/"
-                            "https://www.technologyreview.com/topic/artificial-intelligence/feed"
-                            "https://www.jefftk.com/news.rss"
-                            "https://cprss.s3.amazonaws.com/javascriptweekly.com.xml"
-                            "https://www.smashingmagazine.com/feed"
-                            "https://acoup.blog/feed"
-                            "https://xn--gckvb8fzb.com/index.xml"
-                             ))
      )
 
    ;; List of additional packages that will be installed without being
@@ -622,9 +585,6 @@ configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
   ;; (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-  (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
-  (add-to-list 'load-path "~/lisp")
   (fset 'evil-redirect-digit-argument 'ignore)
 
   ;; (add-to-list 'evil-digit-bound-motions 'evil-org-beginning-of-line)
@@ -649,8 +609,6 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
 
-;; Removed to try out new dotspacemacs-whitepsace-cleanup
-;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (setq make-backup-files nil) ; stop creating backup~ files
 (setq auto-save-default nil) ; stop creating #autosave# files
 (setq create-lockfiles nil)
@@ -720,33 +678,6 @@ you should place your code here."
                     (org-deadline-warning-days 5)
                     (org-super-agenda-groups
                      '((:auto-category t :time-grid t))))))))
-  (setq w-view
-           `("ww" "Work"
-             (
-              (agenda ""
-                      (
-                       (org-super-agenda-groups
-                        '((:discard (:not (:tag ("work")))))
-                        )
-                       (org-agenda-span 'day)
-                       (org-deadline-warning-days 5)
-                       ))
-              (tags-todo "work"
-                         ((org-agenda-overriding-header "All Work")
-                          (org-agenda-files '("~/Org/"))
-                          (org-super-agenda-groups
-                           '((:name "All Work Todos"
-                                    :and (:tag ("work"))
-                                    )
-                             (:discard (:anything t))
-                             )
-                           )
-                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))
-                          ))
-              nil
-              )
-             )
-           )
 
 
   (setq wait-view
@@ -888,90 +819,15 @@ you should place your code here."
                         (org-super-agenda-groups '(
                                                    (:name "Next at Home" :tag ( "@home" "@laptop" "@phone" )  )
                                                    )))))))
-  (setq gtd-next-project-view
-        `("fp" "Next and Projects at Home"
-          ( (todo "NEXT|PROJECT"
-                  ((org-agenda-overriding-header "Next or Projects at Home")
+  (setq nestor-view
+        `("f" "Nestor's Stuff"
+          ( (todo "NEXT"
+                  ((org-agenda-overriding-header "Nestor Stuff")
                    (org-super-agenda-groups '(
-                                              (:name "Next at Home" :and (   :tag ( "@home" "@laptop" "@phone" )   :todo "NEXT"   )  )
-                                              (:name "Projects at Home" :and (  :tag ( "@home" "@laptop" "@phone" )   :todo "PROJECT"   )  )
+                                              (:name "Stuff nestor can do / help with"  :tag ("nestor") )
+                                              (:discard (:anything t))
                                               )))))))
 
-  (setq l-view
-           `("ll" "All Life "
-             (
-              (agenda ""
-                      (
-                       (org-agenda-span 'day)
-                       (org-deadline-warning-days 5)
-                       (org-super-agenda-groups
-                        '((:name "Life Agenda"
-                                 :and (:tag ("life")))
-                          (:discard (:anything t))))))
-
-              (todo "TODO|WAITING"
-                    (
-                     (org-agenda-overriding-header "")
-                          (org-super-agenda-groups
-                           '((:name "Needs Filing"
-                                    :and (:not(:tag ("life" "work" "project" "read" "g0v"))))
-                             (:discard (:anything t)))))
-                          (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-              (todo "TODO|WAITING"
-                    (
-                     (org-agenda-overriding-header "")
-                     (org-super-agenda-groups
-                      '((:name "Reading"
-                               :and (:tag ("read")))
-                        (:discard (:anything t)))))
-                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-
-              (todo "TODO|WAITING"
-                    (
-                     (org-agenda-overriding-header "")
-                     (org-super-agenda-groups
-                      '((:name "All Life Todos"
-                               :and (:tag ("life")))
-                        (:discard (:anything t)))))
-                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-              (tags-todo "project"
-                         (
-                          (org-agenda-overriding-header "Projects")
-                     (org-super-agenda-groups
-                      '((:auto-category t :time-grid t))))
-                    (org-agenda-sorting-strategy '(deadline-up priority-down tag-up))))
-              nil))
-
-  ;; (add-to-list 'org-agenda-custom-commands
-  ;;              '("lc" "Life Clean"
-  ;;                (
-  ;;                (todo "TODO|WAITING"
-  ;;                      (
-  ;;                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-  ;;                       (org-agenda-overriding-header "")
-  ;;                       (org-super-agenda-groups
-  ;;                        '((:name "Reading"
-  ;;                                 :and (:tag ("read")))
-  ;;                          (:discard (:anything t)))))
-  ;;                      (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-  ;;                (todo "TODO|WAITING"
-  ;;                      (
-  ;;                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-  ;;                       (org-agenda-overriding-header "")
-  ;;                       (org-super-agenda-groups
-  ;;                        '((:name "All Life Todos"
-  ;;                                 :and (:tag ("life")))
-  ;;                          (:discard (:anything t)))))
-  ;;                      (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-  ;;                (tags-todo "project"
-  ;;                           (
-  ;;                            (org-agenda-overriding-header "Projects")
-  ;;                            (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-  ;;                            (org-super-agenda-groups
-  ;;                             '((:auto-category t :time-grid t))))
-  ;;                           (org-agenda-sorting-strategy '(deadline-up priority-down tag-up)))
-  ;;                ))
-  ;;              )
 
   (add-to-list 'org-agenda-custom-commands
                '("bd" agenda "Today's Deadlines"
@@ -1098,8 +954,6 @@ should be continued."
              (not (= deadline-day now))
              subtree-end))))
 
-  ;; (add-to-list 'org-agenda-custom-commands `,w-view)
-  ;; (add-to-list 'org-agenda-custom-commands `,l-view)
   (add-to-list 'org-agenda-custom-commands `,wait-view)
   (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
   (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
@@ -1123,7 +977,7 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-calendar-view)
 
   (add-to-list 'org-agenda-custom-commands `,gtd-next-only-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-next-project-view)
+  (add-to-list 'org-agenda-custom-commands `,nestor-view)
 
   (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
   ;; (add-to-list 'org-agenda-custom-commands `,d-view)
@@ -1143,122 +997,6 @@ should be continued."
   (spacemacs/set-leader-keys "opC" 'org-projectile-project-todo-entry)
   (spacemacs/set-leader-keys "ori" 'org-roam-jump-to-index)
 
-  (setq smtpmail-stream-type 'starttls)
-  (setq smtpmail-default-smtp-server "smtp.gmail.com")
-  (setq smtpmail-smtp-server "smtp.gmail.com")
-  (setq smtpmail-smtp-service 587)
-  (setq smtpmail-debug-info t)
-  (setq message-send-mail-function 'smtpmail-send-it )
-  (auth-source-pass-enable)
-  (setq auth-sources '(password-store))
-  (setq auth-source-debug t)
-  (setq auth-source-do-cache nil)
-
-  (with-eval-after-load 'mu4e
-    (setq mail-user-agent 'mu4e-user-agent)
-    (setq mu4e-compose-format-flowed t)
-    (setq message-kill-buffer-on-exit t)
-    ;; (setq message-send-mail-function 'smtpmail-send-it )
-    (setq mu4e-sent-messages-behavior 'delete )
-    ;; (setq mu4e-get-mail-command "offlineimap" )
-    (setq mu4e-update-interval 300 )
-    (setq mu4e-maildir "~/Mail")
-
-    (setq mu4e-context-policy 'ask)
-    (setq mu4e-contexts
-          `( ,(make-mu4e-context
-               :name "Personal"
-               :enter-func (lambda () (mu4e-message "Entering Personal context"))
-               :leave-func (lambda () (mu4e-message "Leaving Personal context"))
-               ;; we match based on the contact-fields of the message
-               :match-func (lambda (msg)
-                             (when msg
-                               (string-match-p "^/gmailhome" (mu4e-message-field msg :maildir))))
-               :vars '( ( user-mail-address	    . "rogersjcaleb@gmail.com"  )
-                        ( user-full-name	    . "Caleb Rogers" )
-                        ( mu4e-drafts-folder . "/gmailhome/[Gmail].Drafts" )
-                        ( mu4e-sent-folder   . "/gmailhome/[Gmail].Sent Mail" )
-                        ( mu4e-trash-folder  . "/gmailhome/[Gmail].Trash" )
-                        ( mu4e-refile-folder . "/gmailhome/[Gmail].All Mail")
-                        ( mu4e-maildir-shortcuts .
-                                                 (
-                                                  ("/gmailhome/INBOX"  . ?i)
-                                                  )
-                                                 )
-                        (smtpmail-smtp-user . "rogersjcaleb@gmail.com")
-                        ))
-             ,(make-mu4e-context
-               :name "Caleb"
-               :enter-func (lambda () (mu4e-message "Switch to the Caleb context"))
-               :leave-func (lambda () (mu4e-message "Leaving Caleb context"))
-               ;; we match based on the maildir of the message
-               ;; this matches maildir /Arkham and its sub-directories
-               :match-func (lambda (msg)
-                             (when msg
-                               (string-match-p "^/calebjay" (mu4e-message-field msg :maildir))))
-               :vars '( ( user-mail-address	     . "caleb@calebjay.com" )
-                        ( user-full-name	     . "Caleb Rogers" )
-                        ( mu4e-drafts-folder . "/calebjay/INBOX.Drafts" )
-                        ( mu4e-sent-folder   . "/calebjay/INBOX.Sent" )
-                        ( mu4e-trash-folder  . "/calebjay/INBOX.Trash" )
-                        (mu4e-refile-folder . "/calebjay/INBOX.Archive")
-                        ( mu4e-maildir-shortcuts .
-                                                 (
-                                                  ("/calebjay/INBOX"  . ?i)
-                                                  )
-                                                 )
-                        (smtpmail-smtp-user . "caleb@calebjay.com")
-                        (smtpmail-default-smtp-server . "mail.calebjay.com")
-                        (smtpmail-smtp-server . "mail.calebjay.com")
-                        (smtpmail-smtp-service . 465)
-                        (smtpmail-stream-type . ssl)
-                        (mu4e-sent-messages-behavior . sent )
-                       ))
-             ,(make-mu4e-context
-               :name "508"
-               :enter-func (lambda () (mu4e-message "Entering 508 context"))
-               :leave-func (lambda () (mu4e-message "Leaving 508 context"))
-               ;; we match based on the contact-fields of the message
-               :match-func (lambda (msg)
-                             (when msg
-                               (string-match-p "^/gmail508" (mu4e-message-field msg :maildir))))
-               :vars '( ( user-mail-address	    . "caleb@508.dev"  )
-                        ( user-full-name	    . "Caleb Rogers" )
-                        ( mu4e-drafts-folder . "/gmail508/[Gmail].Drafts" )
-                        ( mu4e-sent-folder   . "/gmail508/[Gmail].Sent Mail" )
-                        ( mu4e-trash-folder  . "/gmail508/[Gmail].Trash" )
-                        ( mu4e-refile-folder . "/gmail508/[Gmail].All Mail")
-                        ( mu4e-maildir-shortcuts .
-                                                 (
-                                                  ("/gmail508/INBOX"  . ?i)
-                                                  )
-                                                 )
-                        (smtpmail-smtp-user . "caleb@508.dev")
-                        ))
-             ,(make-mu4e-context
-               :name "OCofactr"
-               :enter-func (lambda () (mu4e-message "Entering Cofactr context"))
-               :leave-func (lambda () (mu4e-message "Leaving Cofactr context"))
-               ;; we match based on the contact-fields of the message
-               :match-func (lambda (msg)
-                             (when msg
-                               (string-match-p "^/gmailcofactr" (mu4e-message-field msg :maildir))))
-               :vars '( ( user-mail-address	    . "caleb@cofactr.com"  )
-                        ( user-full-name	    . "Caleb Rogers" )
-                        ( mu4e-drafts-folder . "/gmailcofactr/[Gmail].Drafts" )
-                        ( mu4e-sent-folder   . "/gmailcofactr/[Gmail].Sent Mail" )
-                        ( mu4e-trash-folder  . "/gmailcofactr/[Gmail].Trash" )
-                        ( mu4e-refile-folder . "/gmailcofactr/[Gmail].All Mail")
-                        ( mu4e-maildir-shortcuts .
-                                                 (
-                                                  ("/gmailcofactr/INBOX"  . ?i)
-                                                  )
-                                                 )
-                        (smtpmail-smtp-user . "caleb@cofactr.com")
-                        ))
-             ))
-
-    )
 
 ;;; runs eslint --fix on the current file after save
 ;;; alpha quality -- use at your own risk
