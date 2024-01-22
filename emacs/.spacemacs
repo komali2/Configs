@@ -118,6 +118,7 @@ This function should only modify configuration layer settings."
                                       solarized-theme
                                       anki-editor
                                       sml-mode
+                                      keychain-environment
                                       ;; org-ql
                                       ;; helm-org-ql
                                       )
@@ -1087,7 +1088,7 @@ should be continued."
   (setq web-mode-code-indent-offset 2)
   )
 (add-hook 'web-mode-hook  'my-web-mode-hook)
-
+(keychain-refresh-environment)
 (fset 'vue-wrap-intl
    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
 
