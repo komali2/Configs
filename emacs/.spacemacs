@@ -96,6 +96,8 @@ This function should only modify configuration layer settings."
      common-lisp
      colors
      react
+     svelte
+     :variables svelte-backend 'lsp
      )
 
    ;; List of additional packages that will be installed without being
@@ -802,8 +804,7 @@ you should place your code here."
           ( (todo "NEXT"
                        ((org-agenda-overriding-header "Out Context")
                         (org-super-agenda-groups '(
-                                                   (:name "Requires out" :and (:tag "@out" :not ( :tag "@home")))
-                                                   (:name "Can be out" :and ( ( :tag  "@out" ) ( :tag "@home" ) ))
+                                                   (:name "Requires out" :and ( :tag  "@out"  :not ( :tag "@home")))
                                                    )))))))
   (setq gtd-test-aof-view
         `("xp" "Areas of Focus"
@@ -1101,4 +1102,19 @@ should be continued."
 
 (global-set-key [C-down-mouse-3] #'find-face-at-mouse)
 (global-set-key [mode-line C-mouse-3] #'find-face-at-mouse)
+
+(define-derived-mode astro-mode web-mode "astro")
+(setq auto-mode-alist
+      (append '((".*\\.astro\\'" . astro-mode))
+              auto-mode-alist))
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration
+               '(astro-mode . "astro"))
+
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("astro-ls" "--stdio"))
+                    :activation-fn (lsp-activate-on "astro")
+                    :server-id 'astro-ls)))
+
 )
