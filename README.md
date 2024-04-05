@@ -103,10 +103,10 @@ https://github.com/nvm-sh/nvm
 ## If Manjaro
 
 ```bash
-sudo pacman -Syu
 sudo sed -Ei '/EnableAUR/s/^#//' /etc/pamac.conf
+sudo pamac update -a --devel
 sudo pamac install brave-bin docker docker-compose bash-completion
-sudo pacman -Syu arandr xcape libgccgit imagemagick autoconf automake build-essential
+sudo pamac install arandr xcape libgccgit imagemagick autoconf automake build-essential lazygit buku
 sudo usermod -aG docker $USER
 
 
@@ -119,3 +119,6 @@ Set brave as default browser:
 
 For users of i3wm, in addition to editing ~/.config/mimeapps.list and ~/.i3/config, you also need to change $BROWSER from ~/.profile, set it to /usr/bin/chromium, to prevent browser sessions emerging from the terminal from opening the wrong browser.
 https://unix.stackexchange.com/a/434465/163373
+
+Install some nerd fonts: https://www.nerdfonts.com/font-downloads
+unzip HeavyData.zip -d ~/.fonts/
