@@ -42,7 +42,8 @@ This function should only modify configuration layer settings."
      emacs-lisp
      helm
      (lsp :variables
-          lsp-idle-delay 1.000)
+          lsp-idle-delay 1.000
+          )
      treemacs
      rust
      yaml
@@ -89,16 +90,16 @@ This function should only modify configuration layer settings."
      html
      ( typescript :variables
        typescript-indent-level 2)
-          (vue :variables vue-backend 'lsp)
+     (vue :variables vue-backend 'lsp)
      (node :variables node-add-modules-path t)
      racket
      tern
      common-lisp
      colors
      react
-     svelte
+     ( svelte
      :variables svelte-backend 'lsp
-     )
+     ))
 
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -994,38 +995,7 @@ should be continued."
   ;; (add-to-list 'web-mode-content-types-alist '("vue". "\\.vue?\\'"))
 
 
-  (spacemacs/declare-prefix "o" "custom")
-  (spacemacs/set-leader-keys "opc" 'org-projectile-project-todo-completing-read)
-  (spacemacs/set-leader-keys "opC" 'org-projectile-project-todo-entry)
   (spacemacs/set-leader-keys "ori" 'org-roam-jump-to-index)
-
-
-;;; runs eslint --fix on the current file after save
-;;; alpha quality -- use at your own risk
-
-  (defun eslint-fix-file ()
-    (interactive)
-    (message "eslint --fixing the file" (buffer-file-name))
-    (let* ((root (locate-dominating-file
-                  (or (buffer-file-name) default-directory)
-                  "node_modules"))
-           (eslint (and root
-                        (expand-file-name "node_modules/.bin/eslint"
-                                          root))))
-      (when (and eslint (file-executable-p eslint))
-        (shell-command (concat eslint " --fix " (buffer-file-name))))))
-
-  (defun eslint-fix-file-and-revert ()
-    (interactive)
-    (eslint-fix-file)
-    (revert-buffer t t))
-
-  ;; (add-hook 'js2-mode-hook
-  ;;           (lambda ()
-  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
-  ;; (add-hook 'web-mode-hook
-  ;;           (lambda ()
-  ;;             (add-hook 'after-save-hook #'eslint-fix-file-and-revert)))
 
 
 ;; use the locally installed eslint
@@ -1057,51 +1027,21 @@ should be continued."
   (with-eval-after-load 'lsp-mode
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.node_modules\\'")
     (setq lsp-file-watch-threshold 5000)
-    (setq lsp-enable-file-watchers nil)
+    ;; (setq lsp-enable-file-watchers nil)
     )
   (with-eval-after-load 'undo-tree
     (setq undo-tree-auto-save-history nil))
-(defun elfeed-goodies/search-header-draw ()
-  "Returns the string to be used as the Elfeed header."
-  (if (zerop (elfeed-db-last-update))
-      (elfeed-search--intro-header)
-    (let* ((separator-left (intern (format "powerline-%s-%s"
-                                           elfeed-goodies/powerline-default-separator
-                                           (car powerline-default-separator-dir))))
-           (separator-right (intern (format "powerline-%s-%s"
-                                            elfeed-goodies/powerline-default-separator
-                                            (cdr powerline-default-separator-dir))))
-           (db-time (seconds-to-time (elfeed-db-last-update)))
-           (stats (-elfeed/feed-stats))
-           (search-filter (cond
-                           (elfeed-search-filter-active
-                            "")
-                           (elfeed-search-filter
-                            elfeed-search-filter)
-                           (""))))
-      (if (>= (window-width) (* (frame-width) elfeed-goodies/wide-threshold))
-          (search-header/draw-wide separator-left separator-right search-filter stats db-time)
-        (search-header/draw-tight separator-left separator-right search-filter stats db-time)))))
 
-(defun my-web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  )
-(add-hook 'web-mode-hook  'my-web-mode-hook)
+;; (defun my-web-mode-hook ()
+;;   "Hooks for Web mode."
+;;   (setq web-mode-markup-indent-offset 2)
+;;   (setq web-mode-code-indent-offset 2)
+;;   )
+;; (add-hook 'web-mode-hook  'my-web-mode-hook)
 (keychain-refresh-environment)
-(fset 'vue-wrap-intl
-   (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
+;; (fset 'vue-wrap-intl
+;;    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
 
-(defun find-face-at-mouse (event)
-  (interactive "e")
-  (let* ((mouse-pos  (event-start event))
-         (mouse-buf  (window-buffer (posn-window mouse-pos)))
-         (pos-pt     (posn-point mouse-pos)))
-    (with-current-buffer mouse-buf (describe-char pos-pt))))
-
-(global-set-key [C-down-mouse-3] #'find-face-at-mouse)
-(global-set-key [mode-line C-mouse-3] #'find-face-at-mouse)
 
 (define-derived-mode astro-mode web-mode "astro")
 (setq auto-mode-alist
