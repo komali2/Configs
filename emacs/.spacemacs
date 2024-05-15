@@ -1,4 +1,3 @@
-
 ;; -*- mode: emacs-lisp; lexical-binding: t -*-
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
@@ -122,8 +121,8 @@ This function should only modify configuration layer settings."
                                       anki-editor
                                       sml-mode
                                       keychain-environment
-                                      ;; org-ql
-                                      ;; helm-org-ql
+                                      org-ql
+                                      helm-org-ql
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -707,11 +706,51 @@ you should place your code here."
                        ((org-agenda-overriding-header "All GTD Perspectives")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
-  (setq gtd-project-view
-        `("gp" "All GTD Projects"
+  (setq gtd-project-all-view
+        `("gpp" "All GTD Projects"
           ( (todo "PROJECT"
                        ((org-agenda-overriding-header "All GTD Projects")
                         (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+  (defun search-org-projects ()
+    "Search for subprojects in org files."
+    (interactive)
+    (org-ql-search (org-agenda-files)
+      '(and (todo "PROJECT")
+            (ancestors (todo "PROJECT")))))
+
+  (defun search-subtasks-projects ()
+    ;; Search for all subtasks of projects, grouped by parent heading.
+    (interactive)
+    (org-ql-search (org-agenda-files)
+      '(and (todo)
+            (ancestors (todo "PROJECT")))
+      :super-groups '((:auto-parent t))))
+
+  (defun search-subtasks-a-projects ()
+    ;; Search for all subtasks of projects, grouped by parent heading.
+    (interactive)
+    (org-ql-search (org-agenda-files)
+      '(and (todo)
+            (ancestors (and (todo "PROJECT")(priority "A"))))
+      :super-groups '((:auto-parent t))))
+
+  (defun search-topleveltasks-projects ()
+    ;; Search for direct top-level tasks of projects.
+    (interactive)
+    (org-ql-search (org-agenda-files)
+      '(and (todo)
+            (parent (todo "PROJECT")))
+      :super-groups '((:auto-parent t))))
+
+  ;; Search for subprojects.
+  (spacemacs/set-leader-keys "ops" 'search-org-projects)
+  ;; Search for all subtasks of projects, grouped by parent heading.
+  (spacemacs/set-leader-keys "opg" 'search-subtasks-projects)
+  ;; Search for all subtasks of projects with priority A, grouped by parent heading.
+  (spacemacs/set-leader-keys "opa" 'search-subtasks-a-projects)
+  ;; Search for direct top-level tasks of projects.
+  (spacemacs/set-leader-keys "opt" 'search-topleveltasks-projects)
+
   (setq gtd-file-bad-view
         `("gF" "GTD Needs Filing Bad"
           ( (tags-todo "-GTD"
@@ -965,7 +1004,7 @@ should be continued."
   (add-to-list 'org-agenda-custom-commands `,gtd-view)
   (add-to-list 'org-agenda-custom-commands `,next-unscheduled-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-project-view)
+  (add-to-list 'org-agenda-custom-commands `,gtd-project-all-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-file-bad-view)
   (add-to-list 'org-agenda-custom-commands `,gtd-need-file-inbox)
   (add-to-list 'org-agenda-custom-commands `,gtd-aof-view)
