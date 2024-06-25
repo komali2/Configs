@@ -106,7 +106,7 @@ https://github.com/nvm-sh/nvm
 sudo sed -Ei '/EnableAUR/s/^#//' /etc/pamac.conf
 sudo pamac update -a --devel
 sudo pamac install brave-bin docker docker-compose bash-completion
-sudo pamac install arandr xcape libgccgit imagemagick autoconf automake build-essential lazygit buku
+sudo pamac install arandr xcape libgccgit imagemagick autoconf automake build-essential lazygit buku earlyoom
 sudo usermod -aG docker $USER
 
 
