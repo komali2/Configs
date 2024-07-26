@@ -1071,29 +1071,32 @@ should be continued."
   (with-eval-after-load 'undo-tree
     (setq undo-tree-auto-save-history nil))
 
-;; (defun my-web-mode-hook ()
-;;   "Hooks for Web mode."
-;;   (setq web-mode-markup-indent-offset 2)
-;;   (setq web-mode-code-indent-offset 2)
-;;   )
-;; (add-hook 'web-mode-hook  'my-web-mode-hook)
-(keychain-refresh-environment)
-;; (fset 'vue-wrap-intl
-;;    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
+  ;; (defun my-web-mode-hook ()
+  ;;   "Hooks for Web mode."
+  ;;   (setq web-mode-markup-indent-offset 2)
+  ;;   (setq web-mode-code-indent-offset 2)
+  ;;   )
+  ;; (add-hook 'web-mode-hook  'my-web-mode-hook)
+  (keychain-refresh-environment)
+  ;; (fset 'vue-wrap-intl
+  ;;    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
 
 
-(define-derived-mode astro-mode web-mode "astro")
-(setq auto-mode-alist
-      (append '((".*\\.astro\\'" . astro-mode))
-              auto-mode-alist))
+  (define-derived-mode astro-mode web-mode "astro")
+  (setq auto-mode-alist
+        (append '((".*\\.astro\\'" . astro-mode))
+                auto-mode-alist))
 
-(with-eval-after-load 'lsp-mode
-  (add-to-list 'lsp-language-id-configuration
-               '(astro-mode . "astro"))
+  (with-eval-after-load 'lsp-mode
+    (add-to-list 'lsp-language-id-configuration
+                 '(astro-mode . "astro"))
 
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("astro-ls" "--stdio"))
-                    :activation-fn (lsp-activate-on "astro")
-                    :server-id 'astro-ls)))
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection '("astro-ls" "--stdio"))
+                      :activation-fn (lsp-activate-on "astro")
+                      :server-id 'astro-ls)))
 
-)
+  (setq evil-want-C-i-jump 't)
+  (spacemacs/set-leader-keys "C-SPC" 'company-complete)
+
+  )
