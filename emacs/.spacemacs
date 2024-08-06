@@ -1098,5 +1098,15 @@ should be continued."
 
   (setq evil-want-C-i-jump 't)
   (spacemacs/set-leader-keys "C-SPC" 'company-complete)
+  (add-to-list 'purpose-action-function-ignore-buffer-names "\\*org-roam\\*")
+  (advice-add #'org-roam-fontify-like-in-org-mode :around (lambda (fn &rest args) (save-excursion (apply fn args))))
+  (add-to-list 'display-buffer-alist
+               '("\\*org-roam\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 0)
+                 (window-width . 0.33)
+                 (window-parameters . ((no-other-window . t)
+                                       (no-delete-other-windows . t)))))
 
   )
