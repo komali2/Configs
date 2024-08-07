@@ -76,8 +76,8 @@ This function should only modify configuration layer settings."
           ;; org-tags-exclude-from-inheritance '("GTD" "Control" "Persp" "Context" "Task" "Action" "Project" "AOF" "Goal" "Vision" "Life" "{p@.+}" "{aof@.+}" "{goal@.+}" "{vision@.+}" )
           )
      (shell :variables
-           shell-default-height 30
-           shell-default-position 'bottom)
+            shell-default-height 30
+            shell-default-position 'bottom)
      (spell-checking :variables spell-checking-enable-by-default nil)
      c-c++
      semantic
@@ -89,7 +89,7 @@ This function should only modify configuration layer settings."
      html
      ( typescript :variables
        typescript-indent-level 2)
-     (vue :variables vue-backend 'lsp)
+     ;; (vue :variables vue-backend 'lsp)
      (node :variables node-add-modules-path t)
      racket
      tern
@@ -97,8 +97,8 @@ This function should only modify configuration layer settings."
      colors
      react
      ( svelte
-     :variables svelte-backend 'lsp
-     ))
+       :variables svelte-backend 'lsp
+       ))
 
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -122,6 +122,7 @@ This function should only modify configuration layer settings."
                                       sml-mode
                                       keychain-environment
                                       org-ql
+                                      helm-xref
                                       helm-org-ql
                                       )
    ;; A list of packages that cannot be updated.
@@ -298,7 +299,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Default font or prioritized list of fonts.
    dotspacemacs-default-font '("Fira Code"
-                               :size 11.0
+                               :size 10.0
                                :weight normal
                                :width normal)
 
@@ -579,7 +580,7 @@ default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
   (spacemacs/load-spacemacs-env)
-)
+  )
 
 (defun dotspacemacs/user-init ()
   "Initialization for user code:
@@ -612,421 +613,447 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
 
-(setq make-backup-files nil) ; stop creating backup~ files
-(setq auto-save-default nil) ; stop creating #autosave# files
-(setq create-lockfiles nil)
-(add-hook 'text-mode-hook #'visual-line-mode)
-(autoload 'sml-mode "sml-mode" "Major mode for editing SML." t)
-(autoload 'run-sml "sml-proc" "Run an inferior SML process." t)
-(add-to-list 'auto-mode-alist '("\\.\\(sml\\|sig\\)\\'" . sml-mode))
-(require 'org-roam-export)
-(with-eval-after-load 'org
-  (require 'org-agenda)
-  (org-super-agenda-mode)
-  (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
+  (setq make-backup-files nil) ; stop creating backup~ files
+  (setq auto-save-default nil) ; stop creating #autosave# files
+  (setq create-lockfiles nil)
+  (add-hook 'text-mode-hook #'visual-line-mode)
+  (autoload 'sml-mode "sml-mode" "Major mode for editing SML." t)
+  (autoload 'run-sml "sml-proc" "Run an inferior SML process." t)
+  (add-to-list 'auto-mode-alist '("\\.\\(sml\\|sig\\)\\'" . sml-mode))
+  (require 'org-roam-export)
+  (with-eval-after-load 'org-roam
+    (setq org-roam-mode-sections
+          (list #'org-roam-backlinks-section
+                #'org-roam-reflinks-section
+                ;; #'org-roam-unlinked-references-section
+                )))
+  (with-eval-after-load 'org
+    (require 'org-agenda)
+    (org-super-agenda-mode)
+    (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
 
-  (setq org-agenda-files
-        (seq-filter (lambda(x) (not (string-match "/notes/"(file-name-directory x))))
-                    (directory-files-recursively "~/Org" "\\.org$")
-                    ))
-  (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t%-6e% s")
-                                   (todo . " %i %-12:c %-6e")
-                                   (tags . " %i %-12:c %-6e")
-                                   (search . " %i %-12:c%-6e")))
-  (setq org-todo-keywords
-        '((sequence "TODO" "NEXT" "PROJECT" "WAITING" "|" "DONE")))
-  (setq org-capture-templates
-        `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
-           "* TODO %? \n %U"
-           :prepend t)
-          ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
-           "* TODO %? :work:\n")
-          ("5" "508 Todo" entry (file+olp ,(concat org-directory "/work.org") "508" "tasks")
-           "* TODO %? \n %U"
-           :prepend t)
-          ("o" "Cofactr Todo" entry (file+olp ,(concat org-directory "/work.org") "cofactr" "tasks")
-           "* TODO %? \n %U"
-           :prepend t)
-          ("b" "Blog Post Idea" entry (file+olp ,(concat org-directory "/projects.org") "blog" "Pending Articles")
-          "* TODO %? \n %U"
-          :prepend t)
-          ("p" "Project idea" entry (file+olp ,(concat org-directory "/projects.org") "Project ideas")
-           "* TODO %? \n %U"
-           :prepend t)
-          ))
-  (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
+    (setq org-agenda-files
+          (seq-filter (lambda(x) (not (string-match "/notes/"(file-name-directory x))))
+                      (directory-files-recursively "~/Org" "\\.org$")
+                      ))
+    (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t%-6e% s")
+                                     (todo . " %i %-12:c %-6e")
+                                     (tags . " %i %-12:c %-6e")
+                                     (search . " %i %-12:c%-6e")))
+    (setq org-todo-keywords
+          '((sequence "TODO" "NEXT" "PROJECT" "WAITING" "|" "DONE")))
 
-  (setq daily-agenda-view
-        `("dd" "Daily Agenda"
-          (
-           (agenda ""
-                   (
-                    (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                    (org-agenda-span 'day)
-                    (org-deadline-warning-days 5)
-                    (org-super-agenda-groups
-                     '(
-                       ( :time-grid t)
-                       ( :auto-category t)
-                       )))))))
+    ;; Chatgpt hallucinated this existing lol
+    (defun my/org-roam-daily-today ()
+      "Get the file path for today's daily note."
+      (let ((today (format-time-string "%Y-%m-%d")))
+        (expand-file-name (org-roam-dailies--file-name today)
+                          org-roam-directory)))
+
+    (setq org-capture-templates
+          `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
+             "* TODO %? \n %U"
+             :prepend t)
+            ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
+             "* TODO %? :work:\n")
+            ("5" "508 Todo" entry (file+olp ,(concat org-directory "/work.org") "508" "tasks")
+             "* TODO %? \n %U"
+             :prepend t)
+            ("o" "Cofactr Todo" entry (file+olp ,(concat org-directory "/work.org") "cofactr" "tasks")
+             "* TODO %? \n %U"
+             :prepend t)
+            ("j" "Journal Item Today" entry (file+olp (my/org-roam-daily-today) "journal")
+             "* %? \n %U"
+             :append t)
+
+            ("b" "Blog Post Idea" entry (file+olp ,(concat org-directory "/projects.org") "blog" "Pending Articles")
+             "* TODO %? \n %U"
+             :prepend t)
+
+            ("p" "Project idea" entry (file+olp ,(concat org-directory "/projects.org") "Project ideas")
+             "* TODO %? \n %U"
+             :prepend t)
+            ))
+    (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
+
+    (setq daily-agenda-view
+          `("dd" "Daily Agenda"
+            (
+             (agenda ""
+                     (
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-span 'day)
+                      (org-deadline-warning-days 5)
+                      (org-super-agenda-groups
+                       '(
+                         ( :time-grid t)
+                         ( :auto-category t)
+                         )))))))
 
 
-  (setq weekly-agenda-view
-        `("dw" "Weekly Agenda"
-          (
-           (agenda ""
-                   (
-                    (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                    (org-agenda-span 'week)
-                    (org-deadline-warning-days 5)
-                    (org-super-agenda-groups
-                     '((:auto-category t :time-grid t))))))))
+    (setq weekly-agenda-view
+          `("dw" "Weekly Agenda"
+            (
+             (agenda ""
+                     (
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-span 'week)
+                      (org-deadline-warning-days 5)
+                      (org-super-agenda-groups
+                       '((:auto-category t :time-grid t))))))))
 
 
-  (setq wait-view
-        `("dW" "All Waiting"
-          ( (todo "WAITING"
-                  ((org-agenda-overriding-header "All Waiting")
-                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-  (setq next-unscheduled-view
-        `("gn" "Next with no Scheduled"
-          ( (todo "NEXT"
-                  ((org-agenda-overriding-header "All Waiting")
-                   (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+    (setq wait-view
+          `("dW" "All Waiting"
+            ( (todo "WAITING"
+                    ((org-agenda-overriding-header "All Waiting")
+                     (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+    (setq next-unscheduled-view
+          `("gn" "Next with no Scheduled"
+            ( (todo "NEXT"
+                    ((org-agenda-overriding-header "All Waiting")
+                     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
+                     (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
-  (setq gtd-view
-        `("gG" "All GTD"
-          ( (tags-todo "GTD"
-                  ((org-agenda-overriding-header "All GTD")
-                   (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-  (setq gtd-persp-view
-        `("gP" "All GTD Perspectives"
-          ( (tags-todo "Persp"
-                       ((org-agenda-overriding-header "All GTD Perspectives")
-                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+    (setq gtd-view
+          `("gG" "All GTD"
+            ( (tags-todo "GTD"
+                         ((org-agenda-overriding-header "All GTD")
+                          (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+    (setq gtd-persp-view
+          `("gP" "All GTD Perspectives"
+            ( (tags-todo "Persp"
+                         ((org-agenda-overriding-header "All GTD Perspectives")
+                          (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
 
-  (setq gtd-project-all-view
-        `("gpp" "All GTD Projects"
-          ( (todo "PROJECT"
-                       ((org-agenda-overriding-header "All GTD Projects")
-                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-  (defun search-org-projects ()
-    "Search for subprojects in org files."
-    (interactive)
-    (org-ql-search (org-agenda-files)
-      '(and (todo "PROJECT")
-            (ancestors (todo "PROJECT")))))
+    (setq gtd-project-all-view
+          `("gpp" "All GTD Projects"
+            ( (todo "PROJECT"
+                    ((org-agenda-overriding-header "All GTD Projects")
+                     (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+    (defun search-org-projects ()
+      "Search for subprojects in org files."
+      (interactive)
+      (org-ql-search (org-agenda-files)
+        '(and (todo "PROJECT")
+              (ancestors (todo "PROJECT")))))
 
-  (defun search-subtasks-projects ()
+    (defun search-subtasks-projects ()
+      ;; Search for all subtasks of projects, grouped by parent heading.
+      (interactive)
+      (org-ql-search (org-agenda-files)
+        '(and (todo)
+              (ancestors (todo "PROJECT")))
+        :super-groups '((:auto-parent t))))
+
+    (defun search-subtasks-a-projects ()
+      ;; Search for all subtasks of projects, grouped by parent heading.
+      (interactive)
+      (org-ql-search (org-agenda-files)
+        '(and (todo)
+              (ancestors (and (todo "PROJECT")(priority "A"))))
+        :super-groups '((:auto-parent t))))
+
+    (defun search-topleveltasks-projects ()
+      ;; Search for direct top-level tasks of projects.
+      (interactive)
+      (org-ql-search (org-agenda-files)
+        '(and (todo)
+              (parent (todo "PROJECT")))
+        :super-groups '((:auto-parent t))))
+
+    ;; Search for subprojects.
+    (spacemacs/set-leader-keys "ops" 'search-org-projects)
     ;; Search for all subtasks of projects, grouped by parent heading.
-    (interactive)
-    (org-ql-search (org-agenda-files)
-      '(and (todo)
-            (ancestors (todo "PROJECT")))
-      :super-groups '((:auto-parent t))))
-
-  (defun search-subtasks-a-projects ()
-    ;; Search for all subtasks of projects, grouped by parent heading.
-    (interactive)
-    (org-ql-search (org-agenda-files)
-      '(and (todo)
-            (ancestors (and (todo "PROJECT")(priority "A"))))
-      :super-groups '((:auto-parent t))))
-
-  (defun search-topleveltasks-projects ()
+    (spacemacs/set-leader-keys "opg" 'search-subtasks-projects)
+    ;; Search for all subtasks of projects with priority A, grouped by parent heading.
+    (spacemacs/set-leader-keys "opa" 'search-subtasks-a-projects)
     ;; Search for direct top-level tasks of projects.
-    (interactive)
-    (org-ql-search (org-agenda-files)
-      '(and (todo)
-            (parent (todo "PROJECT")))
-      :super-groups '((:auto-parent t))))
-
-  ;; Search for subprojects.
-  (spacemacs/set-leader-keys "ops" 'search-org-projects)
-  ;; Search for all subtasks of projects, grouped by parent heading.
-  (spacemacs/set-leader-keys "opg" 'search-subtasks-projects)
-  ;; Search for all subtasks of projects with priority A, grouped by parent heading.
-  (spacemacs/set-leader-keys "opa" 'search-subtasks-a-projects)
-  ;; Search for direct top-level tasks of projects.
-  (spacemacs/set-leader-keys "opt" 'search-topleveltasks-projects)
-
-  (setq gtd-file-bad-view
-        `("gF" "GTD Needs Filing Bad"
-          ( (tags-todo "-GTD"
-                       ((org-agenda-overriding-header "Needs GTD filing badly")
-                        (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-  (setq gtd-need-file-inbox
-        `("gf"  ;; key
-          "GTD Needs Filing Inbox" ;; description
-          todo ;; type
-          "TODO" ;; match
-          ;; local settings
-          ((
-            org-agenda-files '("~/Org/inbox.org")
-            org-agenda-overriding-header "Needs GTD filing")
-           (org-super-agenda-groups '((:auto-property "CATEGORY")))))  )
-
-  (setq gtd-aof-view
-        `("ga" "GTD Areas of Focus"
-          ( (tags-todo "AOF"
-                       ((org-agenda-overriding-header "Areas of Focus")
-                        (org-super-agenda-groups
-                         '((:auto-map (lambda (item)
-                                       (-when-let* ((marker (get-text-property 0 (org-entry-get (item) "TAGS")))
-                                                    )
-                                         )
-                                       (concat "AOF: " marker)
-                                       )))
-                         ))
-                       ))))
-
-  (setq gtd-projects-with-no-next-calendar-view
-        `("gm"  ;; key
-          "Projects with no NEXT / Calendar" ;; description
-          todo ;; type
-          "PROJECT" ;; match
-          ;; local settings
-          ((
-            org-agenda-files '("~/Org/inbox.org")
-            org-agenda-overriding-header "Projects with no NEXT and no schedule")
-           (org-super-agenda-groups '((
-                                       :name "Projects w/o NEXT or aren't scheduled" :discard (:children "NEXT" :scheduled t :deadline t)
-                                       )))))  )
-
-  (setq gtd-all-waiting
-        `("gw"  ;; key
-          "All Waiting" ;; description
-          todo ;; type
-          "WAITING" ;; match
-          ;; local settings
-          ((
-            org-agenda-files '("~/Org/inbox.org")
-            org-agenda-overriding-header "All waiting")
-           (org-super-agenda-groups '((
-                                       :name "All Waiting" :auto-category t
-                                       )))))  )
+    (spacemacs/set-leader-keys "opt" 'search-topleveltasks-projects)
 
 
-  (setq gtd-projects-with-no-next-view
-        `("gN"  ;; key
-          "Projects with no NEXT" ;; description
-          todo ;; type
-          "PROJECT" ;; match
-          ;; local settings
-          ((
-            org-agenda-files '("~/Org/inbox.org")
-            org-agenda-overriding-header "Projects with no NEXT")
-           (org-super-agenda-groups '((
-                                       :name "Projects w/o NEXT" :discard (:children "NEXT")
-                                       )))))  )
+
+    (setq gtd-file-bad-view
+          `("gF" "GTD Needs Filing Bad"
+            ( (tags-todo "-GTD"
+                         ((org-agenda-overriding-header "Needs GTD filing badly")
+                          (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
+    (setq gtd-need-file-inbox
+          `("gf"  ;; key
+            "GTD Needs Filing Inbox" ;; description
+            todo ;; type
+            "TODO" ;; match
+            ;; local settings
+            ((
+              org-agenda-files '("~/Org/inbox.org")
+              org-agenda-overriding-header "Needs GTD filing")
+             (org-super-agenda-groups '((:auto-property "CATEGORY")))))  )
+
+    (setq gtd-aof-view
+          `("ga" "GTD Areas of Focus"
+            ( (tags-todo "AOF"
+                         ((org-agenda-overriding-header "Areas of Focus")
+                          (org-super-agenda-groups
+                           '((:auto-map (lambda (item)
+                                          (-when-let* ((marker (get-text-property 0 (org-entry-get (item) "TAGS")))
+                                                       )
+                                            )
+                                          (concat "AOF: " marker)
+                                          )))
+                           ))
+                         ))))
+
+    (setq gtd-projects-with-no-next-calendar-view
+          `("gm"  ;; key
+            "Projects with no NEXT / Calendar" ;; description
+            todo ;; type
+            "PROJECT" ;; match
+            ;; local settings
+            ((
+              org-agenda-files '("~/Org/inbox.org")
+              org-agenda-overriding-header "Projects with no NEXT and no schedule")
+             (org-super-agenda-groups '((
+                                         :name "Projects w/o NEXT or aren't scheduled" :discard (:children "NEXT" :scheduled t :deadline t)
+                                         )))))  )
+
+    (setq gtd-all-waiting
+          `("gw"  ;; key
+            "All Waiting" ;; description
+            todo ;; type
+            "WAITING" ;; match
+            ;; local settings
+            ((
+              org-agenda-files '("~/Org/inbox.org")
+              org-agenda-overriding-header "All waiting")
+             (org-super-agenda-groups '((
+                                         :name "All Waiting" :auto-category t
+                                         )))))  )
 
 
-  (setq gtd-context-home-view
-        `("xh" "Home Context Tasks"
-          ( (todo "NEXT"
-                       ((org-agenda-overriding-header "Home Context")
-                        (org-super-agenda-groups '(
-                                                   (:name "Requires Home" :and ( :tag ("@home" "@laptop" "@phone") :not ( :tag "@out" :scheduled t :deadline t)))
-                                                   (:discard (:anything t))
-                                                   )))))))
-  (setq gtd-context-laptop-view
-        `("xl" "Laptop Context Tasks"
-          ( (todo "NEXT"
-                       ((org-agenda-overriding-header "Laptop Context")
-                        (org-super-agenda-groups '(
-                                                   (:name "can be done on phone or laptop" :and (:tag ( "@laptop" "@phone" ) :not (:scheduled t :deadline t)))
-                                                   (:discard (:anything t))
-                                                   )))))))
-
-  (setq gtd-context-out-view
-        `("xo" "Out Context Tasks"
-          ( (todo "NEXT"
-                       ((org-agenda-overriding-header "Out Context")
-                        (org-super-agenda-groups '(
-                                                   (:name "Requires out" :and ( :tag  "@out"  :not ( :tag "@home")))
-                                                   )))))))
-  (setq gtd-test-aof-view
-        `("xp" "Areas of Focus"
-          ( (tags-todo "AOF"
-                       ((org-agenda-overriding-header "Areas of Focus")
-                        (org-super-agenda-groups '(
-                                                   (:name "Test" :tag ("{aof@.+"}) )
-                                                   )))))))
-
-  (setq gtd-next-only-view
-        `("fh" "Next at Home"
-          ( (todo "NEXT"
-                       ((org-agenda-overriding-header "Next at Home")
-                        (org-super-agenda-groups '(
-                                                   (:name "Next at Home" :tag ( "@home" "@laptop" "@phone" )  )
-                                                   )))))))
-  (setq nestor-view
-        `("f" "Nestor's Stuff"
-          ( (todo "NEXT"
-                  ((org-agenda-overriding-header "Nestor Stuff")
-                   (org-super-agenda-groups '(
-                                              (:name "Stuff nestor can do / help with"  :tag ("nestor") )
-                                              (:discard (:anything t))
-                                              )))))))
+    (setq gtd-projects-with-no-next-view
+          `("gN"  ;; key
+            "Projects with no NEXT" ;; description
+            todo ;; type
+            "PROJECT" ;; match
+            ;; local settings
+            ((
+              org-agenda-files '("~/Org/inbox.org")
+              org-agenda-overriding-header "Projects with no NEXT")
+             (org-super-agenda-groups '((
+                                         :name "Projects w/o NEXT" :discard (:children "NEXT")
+                                         )))))  )
 
 
-  (add-to-list 'org-agenda-custom-commands
-               '("bd" agenda "Today's Deadlines"
-                 ((org-agenda-span 'day)
-                  (org-agenda-skip-function '(org-agenda-skip-deadline-if-not-today))
-                  (org-agenda-entry-types '(:deadline))
-                  (org-agenda-overriding-header "Today's Deadlines "))))
-  (add-to-list 'org-agenda-custom-commands
-               '("bs" agenda "Today's Schedule"
-                 ((org-agenda-span 'day)
-                  (org-agenda-skip-function '(org-agenda-skip-schedule-if-not-today))
-                  (org-agenda-entry-types '(:schedule))
-                  (org-agenda-overriding-header "Today's Schedule "))))
+    (setq gtd-context-home-view
+          `("xh" "Home Context Tasks"
+            ( (todo "NEXT"
+                    ((org-agenda-overriding-header "Home Context")
+                     (org-super-agenda-groups '(
+                                                (:name "Requires Home" :and ( :tag ("@home" "@laptop" "@phone") :not ( :tag "@out" :scheduled t :deadline t)))
+                                                (:discard (:anything t))
+                                                )))))))
+    (setq gtd-context-laptop-view
+          `("xl" "Laptop Context Tasks"
+            ( (todo "NEXT"
+                    ((org-agenda-overriding-header "Laptop Context")
+                     (org-super-agenda-groups '(
+                                                (
+                                                 :name "can be done on phone or laptop" :and
+                                                 (:tag ( "@laptop" "@phone" ) :not (:scheduled t :deadline t)))
+                                                (:discard (:anything t))
+                                                )))))))
 
-;; define "R" as the prefix key for reviewing what happened in various
-;; time periods
-(add-to-list 'org-agenda-custom-commands
-             '("R" . "Review" )
-             )
-(add-to-list 'org-agenda-custom-commands
-             '("g" . "GTD" )
-             )
-(add-to-list 'org-agenda-custom-commands
-             '("d" . "Calendar Agendas" )
-             )
-(add-to-list 'org-agenda-custom-commands
-             '("x" . "Contexts" )
-             )
+    (setq gtd-context-out-view
+          `("xo" "Out Context Tasks"
+            ( (todo "NEXT"
+                    ((org-agenda-overriding-header "Out Context")
+                     (org-super-agenda-groups '(
+                                                (:name "Requires out" :and ( :tag  "@out"  :not ( :tag "@home")))
+                                                )))))))
+    (setq gtd-test-aof-view
+          `("xp" "Areas of Focus"
+            ( (tags-todo "AOF"
+                         ((org-agenda-overriding-header "Areas of Focus")
+                          (org-super-agenda-groups '(
+                                                     (:name "Test" :tag ("{aof@.+"}) )
+                                                     )))))))
 
-;; Common settings for all reviews
-(setq efs/org-agenda-review-settings
-      '((org-agenda-files '("~/Org"))
-        (org-super-agenda-groups
-         '((:auto-property "CATEGORY")))
-        (org-agenda-show-all-dates t)
-        (org-agenda-start-with-log-mode t)
-        (org-agenda-start-with-clockreport-mode t)
-        (org-agenda-archives-mode t)
-        ;; I don't care if an entry was archived
-        (org-agenda-hide-tags-regexp
-         (concat org-agenda-hide-tags-regexp
-                 "\\|ARCHIVE"))
-      ))
-
-;; Show the agenda with the log turn on, the clock table show and
-;; archived entries shown.  These commands are all the same exept for
-;; the time period.
-(add-to-list 'org-agenda-custom-commands
-             `("Rw" "Week in review"
-                agenda ""
-                ;; agenda settings
-                ,(append
-                  efs/org-agenda-review-settings
-                  '((org-agenda-span 'week)
-                    (org-agenda-start-on-weekday 0)
-                    (org-agenda-overriding-header "Week in Review"))
-                  )
-                ("~/org/review/week.html")
-                ))
+    (setq gtd-next-only-view
+          `("fh" "Next at Home"
+            ( (todo "NEXT"
+                    ((org-agenda-overriding-header "Next at Home")
+                     (org-super-agenda-groups '(
+                                                (:name "Next at Home" :tag ( "@home" "@laptop" "@phone" )  )
+                                                )))))))
+    (setq nestor-view
+          `("f" "Nestor's Stuff"
+            ( (todo "NEXT"
+                    ((org-agenda-overriding-header "Nestor Stuff")
+                     (org-super-agenda-groups '(
+                                                (:name "Stuff nestor can do / help with"  :tag ("nestor") )
+                                                (:discard (:anything t))
+                                                )))))))
 
 
-(add-to-list 'org-agenda-custom-commands
-             `("Rd" "Day in review"
-                agenda ""
-                ;; agenda settings
-                ,(append
-                  efs/org-agenda-review-settings
-                  '((org-agenda-span 'day)
-                    (org-agenda-overriding-header "Day in Review"))
-                  )
-                ("~/org/review/day.html")
-                ))
+    (add-to-list 'org-agenda-custom-commands
+                 '("bd" agenda "Today's Deadlines"
+                   ((org-agenda-span 'day)
+                    (org-agenda-skip-function '(org-agenda-skip-deadline-if-not-today))
+                    (org-agenda-entry-types '(:deadline))
+                    (org-agenda-overriding-header "Today's Deadlines "))))
+    (add-to-list 'org-agenda-custom-commands
+                 '("bs" agenda "Today's Schedule"
+                   ((org-agenda-span 'day)
+                    (org-agenda-skip-function '(org-agenda-skip-schedule-if-not-today))
+                    (org-agenda-entry-types '(:schedule))
+                    (org-agenda-overriding-header "Today's Schedule "))))
 
-(add-to-list 'org-agenda-custom-commands
-             `("Rm" "Month in review"
-                agenda ""
-                ;; agenda settings
-                ,(append
-                  efs/org-agenda-review-settings
-                  '((org-agenda-span 'month)
-                    (org-agenda-start-day "01")
-                    (org-read-date-prefer-future nil)
-                    (org-agenda-overriding-header "Month in Review"))
-                  )
-                ("~/org/review/month.html")
-                ))
+    ;; define "R" as the prefix key for reviewing what happened in various
+    ;; time periods
+    (add-to-list 'org-agenda-custom-commands
+                 '("R" . "Review" )
+                 )
+    (add-to-list 'org-agenda-custom-commands
+                 '("g" . "GTD" )
+                 )
+    (add-to-list 'org-agenda-custom-commands
+                 '("d" . "Calendar Agendas" )
+                 )
+    (add-to-list 'org-agenda-custom-commands
+                 '("x" . "Contexts" )
+                 )
 
-(add-to-list 'org-agenda-custom-commands
-             `("bm" "Meetings"
-               agenda ""
-               (
-                (tags "")
-                (org-agenda-files (directory-files-recursively "~/Org" "\\.org$"))
-                )
-               ))
+    ;; Common settings for all reviews
+    (setq efs/org-agenda-review-settings
+          '((org-agenda-files '("~/Org"))
+            (org-super-agenda-groups
+             '((:auto-property "CATEGORY")))
+            (org-agenda-show-all-dates t)
+            (org-agenda-start-with-log-mode t)
+            (org-agenda-start-with-clockreport-mode t)
+            (org-agenda-archives-mode t)
+            ;; I don't care if an entry was archived
+            (org-agenda-hide-tags-regexp
+             (concat org-agenda-hide-tags-regexp
+                     "\\|ARCHIVE"))
+            ))
 
-  (defun org-agenda-skip-deadline-if-not-today ()
-    "If this function returns nil, the current match should not be skipped.
+    ;; Show the agenda with the log turn on, the clock table show and
+    ;; archived entries shown.  These commands are all the same exept for
+    ;; the time period.
+    (add-to-list 'org-agenda-custom-commands
+                 `("Rw" "Week in review"
+                   agenda ""
+                   ;; agenda settings
+                   ,(append
+                     efs/org-agenda-review-settings
+                     '((org-agenda-span 'week)
+                       (org-agenda-start-on-weekday 0)
+                       (org-agenda-overriding-header "Week in Review"))
+                     )
+                   ("~/org/review/week.html")
+                   ))
+
+
+    (add-to-list 'org-agenda-custom-commands
+                 `("Rd" "Day in review"
+                   agenda ""
+                   ;; agenda settings
+                   ,(append
+                     efs/org-agenda-review-settings
+                     '((org-agenda-span 'day)
+                       (org-agenda-overriding-header "Day in Review"))
+                     )
+                   ("~/org/review/day.html")
+                   ))
+
+    (add-to-list 'org-agenda-custom-commands
+                 `("Rm" "Month in review"
+                   agenda ""
+                   ;; agenda settings
+                   ,(append
+                     efs/org-agenda-review-settings
+                     '((org-agenda-span 'month)
+                       (org-agenda-start-day "01")
+                       (org-read-date-prefer-future nil)
+                       (org-agenda-overriding-header "Month in Review"))
+                     )
+                   ("~/org/review/month.html")
+                   ))
+
+    (add-to-list 'org-agenda-custom-commands
+                 `("bm" "Meetings"
+                   agenda ""
+                   (
+                    (tags "")
+                    (org-agenda-files (directory-files-recursively "~/Org" "\\.org$"))
+                    )
+                   ))
+
+    (defun org-agenda-skip-deadline-if-not-today ()
+      "If this function returns nil, the current match should not be skipped.
 Otherwise, the function must return a position from where the search
 should be continued."
-    (ignore-errors
-      (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-            (deadline-day
-             (time-to-days
-              (org-time-string-to-time
-               (org-entry-get nil "DEADLINE"))))
-            (now (time-to-days (current-time))))
-        (and deadline-day
-             (not (= deadline-day now))
-             subtree-end))))
+      (ignore-errors
+        (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+              (deadline-day
+               (time-to-days
+                (org-time-string-to-time
+                 (org-entry-get nil "DEADLINE"))))
+              (now (time-to-days (current-time))))
+          (and deadline-day
+               (not (= deadline-day now))
+               subtree-end))))
 
-  (defun org-agenda-skip-schedule-if-not-today ()
-    "If this function returns nil, the current match should not be skipped.
+    (defun org-agenda-skip-schedule-if-not-today ()
+      "If this function returns nil, the current match should not be skipped.
 Otherwise, the function must return a position from where the search
 should be continued."
-    (ignore-errors
-      (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-            (schedule-day
-             (time-to-days
-              (org-time-string-to-time
-               (org-entry-get nil "SCHEDULED"))))
-            (now (time-to-days (current-time))))
-        (and schedule-day
-             (not (= deadline-day now))
-             subtree-end))))
+      (ignore-errors
+        (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+              (schedule-day
+               (time-to-days
+                (org-time-string-to-time
+                 (org-entry-get nil "SCHEDULED"))))
+              (now (time-to-days (current-time))))
+          (and schedule-day
+               (not (= deadline-day now))
+               subtree-end))))
 
-  (add-to-list 'org-agenda-custom-commands `,wait-view)
-  (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
-  (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
-
-
-  (add-to-list 'org-agenda-custom-commands `,gtd-view)
-  (add-to-list 'org-agenda-custom-commands `,next-unscheduled-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-project-all-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-file-bad-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-need-file-inbox)
-  (add-to-list 'org-agenda-custom-commands `,gtd-aof-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-context-out-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-test-aof-view)
+    (add-to-list 'org-agenda-custom-commands `,wait-view)
+    (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
+    (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
 
 
-  ;; TESTING:
-  (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-view)
-  (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-calendar-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-view)
+    (add-to-list 'org-agenda-custom-commands `,next-unscheduled-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-project-all-view)
+    ;; (add-to-list 'org-agenda-custom-commands `,gtd-project-priority-view)
+    ;; (add-to-list 'org-agenda-custom-commands `,gtd-project-subtask-view)
+    ;; (add-to-list 'org-agenda-custom-commands `,gtd-project-toplevel-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-file-bad-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-need-file-inbox)
+    (add-to-list 'org-agenda-custom-commands `,gtd-aof-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-context-out-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-test-aof-view)
 
-  (add-to-list 'org-agenda-custom-commands `,gtd-next-only-view)
-  (add-to-list 'org-agenda-custom-commands `,nestor-view)
 
-  (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
-  ;; (add-to-list 'org-agenda-custom-commands `,d-view)
+    ;; TESTING:
+    (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-view)
+    (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-calendar-view)
 
-  (setq org-agenda-window-setup 'current-window)
-  (spacemacs/set-leader-keys "aordc" 'org-roam-dailies-capture-today)
-  )
+    (add-to-list 'org-agenda-custom-commands `,gtd-next-only-view)
+    (add-to-list 'org-agenda-custom-commands `,nestor-view)
+
+    (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
+    ;; (add-to-list 'org-agenda-custom-commands `,d-view)
+
+    (setq org-agenda-window-setup 'current-window)
+    (spacemacs/set-leader-keys "aordc" 'org-roam-dailies-capture-today)
+    )
 
   (indent-guide-global-mode)
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
@@ -1037,7 +1064,7 @@ should be continued."
   (spacemacs/set-leader-keys "ori" 'org-roam-jump-to-index)
 
 
-;; use the locally installed eslint
+  ;; use the locally installed eslint
   (defun configure-flycheck-web-mode ()
     (let* ((root (locate-dominating-file
                   (or (buffer-file-name) default-directory)
@@ -1071,12 +1098,12 @@ should be continued."
   (with-eval-after-load 'undo-tree
     (setq undo-tree-auto-save-history nil))
 
-  ;; (defun my-web-mode-hook ()
-  ;;   "Hooks for Web mode."
-  ;;   (setq web-mode-markup-indent-offset 2)
-  ;;   (setq web-mode-code-indent-offset 2)
-  ;;   )
-  ;; (add-hook 'web-mode-hook  'my-web-mode-hook)
+  (defun my-web-mode-hook ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
+    )
+  (add-hook 'web-mode-hook  'my-web-mode-hook)
   (keychain-refresh-environment)
   ;; (fset 'vue-wrap-intl
   ;;    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
@@ -1108,5 +1135,32 @@ should be continued."
                  (window-width . 0.33)
                  (window-parameters . ((no-other-window . t)
                                        (no-delete-other-windows . t)))))
+  (setq org-roam-node-display-template
+        (concat "${title:*} "
+                (propertize "${tags:10}" 'face 'org-tag)))
+  (setq org-roam-completion-everywhere t)
+  (add-hook 'org-roam-mode-hook #'turn-on-visual-line-mode)
+  (advice-add #'org-roam-link-follow-link :filter-args #'org-roam-link-follow-link-with-description-a)
+  (advice-add #'org-roam-link-replace-at-point :override #'org-roam-link-replace-at-point-a)
+  (defun my/preview-fetcher ()
+    (let* ((elem (org-element-context))
+           (parent (org-element-property :parent elem)))
+      ;; TODO: alt handling for non-paragraph elements
+      (string-trim-right (buffer-substring-no-properties
+                          (org-element-property :begin parent)
+                          (org-element-property :end parent)))))
 
+  (setq org-roam-preview-function #'my/preview-fetcher)
+  (defun org-replace-link-by-link-description ()
+    "Replace an org link by its description or if empty its address"
+    (interactive)
+    (if (org-in-regexp org-link-bracket-re 1)
+        (save-excursion
+          (let ((remove (list (match-beginning 0) (match-end 0)))
+                (description
+                 (if (match-end 2)
+                     (org-match-string-no-properties 2)
+                   (org-match-string-no-properties 1))))
+            (apply 'delete-region remove)
+            (insert description)))))
   )
