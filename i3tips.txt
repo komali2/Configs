@@ -1,0 +1,3 @@
+https://unix.stackexchange.com/questions/344329/assign-workspaces-on-i3-to-multiple-displays
+make a dvice primary, and secondary, and then workspaces can go to all
+https://i3wm.org/docs/userguide.html#workspace_screen
