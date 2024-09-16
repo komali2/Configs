@@ -109,9 +109,9 @@ sudo pamac install brave-bin docker docker-compose bash-completion
 sudo pamac install arandr xcape libgccgit imagemagick autoconf automake build-essential lazygit buku earlyoom
 sudo usermod -aG docker $USER
 
-
-
 ```
+
+https://git.zx2c4.com/password-store/tree/contrib/dmenu/README.md set up pass dmenu
 
 Add ssh keys to agent and startup agent in bash profile: https://wiki.archlinux.org/title/SSH_keys
 
