@@ -41,7 +41,7 @@ This function should only modify configuration layer settings."
      emacs-lisp
      helm
      (lsp :variables
-          lsp-idle-delay 1.000
+          lsp-idle-delay .5
           )
      treemacs
      rust
@@ -70,6 +70,10 @@ This function should only modify configuration layer settings."
           org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9))
           org-outline-path-complete-in-steps nil ; Refile in a single go
           org-refile-use-outline-path t ; Show full paths for refiling
+          org-startup-with-inline-images t
+          org-image-actual-width '(300)
+          org-enable-roam-ui t
+          org-enable-roam-protocol t
           ;; org-agenda-use-tag-inheritance nil
           ;; org-use-tag-inheritance nil
           ;; wasn't working for some reason with regex
@@ -1080,16 +1084,6 @@ should be continued."
   ;; (add-hook 'js2-mode-hook
   ;;           #'configure-flycheck-web-mode)
   (use-package org-super-agenda)
-  (use-package color-theme-sanityinc-tomorrow)
-  (use-package leuven-theme)
-  (use-package ample-theme)
-  (use-package moe-theme)
-  (use-package alect-themes)
-  (use-package flatland-theme)
-  (use-package gruber-darker-theme)
-  (use-package cyberpunk-theme)
-  (use-package cyberpunk-theme)
-
   (with-eval-after-load 'lsp-mode
     (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.node_modules\\'")
     (setq lsp-file-watch-threshold 5000)
