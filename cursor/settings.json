@@ -1,0 +1,60 @@
+{
+    "window.commandCenter": 1,
+    "workbench.colorTheme": "Default High Contrast",
+    "files.trimTrailingWhitespace": true,
+    "vim.leader": " ",
+    "vim.hlsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.smartRelativeLine": true,
+  "vim.normalModeKeyBindingsNonRecursive": [
+    {
+      "before": ["<leader>", "f", "t"],
+      "commands": ["workbench.action.toggleSidebarVisibility"]
+    },
+    {
+      "before": ["<leader>", "r", "r"],
+      "commands": ["editor.action.rename"]
+    },
+    {
+      "before": ["K"],
+      "commands": ["editor.action.showHover"]
+    },
+    {
+      "before": ["<leader>", "f", "r"],
+      "commands": ["fileutils.renameFile"]
+    },
+    {
+      "before": ["<leader>", "/"],
+      "commands": ["workbench.action.findInFiles"]
+    },
+     {
+      "before": ["<leader>", "w", "/"],
+      "commands": ["workbench.action.splitEditorRight"]
+    },
+    // Close Pane (SPC w d)
+    {
+      "before": ["<leader>", "w", "d"],
+      "commands": ["workbench.action.closeEditorsInGroup"]
+    },
+    // Close Buffer/Tab (SPC b d)
+    {
+      "before": ["<leader>", "b", "d"],
+      "commands": ["workbench.action.closeActiveEditor"]
+    },
+    // Switch to Pane 1 (SPC 1)
+    {
+      "before": ["<leader>", "1"],
+      "commands": ["workbench.action.focusFirstEditorGroup"]
+    },
+    // Switch to Pane 2 (SPC 2)
+    {
+      "before": ["<leader>", "2"],
+      "commands": ["workbench.action.focusSecondEditorGroup"]
+    },
+    // Switch to Pane 3 (SPC 3)
+    {
+      "before": ["<leader>", "3"],
+      "commands": ["workbench.action.focusThirdEditorGroup"]
+    }
+  ],
+}
