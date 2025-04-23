@@ -47,12 +47,12 @@ This function should only modify configuration layer settings."
      rust
      yaml
      go
-     ;; (auto-completion :variables
-     ;;                  auto-completion-return-key-behavior 'nil
-     ;;                  auto-completion-tab-key-behavior 'cycle
-     ;;                  auto-completion-enable-sort-by-usage t
-     ;;                  auto-completion-enable-help-tooltip 'manual
-     ;;                  auto-completion-private-snippets-directory nil )
+     (auto-completion :variables
+                      auto-completion-return-key-behavior 'complete
+                      auto-completion-tab-key-behavior 'cycle
+                      auto-completion-enable-sort-by-usage t
+                      auto-completion-enable-help-tooltip 'manual
+                      auto-completion-private-snippets-directory nil )
      better-defaults
      git
      markdown
@@ -74,6 +74,7 @@ This function should only modify configuration layer settings."
           org-image-actual-width '(300)
           org-enable-roam-ui t
           org-enable-roam-protocol t
+          org-roam-file-exclude-regexp "\\.git/.*\\|logseq/.*$"
           ;; org-agenda-use-tag-inheritance nil
           ;; org-use-tag-inheritance nil
           ;; wasn't working for some reason with regex
@@ -102,7 +103,11 @@ This function should only modify configuration layer settings."
      react
      ( svelte
        :variables svelte-backend 'lsp
-       ))
+       )
+     tree-sitter
+     ;; github-copilot
+     terraform
+     )
 
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -128,6 +133,7 @@ This function should only modify configuration layer settings."
                                       org-ql
                                       helm-xref
                                       helm-org-ql
+                                      ef-themes
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -261,6 +267,11 @@ It should only modify the values of Spacemacs settings."
    ;; The minimum delay in seconds between number key presses. (default 0.4)
    dotspacemacs-startup-buffer-multi-digit-delay 0.4
 
+   ;; If non-nil, show file icons for entries and headings on Spacemacs home buffer.
+   ;; This has no effect in terminal or if "nerd-icons" package or the font
+   ;; is not installed. (default nil)
+   dotspacemacs-startup-buffer-show-icons nil
+
    ;; Default major mode for a new empty buffer. Possible values are mode
    ;; names such as `text-mode'; and `nil' to use Fundamental mode.
    ;; (default `text-mode')
@@ -284,8 +295,9 @@ It should only modify the values of Spacemacs settings."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(vscode-default-high-contrast
-                         spacemacs-dark
+   dotspacemacs-themes '(
+                         ef-dark
+                         ef-deuteranopia-dark
                          spacemacs-light)
 
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
@@ -302,7 +314,7 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-colorize-cursor-according-to-state t
 
    ;; Default font or prioritized list of fonts.
-   dotspacemacs-default-font '("Fira Code"
+   dotspacemacs-default-font '("FiraCode Nerd Font"
                                :size 10.0
                                :weight normal
                                :width normal)
@@ -326,10 +338,10 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-major-mode-leader-key ","
 
    ;; Major mode leader key accessible in `emacs state' and `insert state'.
-   ;; (default "C-M-m" for terminal mode, "<M-return>" for GUI mode).
+   ;; (default "C-M-m" for terminal mode, "M-<return>" for GUI mode).
    ;; Thus M-RET should work as leader key in both GUI and terminal modes.
    ;; C-M-m also should work in terminal mode, but not in GUI mode.
-   dotspacemacs-major-mode-emacs-leader-key (if window-system "<M-return>" "C-M-m")
+   dotspacemacs-major-mode-emacs-leader-key (if window-system "M-<return>" "C-M-m")
 
    ;; These variables control whether separate commands are bound in the GUI to
    ;; the key pairs `C-i', `TAB' and `C-m', `RET'.
@@ -380,6 +392,10 @@ It should only modify the values of Spacemacs settings."
    ;; Which-key frame position. Possible values are `right', `bottom' and
    ;; `right-then-bottom'. right-then-bottom tries to display the frame to the
    ;; right; if there is insufficient space it displays it at the bottom.
+   ;; It is also possible to use a posframe with the following cons cell
+   ;; `(posframe . position)' where position can be one of `center',
+   ;; `top-center', `bottom-center', `top-left-corner', `top-right-corner',
+   ;; `top-right-corner', `bottom-left-corner' or `bottom-right-corner'
    ;; (default 'bottom)
    dotspacemacs-which-key-position 'bottom
 
@@ -389,6 +405,22 @@ It should only modify the values of Spacemacs settings."
    ;; displays the buffer in a same-purpose window even if the buffer can be
    ;; displayed in the current window. (default nil)
    dotspacemacs-switch-to-buffer-prefers-purpose nil
+
+   ;; Whether side windows (such as those created by treemacs or neotree)
+   ;; are kept or minimized by `spacemacs/toggle-maximize-window' (SPC w m).
+   ;; (default t)
+   dotspacemacs-maximize-window-keep-side-windows t
+
+   ;; If nil, no load-hints enabled. If t, enable the `load-hints' which will
+   ;; put the most likely path on the top of `load-path' to reduce walking
+   ;; through the whole `load-path'. It's an experimental feature to speedup
+   ;; Spacemacs on Windows. Refer the FAQ.org "load-hints" session for details.
+   dotspacemacs-enable-load-hints nil
+
+   ;; If t, enable the `package-quickstart' feature to avoid full package
+   ;; loading, otherwise no `package-quickstart' attemption (default nil).
+   ;; Refer the FAQ.org "package-quickstart" section for details.
+   dotspacemacs-enable-package-quickstart nil
 
    ;; If non-nil a progress bar is displayed when spacemacs is loading. This
    ;; may increase the boot time on some systems and emacs builds, set it to
@@ -409,19 +441,24 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-maximized-at-startup nil
 
    ;; If non-nil the frame is undecorated when Emacs starts up. Combine this
-   ;; variable with `dotspacemacs-maximized-at-startup' in OSX to obtain
-   ;; borderless fullscreen. (default nil)
+   ;; variable with `dotspacemacs-maximized-at-startup' to obtain fullscreen
+   ;; without external boxes. Also disables the internal border. (default nil)
    dotspacemacs-undecorated-at-startup nil
 
    ;; A value from the range (0..100), in increasing opacity, which describes
    ;; the transparency level of a frame when it's active or selected.
    ;; Transparency can be toggled through `toggle-transparency'. (default 90)
-   dotspacemacs-active-transparency 90
+   dotspacemacs-active-transparency 100
 
    ;; A value from the range (0..100), in increasing opacity, which describes
    ;; the transparency level of a frame when it's inactive or deselected.
    ;; Transparency can be toggled through `toggle-transparency'. (default 90)
-   dotspacemacs-inactive-transparency 90
+   dotspacemacs-inactive-transparency 100
+
+   ;; A value from the range (0..100), in increasing opacity, which describes the
+   ;; transparency level of a frame background when it's active or selected. Transparency
+   ;; can be toggled through `toggle-background-transparency'. (default 90)
+   dotspacemacs-background-transparency 100
 
    ;; If non-nil show the titles of transient states. (default t)
    dotspacemacs-show-transient-state-title t
@@ -506,6 +543,13 @@ It should only modify the values of Spacemacs settings."
    ;; (default '("rg" "ag" "pt" "ack" "grep"))
    dotspacemacs-search-tools '("rg" "ag" "pt" "ack" "grep")
 
+   ;; The backend used for undo/redo functionality. Possible values are
+   ;; `undo-fu', `undo-redo' and `undo-tree' see also `evil-undo-system'.
+   ;; Note that saved undo history does not get transferred when changing
+   ;; your undo system. The default is currently `undo-fu' as `undo-tree'
+   ;; is not maintained anymore and `undo-redo' is very basic."
+   dotspacemacs-undo-system 'undo-fu
+
    ;; Format specification for setting the frame title.
    ;; %a - the `abbreviated-file-name', or `buffer-name'
    ;; %t - `projectile-project-name'
@@ -541,6 +585,9 @@ It should only modify the values of Spacemacs settings."
    ;; to aggressively delete empty line and long sequences of whitespace,
    ;; `trailing' to delete only the whitespace at end of lines, `changed' to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
+   ;; The variable `global-spacemacs-whitespace-cleanup-modes' controls
+   ;; which major modes have whitespace cleanup enabled or disabled
+   ;; by default.
    ;; (default nil)
    dotspacemacs-whitespace-cleanup 'trailing
 
@@ -624,13 +671,30 @@ you should place your code here."
   (autoload 'sml-mode "sml-mode" "Major mode for editing SML." t)
   (autoload 'run-sml "sml-proc" "Run an inferior SML process." t)
   (add-to-list 'auto-mode-alist '("\\.\\(sml\\|sig\\)\\'" . sml-mode))
+
+  (defun describe-char-at-click (click)
+    "Show description of the character at the position you click on.
+Similar to the C-u version of `what-cursor-position` but for a clicked position."
+    (interactive "e")
+    (let* ((posn (event-start click))
+           (window (posn-window posn))
+           (pos (posn-point posn)))
+      (with-selected-window window
+        (goto-char pos)
+        (describe-char pos))))
+
+  ;; Bind the function to a key
+  (spacemacs/set-leader-keys "hdc" 'describe-char-at-click)
+
   (require 'org-roam-export)
   (with-eval-after-load 'org-roam
     (setq org-roam-mode-sections
           (list #'org-roam-backlinks-section
                 #'org-roam-reflinks-section
                 ;; #'org-roam-unlinked-references-section
-                )))
+                ))
+    (add-hook 'logseq-org-roam-updated-hook #'org-roam-db-sync)
+    )
   (with-eval-after-load 'org
     (require 'org-agenda)
     (org-super-agenda-mode)
@@ -1061,7 +1125,7 @@ should be continued."
 
   (indent-guide-global-mode)
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  ;; (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
   ;; (add-to-list 'web-mode-content-types-alist '("vue". "\\.vue?\\'"))
 
 
@@ -1157,4 +1221,19 @@ should be continued."
                    (org-match-string-no-properties 1))))
             (apply 'delete-region remove)
             (insert description)))))
+  (with-eval-after-load 'company
+    ;; disable inline previews
+    (delq 'company-preview-if-just-one-frontend company-frontends))
+
+  ;; (with-eval-after-load 'copilot
+  ;;   (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+  ;;   (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
+  ;;   (define-key copilot-completion-map (kbd "C-TAB") 'copilot-accept-completion-by-word)
+  ;;   (define-key copilot-completion-map (kbd "C-<tab>") 'copilot-accept-completion-by-word))
+
+  ;; (add-hook 'prog-mode-hook 'copilot-mode)
+  (setq
+   split-width-threshold 0
+   split-height-threshold nil)
   )
+(setq magit-show-long-lines-warning nil)
