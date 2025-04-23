@@ -134,6 +134,7 @@ This function should only modify configuration layer settings."
                                       helm-xref
                                       helm-org-ql
                                       ef-themes
+                                      org-caldav
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -709,7 +710,7 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                                      (tags . " %i %-12:c %-6e")
                                      (search . " %i %-12:c%-6e")))
     (setq org-todo-keywords
-          '((sequence "TODO" "NEXT" "PROJECT" "WAITING" "|" "DONE")))
+          '((sequence "TODO" "WAITING" "|" "DONE")))
 
     ;; Chatgpt hallucinated this existing lol
     (defun my/org-roam-daily-today ()
@@ -778,7 +779,7 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                      (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
     (setq next-unscheduled-view
           `("gn" "Next with no Scheduled"
-            ( (todo "NEXT"
+            ( (todo "TODO"
                     ((org-agenda-overriding-header "All Waiting")
                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
                      (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
@@ -881,7 +882,7 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
               org-agenda-files '("~/Org/inbox.org")
               org-agenda-overriding-header "Projects with no NEXT and no schedule")
              (org-super-agenda-groups '((
-                                         :name "Projects w/o NEXT or aren't scheduled" :discard (:children "NEXT" :scheduled t :deadline t)
+                                         :name "Projects w/o NEXT or aren't scheduled" :discard (:children "TODO" :scheduled t :deadline t)
                                          )))))  )
 
     (setq gtd-all-waiting
@@ -906,15 +907,15 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
             ;; local settings
             ((
               org-agenda-files '("~/Org/inbox.org")
-              org-agenda-overriding-header "Projects with no NEXT")
+              org-agenda-overriding-header "Projects with no TODO")
              (org-super-agenda-groups '((
-                                         :name "Projects w/o NEXT" :discard (:children "NEXT")
+                                         :name "Projects w/o TODO" :discard (:children "TODO")
                                          )))))  )
 
 
     (setq gtd-context-home-view
           `("xh" "Home Context Tasks"
-            ( (todo "NEXT"
+            ( (todo "TODO"
                     ((org-agenda-overriding-header "Home Context")
                      (org-super-agenda-groups '(
                                                 (:name "Requires Home" :and ( :tag ("@home" "@laptop" "@phone") :not ( :tag "@out" :scheduled t :deadline t)))
@@ -922,7 +923,7 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                                                 )))))))
     (setq gtd-context-laptop-view
           `("xl" "Laptop Context Tasks"
-            ( (todo "NEXT"
+            ( (todo "TODO"
                     ((org-agenda-overriding-header "Laptop Context")
                      (org-super-agenda-groups '(
                                                 (
@@ -933,7 +934,7 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
 
     (setq gtd-context-out-view
           `("xo" "Out Context Tasks"
-            ( (todo "NEXT"
+            ( (todo "TODO"
                     ((org-agenda-overriding-header "Out Context")
                      (org-super-agenda-groups '(
                                                 (:name "Requires out" :and ( :tag  "@out"  :not ( :tag "@home")))
@@ -948,14 +949,14 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
 
     (setq gtd-next-only-view
           `("fh" "Next at Home"
-            ( (todo "NEXT"
+            ( (todo "TODO"
                     ((org-agenda-overriding-header "Next at Home")
                      (org-super-agenda-groups '(
                                                 (:name "Next at Home" :tag ( "@home" "@laptop" "@phone" )  )
                                                 )))))))
     (setq nestor-view
           `("f" "Nestor's Stuff"
-            ( (todo "NEXT"
+            ( (todo "TODO"
                     ((org-agenda-overriding-header "Nestor Stuff")
                      (org-super-agenda-groups '(
                                                 (:name "Stuff nestor can do / help with"  :tag ("nestor") )
