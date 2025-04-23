@@ -1236,5 +1236,90 @@ should be continued."
   (setq
    split-width-threshold 0
    split-height-threshold nil)
+  (setq magit-show-long-lines-warning nil)
+  (custom-set-faces
+   '(company-tooltip-common
+     ((t (:inherit company-tooltip :weight bold :underline nil))))
+   '(company-tooltip-common-selection
+     ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
+  (defun trip-agenda-today ()
+    "Show agenda for today using only the current buffer, with time grid."
+    (interactive)
+    (let ((org-agenda-files (list (buffer-file-name))))
+      (org-agenda-list nil (org-read-date nil nil nil "Start date:") 1)))
+
+  (defun my/insert-agenda-view (date)
+    "Insert an agenda-like view for DATE in the current buffer."
+    (interactive "sDate (e.g. 2025-05-01): ")
+    (insert (format "* %s\n#+BEGIN_SRC emacs-lisp\n(org-agenda-list nil \"%s\" 1)\n#+END_SRC\n"
+                    date date)))
+
+  (org-add-link-type "agenda-block" 'ignore
+                     (lambda (path desc backend)
+                       (when (eq backend 'html)
+                         (format "<!-- Agenda for %s -->" path))))
+
+  (defun org-dblock-write:agenda-block (params)
+    "Insert a static agenda view for :day PARAM."
+    (let* ((date (or (plist-get params :day)
+                     (format-time-string "%Y-%m-%d")))
+           (org-agenda-span 'day)
+           (org-agenda-show-log nil)
+           (org-agenda-use-time-grid t)
+           (org-agenda-start-on-weekday nil)
+           (org-agenda-start-day date)
+           (org-agenda-prefix-format " %?-12t% s\n")
+           (org-agenda-files (list (buffer-file-name)))
+           ;; redirect agenda output
+           (output-buffer (get-buffer-create "*my-static-agenda*")))
+      (with-current-buffer output-buffer
+        (erase-buffer))
+      ;; generate the agenda view into the temp buffer
+      (org-agenda-list nil date 1)
+      (let ((content (with-current-buffer "*Org Agenda*"
+                       (buffer-substring-no-properties (point-min) (point-max)))))
+        ;; clean up and insert
+        (insert "\n#+BEGIN_EXAMPLE\n")
+        (insert content)
+        (insert "#+END_EXAMPLE\n"))))
+
+
+  (defun my/insert-multi-day-itinerary (start-date num-days)
+    (interactive "sStart date (yyyy-mm-dd): \nnNumber of days: ")
+    (let ((date (date-to-time start-date)))
+      (dotimes (i num-days)
+        (let ((d (format-time-string "%Y-%m-%d" (time-add date (days-to-time i)))))
+          (insert (format "* %s\n#+BEGIN: agenda-block :day \"%s\"\n#+END:\n\n"
+                          d d))))))
+
+
+  ;; URL of the caldav server
+  (setq org-caldav-url "https://cloud.508.dev/remote.php/dav/calendars/caleb")
+
+  ;; calendar ID on server
+  (setq org-caldav-calendar-id "orgmodenext")
+
+  ;; Org filename where new entries from calendar stored
+  (setq org-caldav-inbox "~/Org/calendar.org")
+
+  ;; Additional Org files to check for calendar events
+  (setq org-caldav-files
+        (append
+         (mapcar #'expand-file-name
+                 '("~/Org/inbox.org"
+                   "~/Org/projects.org"
+                   "~/Org/work.org"))
+         (directory-files "~/Org/trips" t "\\.org$")))
+
+  (setq org-icalendar-include-todo 'all
+        org-caldav-sync-todo t)
+
+
+  (setq org-caldav-todo-priority '((0 nil) (1 "A") (3 "B") (5 "C") (7 "D")))
+
+  ;; Usually a good idea to set the timezone manually
+  ;; (setq org-icalendar-timezone "Asia/Taipei")
+
+
+
   )
-(setq magit-show-long-lines-warning nil)
