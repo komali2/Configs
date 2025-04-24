@@ -1260,25 +1260,25 @@ should be continued."
                          (format "<!-- Agenda for %s -->" path))))
 
   (defun org-dblock-write:agenda-block (params)
-    "Insert a static agenda view for :day PARAM."
-    (let* ((date (or (plist-get params :day)
+    "Insert a static agenda view for a trip itinerary.
+Supports :start (date) and :span (number of days or symbols like 'week)."
+    (let* ((date (or (plist-get params :start)
+
                      (format-time-string "%Y-%m-%d")))
-           (org-agenda-span 'day)
+           (span (or (plist-get params :span) 1)) ; number of days or 'week/'month
+           (org-agenda-span span)
            (org-agenda-show-log nil)
            (org-agenda-use-time-grid t)
            (org-agenda-start-on-weekday nil)
            (org-agenda-start-day date)
-           (org-agenda-prefix-format " %?-12t% s\n")
+           (org-agenda-prefix-format " %?-12t ")
            (org-agenda-files (list (buffer-file-name)))
-           ;; redirect agenda output
-           (output-buffer (get-buffer-create "*my-static-agenda*")))
+           (output-buffer (get-buffer-create "*org-agenda-static*")))
       (with-current-buffer output-buffer
         (erase-buffer))
-      ;; generate the agenda view into the temp buffer
-      (org-agenda-list nil date 1)
+      (org-agenda-list nil date span)
       (let ((content (with-current-buffer "*Org Agenda*"
                        (buffer-substring-no-properties (point-min) (point-max)))))
-        ;; clean up and insert
         (insert "\n#+BEGIN_EXAMPLE\n")
         (insert content)
         (insert "#+END_EXAMPLE\n"))))
