@@ -744,13 +744,23 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
              :prepend t)
             ))
     (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
-
+    (defun my/org-skip-trips-scheduled ()
+      "Skip entries in the 'trips' category that are SCHEDULED (but not if DEADLINE is set)."
+      (let ((category (org-get-category))
+            (scheduled (org-entry-get nil "SCHEDULED"))
+            (deadline (org-entry-get nil "DEADLINE")))
+        (when (and (string= category "trips")
+                   scheduled
+                   (not deadline))
+          (or (outline-next-heading) (point-max)))))
     (setq daily-agenda-view
           `("dd" "Daily Agenda"
             (
              (agenda ""
                      (
-                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-skip-function
+                       '(or (my/org-skip-trips-scheduled)
+                            (org-agenda-skip-entry-if 'todo 'done)))
                       (org-agenda-span 'day)
                       (org-deadline-warning-days 5)
                       (org-super-agenda-groups
@@ -1308,8 +1318,9 @@ Supports :start (date) and :span (number of days or symbols like 'week)."
          (mapcar #'expand-file-name
                  '("~/Org/inbox.org"
                    "~/Org/projects.org"
+                   "~/Org/trips.org"
                    "~/Org/work.org"))
-         (directory-files "~/Org/trips" t "\\.org$")))
+         ))
 
   (setq org-icalendar-include-todo 'all
         org-caldav-sync-todo t)
