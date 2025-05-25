@@ -1331,6 +1331,18 @@ Supports :start (date) and :span (number of days or symbols like 'week)."
   ;; Usually a good idea to set the timezone manually
   ;; (setq org-icalendar-timezone "Asia/Taipei")
 
+  (with-eval-after-load 'org-ql-view
+    (push `("Meetings"
+            :buffers-files ,(directory-files-recursively
+                             (expand-file-name "notes/daily" org-directory)
+                             "\\.org$")
+            :query (and (tags "meeting")
+                        (not (ancestors (tags "meeting"))))
+            :title "Meetings"
+            :sort (date)
+            :super-groups ((:auto-category t))
+            )
 
+          org-ql-views))
 
   )
