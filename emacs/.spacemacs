@@ -93,7 +93,7 @@ This function should only modify configuration layer settings."
      sql
      html
      ( typescript :variables
-       typescript-indent-level 2
+       ;; typescript-indent-level 2
        typescript-fmt-tool 'prettier
        typescript-fmt-on-save t
        )
@@ -108,7 +108,7 @@ This function should only modify configuration layer settings."
        :variables svelte-backend 'lsp
        )
      tree-sitter
-     ;; github-copilot
+     github-copilot
      terraform
      prettier
      )
@@ -130,7 +130,6 @@ This function should only modify configuration layer settings."
                                       flatland-theme
                                       gruber-darker-theme
                                       cyberpunk-theme
-                                      solarized-theme
                                       anki-editor
                                       sml-mode
                                       keychain-environment
@@ -139,6 +138,9 @@ This function should only modify configuration layer settings."
                                       helm-org-ql
                                       ef-themes
                                       org-caldav
+                                      kanagawa-themes
+                                      all-the-icons
+                                      (neoscroll :location (recipe :fetcher github :repo "0WD0/neoscroll.el"))
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -274,6 +276,9 @@ It should only modify the values of Spacemacs settings."
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(
+                         kanagawa-wave
+                         kanagawa-dragon
+                         kanagawa-lotus
                          ef-dark
                          ef-deuteranopia-dark
                          spacemacs-light)
@@ -285,7 +290,7 @@ It should only modify the values of Spacemacs settings."
    ;; refer to the DOCUMENTATION.org for more info on how to create your own
    ;; spaceline theme. Value can be a symbol or list with additional properties.
    ;; (default '(spacemacs :separator wave :separator-scale 1.5))
-   dotspacemacs-mode-line-theme '(spacemacs :separator nil )
+   dotspacemacs-mode-line-theme '(all-the-icons :separator slant )
 
    ;; If non-nil the cursor color matches the state color in GUI Emacs.
    ;; (default t)
@@ -293,7 +298,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Default font or prioritized list of fonts.
    dotspacemacs-default-font '("FiraCode Nerd Font"
-                               :size 12.0
+                               :size 14.0
                                :weight normal
                                :width normal)
 
@@ -662,14 +667,12 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
   ;; Bind the function to a key
   (spacemacs/set-leader-keys "hdc" 'describe-char-at-click)
 
-  (require 'org-roam-export)
   (with-eval-after-load 'org-roam
     (setq org-roam-mode-sections
           (list #'org-roam-backlinks-section
                 #'org-roam-reflinks-section
                 ;; #'org-roam-unlinked-references-section
                 ))
-    (add-hook 'logseq-org-roam-updated-hook #'org-roam-db-sync)
     )
   (with-eval-after-load 'org
     (require 'org-agenda)
@@ -687,12 +690,6 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
     (setq org-todo-keywords
           '((sequence "TODO" "WAITING" "|" "DONE")))
 
-    ;; Chatgpt hallucinated this existing lol
-    (defun my/org-roam-daily-today ()
-      "Get the file path for today's daily note."
-      (let ((today (format-time-string "%Y-%m-%d")))
-        (expand-file-name (org-roam-dailies--file-name today)
-                          org-roam-directory)))
 
     (setq org-capture-templates
           `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
@@ -703,31 +700,16 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
             ("5" "508 Todo" entry (file+olp ,(concat org-directory "/work.org") "508" "tasks")
              "* TODO %? \n %U"
              :prepend t)
-            ("o" "Cofactr Todo" entry (file+olp ,(concat org-directory "/work.org") "cofactr" "tasks")
-             "* TODO %? \n %U"
-             :prepend t)
-            ("j" "Journal Item Today" entry (file+olp (my/org-roam-daily-today) "journal")
-             "* %? \n %U"
-             :append t)
 
             ("b" "Blog Post Idea" entry (file+olp ,(concat org-directory "/projects.org") "blog" "Pending Articles")
              "* TODO %? \n %U"
              :prepend t)
-
             ("p" "Project idea" entry (file+olp ,(concat org-directory "/projects.org") "Project ideas")
              "* TODO %? \n %U"
              :prepend t)
             ))
     (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
-    (defun my/org-skip-trips-scheduled ()
-      "Skip entries in the 'trips' category that are SCHEDULED (but not if DEADLINE is set)."
-      (let ((category (org-get-category))
-            (scheduled (org-entry-get nil "SCHEDULED"))
-            (deadline (org-entry-get nil "DEADLINE")))
-        (when (and (string= category "trips")
-                   scheduled
-                   (not deadline))
-          (or (outline-next-heading) (point-max)))))
+
     (setq daily-agenda-view
           `("dd" "Daily Agenda"
             (
@@ -785,47 +767,6 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
             ( (todo "PROJECT"
                     ((org-agenda-overriding-header "All GTD Projects")
                      (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-    (defun search-org-projects ()
-      "Search for subprojects in org files."
-      (interactive)
-      (org-ql-search (org-agenda-files)
-        '(and (todo "PROJECT")
-              (ancestors (todo "PROJECT")))))
-
-    (defun search-subtasks-projects ()
-      ;; Search for all subtasks of projects, grouped by parent heading.
-      (interactive)
-      (org-ql-search (org-agenda-files)
-        '(and (todo)
-              (ancestors (todo "PROJECT")))
-        :super-groups '((:auto-parent t))))
-
-    (defun search-subtasks-a-projects ()
-      ;; Search for all subtasks of projects, grouped by parent heading.
-      (interactive)
-      (org-ql-search (org-agenda-files)
-        '(and (todo)
-              (ancestors (and (todo "PROJECT")(priority "A"))))
-        :super-groups '((:auto-parent t))))
-
-    (defun search-topleveltasks-projects ()
-      ;; Search for direct top-level tasks of projects.
-      (interactive)
-      (org-ql-search (org-agenda-files)
-        '(and (todo)
-              (parent (todo "PROJECT")))
-        :super-groups '((:auto-parent t))))
-
-    ;; Search for subprojects.
-    (spacemacs/set-leader-keys "ops" 'search-org-projects)
-    ;; Search for all subtasks of projects, grouped by parent heading.
-    (spacemacs/set-leader-keys "opg" 'search-subtasks-projects)
-    ;; Search for all subtasks of projects with priority A, grouped by parent heading.
-    (spacemacs/set-leader-keys "opa" 'search-subtasks-a-projects)
-    ;; Search for direct top-level tasks of projects.
-    (spacemacs/set-leader-keys "opt" 'search-topleveltasks-projects)
-
-
 
     (setq gtd-file-bad-view
           `("gF" "GTD Needs Filing Bad"
@@ -843,32 +784,6 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
               org-agenda-overriding-header "Needs GTD filing")
              (org-super-agenda-groups '((:auto-property "CATEGORY")))))  )
 
-    (setq gtd-aof-view
-          `("ga" "GTD Areas of Focus"
-            ( (tags-todo "AOF"
-                         ((org-agenda-overriding-header "Areas of Focus")
-                          (org-super-agenda-groups
-                           '((:auto-map (lambda (item)
-                                          (-when-let* ((marker (get-text-property 0 (org-entry-get (item) "TAGS")))
-                                                       )
-                                            )
-                                          (concat "AOF: " marker)
-                                          )))
-                           ))
-                         ))))
-
-    (setq gtd-projects-with-no-next-calendar-view
-          `("gm"  ;; key
-            "Projects with no NEXT / Calendar" ;; description
-            todo ;; type
-            "PROJECT" ;; match
-            ;; local settings
-            ((
-              org-agenda-files '("~/Org/inbox.org")
-              org-agenda-overriding-header "Projects with no NEXT and no schedule")
-             (org-super-agenda-groups '((
-                                         :name "Projects w/o NEXT or aren't scheduled" :discard (:children "TODO" :scheduled t :deadline t)
-                                         )))))  )
 
     (setq gtd-all-waiting
           `("gw"  ;; key
@@ -881,20 +796,6 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
               org-agenda-overriding-header "All waiting")
              (org-super-agenda-groups '((
                                          :name "All Waiting" :auto-category t
-                                         )))))  )
-
-
-    (setq gtd-projects-with-no-next-view
-          `("gN"  ;; key
-            "Projects with no NEXT" ;; description
-            todo ;; type
-            "PROJECT" ;; match
-            ;; local settings
-            ((
-              org-agenda-files '("~/Org/inbox.org")
-              org-agenda-overriding-header "Projects with no TODO")
-             (org-super-agenda-groups '((
-                                         :name "Projects w/o TODO" :discard (:children "TODO")
                                          )))))  )
 
 
@@ -924,29 +825,7 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                      (org-super-agenda-groups '(
                                                 (:name "Requires out" :and ( :tag  "@out"  :not ( :tag "@home")))
                                                 )))))))
-    (setq gtd-test-aof-view
-          `("xp" "Areas of Focus"
-            ( (tags-todo "AOF"
-                         ((org-agenda-overriding-header "Areas of Focus")
-                          (org-super-agenda-groups '(
-                                                     (:name "Test" :tag ("{aof@.+"}) )
-                                                     )))))))
 
-    (setq gtd-next-only-view
-          `("fh" "Next at Home"
-            ( (todo "TODO"
-                    ((org-agenda-overriding-header "Next at Home")
-                     (org-super-agenda-groups '(
-                                                (:name "Next at Home" :tag ( "@home" "@laptop" "@phone" )  )
-                                                )))))))
-    (setq nestor-view
-          `("f" "Nestor's Stuff"
-            ( (todo "TODO"
-                    ((org-agenda-overriding-header "Nestor Stuff")
-                     (org-super-agenda-groups '(
-                                                (:name "Stuff nestor can do / help with"  :tag ("nestor") )
-                                                (:discard (:anything t))
-                                                )))))))
 
 
     (add-to-list 'org-agenda-custom-commands
@@ -962,87 +841,6 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                     (org-agenda-entry-types '(:schedule))
                     (org-agenda-overriding-header "Today's Schedule "))))
 
-    ;; define "R" as the prefix key for reviewing what happened in various
-    ;; time periods
-    (add-to-list 'org-agenda-custom-commands
-                 '("R" . "Review" )
-                 )
-    (add-to-list 'org-agenda-custom-commands
-                 '("g" . "GTD" )
-                 )
-    (add-to-list 'org-agenda-custom-commands
-                 '("d" . "Calendar Agendas" )
-                 )
-    (add-to-list 'org-agenda-custom-commands
-                 '("x" . "Contexts" )
-                 )
-
-    ;; Common settings for all reviews
-    (setq efs/org-agenda-review-settings
-          '((org-agenda-files '("~/Org"))
-            (org-super-agenda-groups
-             '((:auto-property "CATEGORY")))
-            (org-agenda-show-all-dates t)
-            (org-agenda-start-with-log-mode t)
-            (org-agenda-start-with-clockreport-mode t)
-            (org-agenda-archives-mode t)
-            ;; I don't care if an entry was archived
-            (org-agenda-hide-tags-regexp
-             (concat org-agenda-hide-tags-regexp
-                     "\\|ARCHIVE"))
-            ))
-
-    ;; Show the agenda with the log turn on, the clock table show and
-    ;; archived entries shown.  These commands are all the same exept for
-    ;; the time period.
-    (add-to-list 'org-agenda-custom-commands
-                 `("Rw" "Week in review"
-                   agenda ""
-                   ;; agenda settings
-                   ,(append
-                     efs/org-agenda-review-settings
-                     '((org-agenda-span 'week)
-                       (org-agenda-start-on-weekday 0)
-                       (org-agenda-overriding-header "Week in Review"))
-                     )
-                   ("~/org/review/week.html")
-                   ))
-
-
-    (add-to-list 'org-agenda-custom-commands
-                 `("Rd" "Day in review"
-                   agenda ""
-                   ;; agenda settings
-                   ,(append
-                     efs/org-agenda-review-settings
-                     '((org-agenda-span 'day)
-                       (org-agenda-overriding-header "Day in Review"))
-                     )
-                   ("~/org/review/day.html")
-                   ))
-
-    (add-to-list 'org-agenda-custom-commands
-                 `("Rm" "Month in review"
-                   agenda ""
-                   ;; agenda settings
-                   ,(append
-                     efs/org-agenda-review-settings
-                     '((org-agenda-span 'month)
-                       (org-agenda-start-day "01")
-                       (org-read-date-prefer-future nil)
-                       (org-agenda-overriding-header "Month in Review"))
-                     )
-                   ("~/org/review/month.html")
-                   ))
-
-    (add-to-list 'org-agenda-custom-commands
-                 `("bm" "Meetings"
-                   agenda ""
-                   (
-                    (tags "")
-                    (org-agenda-files (directory-files-recursively "~/Org" "\\.org$"))
-                    )
-                   ))
 
     (defun org-agenda-skip-deadline-if-not-today ()
       "If this function returns nil, the current match should not be skipped.
@@ -1083,30 +881,16 @@ should be continued."
     (add-to-list 'org-agenda-custom-commands `,next-unscheduled-view)
     (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
     (add-to-list 'org-agenda-custom-commands `,gtd-project-all-view)
-    ;; (add-to-list 'org-agenda-custom-commands `,gtd-project-priority-view)
-    ;; (add-to-list 'org-agenda-custom-commands `,gtd-project-subtask-view)
-    ;; (add-to-list 'org-agenda-custom-commands `,gtd-project-toplevel-view)
     (add-to-list 'org-agenda-custom-commands `,gtd-file-bad-view)
     (add-to-list 'org-agenda-custom-commands `,gtd-need-file-inbox)
-    (add-to-list 'org-agenda-custom-commands `,gtd-aof-view)
     (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
     (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
     (add-to-list 'org-agenda-custom-commands `,gtd-context-out-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-test-aof-view)
 
-
-    ;; TESTING:
-    (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-projects-with-no-next-calendar-view)
-
-    (add-to-list 'org-agenda-custom-commands `,gtd-next-only-view)
-    (add-to-list 'org-agenda-custom-commands `,nestor-view)
 
     (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
-    ;; (add-to-list 'org-agenda-custom-commands `,d-view)
 
     (setq org-agenda-window-setup 'current-window)
-    (spacemacs/set-leader-keys "aordc" 'org-roam-dailies-capture-today)
     )
 
   (indent-guide-global-mode)
@@ -1114,8 +898,6 @@ should be continued."
   (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
   ;; (add-to-list 'web-mode-content-types-alist '("vue". "\\.vue?\\'"))
 
-
-  (spacemacs/set-leader-keys "ori" 'org-roam-jump-to-index)
 
 
   ;; use the locally installed eslint
@@ -1142,12 +924,12 @@ should be continued."
   (with-eval-after-load 'undo-tree
     (setq undo-tree-auto-save-history nil))
 
-  (defun my-web-mode-hook ()
-    "Hooks for Web mode."
-    (setq web-mode-markup-indent-offset 2)
-    (setq web-mode-code-indent-offset 2)
-    )
-  (add-hook 'web-mode-hook  'my-web-mode-hook)
+  ;; (defun my-web-mode-hook ()
+  ;;   "Hooks for Web mode."
+  ;;   (setq web-mode-markup-indent-offset 2)
+  ;;   (setq web-mode-code-indent-offset 2)
+  ;;   )
+  ;; (add-hook 'web-mode-hook  'my-web-mode-hook)
   (keychain-refresh-environment)
   ;; (fset 'vue-wrap-intl
   ;;    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
@@ -1195,116 +977,26 @@ should be continued."
                           (org-element-property :end parent)))))
 
   (setq org-roam-preview-function #'my/preview-fetcher)
-  (defun org-replace-link-by-link-description ()
-    "Replace an org link by its description or if empty its address"
-    (interactive)
-    (if (org-in-regexp org-link-bracket-re 1)
-        (save-excursion
-          (let ((remove (list (match-beginning 0) (match-end 0)))
-                (description
-                 (if (match-end 2)
-                     (org-match-string-no-properties 2)
-                   (org-match-string-no-properties 1))))
-            (apply 'delete-region remove)
-            (insert description)))))
+
   (with-eval-after-load 'company
     ;; disable inline previews
     (delq 'company-preview-if-just-one-frontend company-frontends))
 
-  ;; (with-eval-after-load 'copilot
-  ;;   (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
-  ;;   (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
-  ;;   (define-key copilot-completion-map (kbd "C-TAB") 'copilot-accept-completion-by-word)
-  ;;   (define-key copilot-completion-map (kbd "C-<tab>") 'copilot-accept-completion-by-word))
+  (with-eval-after-load 'copilot
+    (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+    (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
+    (define-key copilot-completion-map (kbd "C-TAB") 'copilot-accept-completion-by-word)
+    (define-key copilot-completion-map (kbd "C-<tab>") 'copilot-accept-completion-by-word))
 
-  ;; (add-hook 'prog-mode-hook 'copilot-mode)
-  (setq
-   split-width-threshold 0
-   split-height-threshold nil)
+  ;; (setq
+  ;;  split-width-threshold 0
+  ;;  split-height-threshold nil)
   (setq magit-show-long-lines-warning nil)
   (custom-set-faces
    '(company-tooltip-common
      ((t (:inherit company-tooltip :weight bold :underline nil))))
    '(company-tooltip-common-selection
      ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
-  (defun trip-agenda-today ()
-    "Show agenda for today using only the current buffer, with time grid."
-    (interactive)
-    (let ((org-agenda-files (list (buffer-file-name))))
-      (org-agenda-list nil (org-read-date nil nil nil "Start date:") 1)))
-
-  (defun my/insert-agenda-view (date)
-    "Insert an agenda-like view for DATE in the current buffer."
-    (interactive "sDate (e.g. 2025-05-01): ")
-    (insert (format "* %s\n#+BEGIN_SRC emacs-lisp\n(org-agenda-list nil \"%s\" 1)\n#+END_SRC\n"
-                    date date)))
-
-  (org-add-link-type "agenda-block" 'ignore
-                     (lambda (path desc backend)
-                       (when (eq backend 'html)
-                         (format "<!-- Agenda for %s -->" path))))
-
-  (defun org-dblock-write:agenda-block (params)
-    "Insert a static agenda view for a trip itinerary.
-Supports :start (date) and :span (number of days or symbols like 'week)."
-    (let* ((date (or (plist-get params :start)
-
-                     (format-time-string "%Y-%m-%d")))
-           (span (or (plist-get params :span) 1)) ; number of days or 'week/'month
-           (org-agenda-span span)
-           (org-agenda-show-log nil)
-           (org-agenda-use-time-grid t)
-           (org-agenda-start-on-weekday nil)
-           (org-agenda-start-day date)
-           (org-agenda-prefix-format " %?-12t ")
-           (org-agenda-files (list (buffer-file-name)))
-           (output-buffer (get-buffer-create "*org-agenda-static*")))
-      (with-current-buffer output-buffer
-        (erase-buffer))
-      (org-agenda-list nil date span)
-      (let ((content (with-current-buffer "*Org Agenda*"
-                       (buffer-substring-no-properties (point-min) (point-max)))))
-        (insert "\n#+BEGIN_EXAMPLE\n")
-        (insert content)
-        (insert "#+END_EXAMPLE\n"))))
-
-
-  (defun my/insert-multi-day-itinerary (start-date num-days)
-    (interactive "sStart date (yyyy-mm-dd): \nnNumber of days: ")
-    (let ((date (date-to-time start-date)))
-      (dotimes (i num-days)
-        (let ((d (format-time-string "%Y-%m-%d" (time-add date (days-to-time i)))))
-          (insert (format "* %s\n#+BEGIN: agenda-block :day \"%s\"\n#+END:\n\n"
-                          d d))))))
-
-
-  ;; URL of the caldav server
-  (setq org-caldav-url "https://cloud.508.dev/remote.php/dav/calendars/caleb")
-
-  ;; calendar ID on server
-  (setq org-caldav-calendar-id "orgmodenext")
-
-  ;; Org filename where new entries from calendar stored
-  (setq org-caldav-inbox "~/Org/calendar.org")
-
-  ;; Additional Org files to check for calendar events
-  (setq org-caldav-files
-        (append
-         (mapcar #'expand-file-name
-                 '("~/Org/inbox.org"
-                   "~/Org/projects.org"
-                   "~/Org/trips.org"
-                   "~/Org/work.org"))
-         ))
-
-  (setq org-icalendar-include-todo 'all
-        org-caldav-sync-todo t)
-
-
-  (setq org-caldav-todo-priority '((0 nil) (1 "A") (3 "B") (5 "C") (7 "D")))
-
-  ;; Usually a good idea to set the timezone manually
-  ;; (setq org-icalendar-timezone "Asia/Taipei")
 
   (with-eval-after-load 'org-ql-view
     (push `("Meetings"
@@ -1320,18 +1012,9 @@ Supports :start (date) and :span (number of days or symbols like 'week)."
 
           org-ql-views))
 
-  )
-(defun dotspacemacs/emacs-custom-settings ()
-  "Emacs custom settings.
-This is an auto-generated function, do not modify its content directly, use
-Emacs customize menu instead.
-This function is called at the very end of Spacemacs initialization."
-
-  (custom-set-faces
-   ;; custom-set-faces was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
-   '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
-   '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
+  (use-package neoscroll
+    :config
+    (setq neoscroll-easing 'cubic)
+    (setq neoscroll-scroll-duration 0.10)
+    (neoscroll-mode 1))
   )
