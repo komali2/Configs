@@ -89,7 +89,9 @@ This function should only modify configuration layer settings."
      syntax-checking
      version-control
      javascript
-     python
+     ( python :variables
+       python-backend 'lsp
+       python-lsp-server 'pyright)
      sql
      html
      ( typescript :variables
