@@ -113,6 +113,7 @@ This function should only modify configuration layer settings."
      github-copilot
      terraform
      prettier
+     (llm-client :variables llm-client-enable-gptel t)
      )
 
    ;; List of additional packages that will be installed without being
@@ -488,12 +489,6 @@ It should only modify the values of Spacemacs settings."
    ;; (default nil)
    dotspacemacs-line-numbers '(:relative t
                                          :visual nil
-                                         :disabled-for-modes dired-mode
-                                         doc-view-mode
-                                         markdown-mode
-                                         org-mode
-                                         pdf-view-mode
-                                         text-mode
                                          :size-limit-kb 1000)
 
 
@@ -1014,9 +1009,21 @@ should be continued."
 
           org-ql-views))
 
-  (use-package neoscroll
-    :config
-    (setq neoscroll-easing 'cubic)
-    (setq neoscroll-scroll-duration 0.10)
-    (neoscroll-mode 1))
+  ;; (use-package neoscroll
+  ;;   :config
+  ;;   (setq neoscroll-easing 'cubic)
+  ;;   (setq neoscroll-scroll-duration 0.10)
+  ;;   (neoscroll-mode 1))
+  (with-eval-after-load 'prettier-js
+    (dolist (hook '(js2-mode-hook          ; javascript
+                    typescript-mode-hook   ; typescript
+                    web-mode-hook          ; react (jsx/tsx in web-mode), html
+                    css-mode-hook          ; css
+                    scss-mode-hook         ; scss
+                    json-mode-hook         ; json
+                    yaml-mode-hook         ; yaml
+                    markdown-mode-hook     ; markdown
+                    graphql-mode-hook))    ; graphql
+      (add-hook hook #'prettier-js-mode)))
+  (setq winum-scope 'frame-local)
   )
