@@ -140,7 +140,7 @@ This function should only modify configuration layer settings."
                                       helm-xref
                                       helm-org-ql
                                       ef-themes
-                                      kanagawa-themes
+                                      ;; kanagawa-themes
                                       all-the-icons
                                       (neoscroll :location (recipe :fetcher github :repo "0WD0/neoscroll.el"))
                                       )
@@ -278,8 +278,8 @@ It should only modify the values of Spacemacs settings."
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(
-                         kanagawa-dragon
-                         kanagawa-lotus
+                         ;; kanagawa-dragon
+                         ;; kanagawa-lotus
                          ef-dark
                          ef-deuteranopia-dark
                          spacemacs-light)
@@ -996,12 +996,10 @@ Assumes the correct file is already visited."
       "Navigate to today's Todos section (for capture templates).
 Assumes the correct file is already visited."
       (my/journal-ensure-day-in-buffer (current-time))
+      ;; Point should be at day heading. Find the Todos subheading.
       (let ((day-end (save-excursion (org-end-of-subtree t) (point))))
-        (if (re-search-forward "^\\*\\*\\*\\* Todos$" day-end t)
-            (progn
-              (org-end-of-subtree t)
-              (unless (bolp) (insert "\n")))
-          (org-end-of-subtree t))))
+        (when (re-search-forward "^\\*\\*\\*\\* Todos" day-end t)
+          )))
 
     (defun my/journal-goto-date (date)
       "Jump to a specific DATE's journal entry using calendar picker.
@@ -1131,13 +1129,13 @@ When called interactively, prompts with calendar."
              (file+function my/journal-current-year-file my/journal-goto-today-heading)
              "***** %? :meeting:\n:PROPERTIES:\n:CREATED: %U\n:END:\n"
              :empty-lines 1)
-            ("jt" "Therapy" entry
+            ("jT" "Therapy" entry
              (file+function my/journal-current-year-file my/journal-goto-today-heading)
-             "***** %? :therapy:\n:PROPERTIES:\n:CREATED: %U\n:END:\n"
+             "* %? :therapy:\n:PROPERTIES:\n:CREATED: %U\n:END:\n"
              :empty-lines 1)
-            ("jT" "Today Todo" entry
+            ("jt" "Today Todo" entry
              (file+function my/journal-current-year-file my/journal-goto-today-todos)
-             "***** TODO %?\n"
+             "* TODO %?\n"
              :empty-lines 0)))
 
     ;; --- Agenda Views for Journal ---
