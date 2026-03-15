@@ -89,9 +89,9 @@ This function should only modify configuration layer settings."
      syntax-checking
      version-control
      javascript
-     ( python :variables
-       python-backend 'lsp
-       python-lsp-server 'pyright)
+     (python :variables
+             python-backend 'lsp
+             python-lsp-server 'pyright)
      sql
      html
      ( typescript :variables
@@ -113,7 +113,6 @@ This function should only modify configuration layer settings."
      github-copilot
      terraform
      prettier
-     (llm-client :variables llm-client-enable-gptel t)
      )
 
    ;; List of additional packages that will be installed without being
@@ -133,6 +132,7 @@ This function should only modify configuration layer settings."
                                       flatland-theme
                                       gruber-darker-theme
                                       cyberpunk-theme
+                                      solarized-theme
                                       anki-editor
                                       sml-mode
                                       keychain-environment
@@ -140,7 +140,6 @@ This function should only modify configuration layer settings."
                                       helm-xref
                                       helm-org-ql
                                       ef-themes
-                                      org-caldav
                                       kanagawa-themes
                                       all-the-icons
                                       (neoscroll :location (recipe :fetcher github :repo "0WD0/neoscroll.el"))
@@ -279,7 +278,6 @@ It should only modify the values of Spacemacs settings."
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(
-                         kanagawa-wave
                          kanagawa-dragon
                          kanagawa-lotus
                          ef-dark
@@ -301,7 +299,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Default font or prioritized list of fonts.
    dotspacemacs-default-font '("FiraCode Nerd Font"
-                               :size 14.0
+                               :size 12.0
                                :weight normal
                                :width normal)
 
@@ -491,7 +489,6 @@ It should only modify the values of Spacemacs settings."
                                          :visual nil
                                          :size-limit-kb 1000)
 
-
    ;; Code folding method. Possible values are `evil', `origami' and `vimish'.
    ;; (default 'evil)
    dotspacemacs-folding-method 'evil
@@ -664,12 +661,14 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
   ;; Bind the function to a key
   (spacemacs/set-leader-keys "hdc" 'describe-char-at-click)
 
+  (require 'org-roam-export)
   (with-eval-after-load 'org-roam
     (setq org-roam-mode-sections
           (list #'org-roam-backlinks-section
                 #'org-roam-reflinks-section
                 ;; #'org-roam-unlinked-references-section
                 ))
+    (add-hook 'logseq-org-roam-updated-hook #'org-roam-db-sync)
     )
   (with-eval-after-load 'org
     (require 'org-agenda)
@@ -688,206 +687,505 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
           '((sequence "TODO" "WAITING" "|" "DONE")))
 
 
-    (setq org-capture-templates
-          `(("i" "inbox" entry (file ,(concat org-directory "/inbox.org"))
-             "* TODO %? \n %U"
-             :prepend t)
-            ("w" "Work Todo" entry (file ,(concat org-directory "/inbox.org"))
-             "* TODO %? :work:\n")
-            ("5" "508 Todo" entry (file+olp ,(concat org-directory "/work.org") "508" "tasks")
-             "* TODO %? \n %U"
-             :prepend t)
-
-            ("b" "Blog Post Idea" entry (file+olp ,(concat org-directory "/projects.org") "blog" "Pending Articles")
-             "* TODO %? \n %U"
-             :prepend t)
-            ("p" "Project idea" entry (file+olp ,(concat org-directory "/projects.org") "Project ideas")
-             "* TODO %? \n %U"
-             :prepend t)
-            ))
-    (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
-
-    (setq daily-agenda-view
-          `("dd" "Daily Agenda"
-            (
-             (agenda ""
-                     (
-                      (org-agenda-skip-function
-                       '(or (my/org-skip-trips-scheduled)
-                            (org-agenda-skip-entry-if 'todo 'done)))
-                      (org-agenda-span 'day)
-                      (org-deadline-warning-days 5)
-                      (org-super-agenda-groups
-                       '(
-                         ( :time-grid t)
-                         ( :auto-category t)
-                         )))))))
-
-
-    (setq weekly-agenda-view
-          `("dw" "Weekly Agenda"
-            (
-             (agenda ""
-                     (
-                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                      (org-agenda-span 'week)
-                      (org-deadline-warning-days 5)
-                      (org-super-agenda-groups
-                       '((:auto-category t :time-grid t))))))))
-
-
-    (setq wait-view
-          `("dW" "All Waiting"
-            ( (todo "WAITING"
-                    ((org-agenda-overriding-header "All Waiting")
-                     (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-    (setq next-unscheduled-view
-          `("gn" "Next with no Scheduled"
-            ( (todo "TODO"
-                    ((org-agenda-overriding-header "All Waiting")
-                     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))
-                     (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-
-    (setq gtd-view
-          `("gG" "All GTD"
-            ( (tags-todo "GTD"
-                         ((org-agenda-overriding-header "All GTD")
-                          (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-    (setq gtd-persp-view
-          `("gP" "All GTD Perspectives"
-            ( (tags-todo "Persp"
-                         ((org-agenda-overriding-header "All GTD Perspectives")
-                          (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-
-    (setq gtd-project-all-view
-          `("gpp" "All GTD Projects"
-            ( (todo "PROJECT"
-                    ((org-agenda-overriding-header "All GTD Projects")
-                     (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-
-    (setq gtd-file-bad-view
-          `("gF" "GTD Needs Filing Bad"
-            ( (tags-todo "-GTD"
-                         ((org-agenda-overriding-header "Needs GTD filing badly")
-                          (org-super-agenda-groups '((:auto-property "CATEGORY"))))) )) )
-    (setq gtd-need-file-inbox
-          `("gf"  ;; key
-            "GTD Needs Filing Inbox" ;; description
-            todo ;; type
-            "TODO" ;; match
-            ;; local settings
-            ((
-              org-agenda-files '("~/Org/inbox.org")
-              org-agenda-overriding-header "Needs GTD filing")
-             (org-super-agenda-groups '((:auto-property "CATEGORY")))))  )
-
-
-    (setq gtd-all-waiting
-          `("gw"  ;; key
-            "All Waiting" ;; description
-            todo ;; type
-            "WAITING" ;; match
-            ;; local settings
-            ((
-              org-agenda-files '("~/Org/inbox.org")
-              org-agenda-overriding-header "All waiting")
-             (org-super-agenda-groups '((
-                                         :name "All Waiting" :auto-category t
-                                         )))))  )
-
-
-    (setq gtd-context-home-view
-          `("xh" "Home Context Tasks"
-            ( (todo "TODO"
-                    ((org-agenda-overriding-header "Home Context")
-                     (org-super-agenda-groups '(
-                                                (:name "Requires Home" :and ( :tag ("@home" "@laptop" "@phone") :not ( :tag "@out" :scheduled t :deadline t)))
-                                                (:discard (:anything t))
-                                                )))))))
-    (setq gtd-context-laptop-view
-          `("xl" "Laptop Context Tasks"
-            ( (todo "TODO"
-                    ((org-agenda-overriding-header "Laptop Context")
-                     (org-super-agenda-groups '(
-                                                (
-                                                 :name "can be done on phone or laptop" :and
-                                                 (:tag ( "@laptop" "@phone" ) :not (:scheduled t :deadline t)))
-                                                (:discard (:anything t))
-                                                )))))))
-
-    (setq gtd-context-out-view
-          `("xo" "Out Context Tasks"
-            ( (todo "TODO"
-                    ((org-agenda-overriding-header "Out Context")
-                     (org-super-agenda-groups '(
-                                                (:name "Requires out" :and ( :tag  "@out"  :not ( :tag "@home")))
-                                                )))))))
 
 
 
-    (add-to-list 'org-agenda-custom-commands
-                 '("bd" agenda "Today's Deadlines"
-                   ((org-agenda-span 'day)
-                    (org-agenda-skip-function '(org-agenda-skip-deadline-if-not-today))
-                    (org-agenda-entry-types '(:deadline))
-                    (org-agenda-overriding-header "Today's Deadlines "))))
-    (add-to-list 'org-agenda-custom-commands
-                 '("bs" agenda "Today's Schedule"
-                   ((org-agenda-span 'day)
-                    (org-agenda-skip-function '(org-agenda-skip-schedule-if-not-today))
-                    (org-agenda-entry-types '(:schedule))
-                    (org-agenda-overriding-header "Today's Schedule "))))
 
 
-    (defun org-agenda-skip-deadline-if-not-today ()
-      "If this function returns nil, the current match should not be skipped.
-Otherwise, the function must return a position from where the search
-should be continued."
-      (ignore-errors
-        (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-              (deadline-day
-               (time-to-days
-                (org-time-string-to-time
-                 (org-entry-get nil "DEADLINE"))))
-              (now (time-to-days (current-time))))
-          (and deadline-day
-               (not (= deadline-day now))
-               subtree-end))))
-
-    (defun org-agenda-skip-schedule-if-not-today ()
-      "If this function returns nil, the current match should not be skipped.
-Otherwise, the function must return a position from where the search
-should be continued."
-      (ignore-errors
-        (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-              (schedule-day
-               (time-to-days
-                (org-time-string-to-time
-                 (org-entry-get nil "SCHEDULED"))))
-              (now (time-to-days (current-time))))
-          (and schedule-day
-               (not (= deadline-day now))
-               subtree-end))))
-
-    (add-to-list 'org-agenda-custom-commands `,wait-view)
-    (add-to-list 'org-agenda-custom-commands `,daily-agenda-view)
-    (add-to-list 'org-agenda-custom-commands `,weekly-agenda-view)
-
-
-    (add-to-list 'org-agenda-custom-commands `,gtd-view)
-    (add-to-list 'org-agenda-custom-commands `,next-unscheduled-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-persp-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-project-all-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-file-bad-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-need-file-inbox)
-    (add-to-list 'org-agenda-custom-commands `,gtd-context-home-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-context-laptop-view)
-    (add-to-list 'org-agenda-custom-commands `,gtd-context-out-view)
-
-
-    (add-hook 'org-agenda-mode-hook #'hack-dir-local-variables-non-file-buffer)
 
     (setq org-agenda-window-setup 'current-window)
+
+    ;; ============================================================
+    ;; Hierarchical Journal System (Trilium-style)
+    ;; ============================================================
+
+    (defvar my/journal-directory (expand-file-name "journal/" org-directory)
+      "Directory for hierarchical journal files.")
+
+    (defvar my/journal-template-directory (expand-file-name "templates/" my/journal-directory)
+      "Directory for journal templates.")
+
+    ;; --- Date/Week Calculation Helpers ---
+
+    (defun my/journal-file-for-date (date)
+      "Return the journal file path for DATE (a time value)."
+      (expand-file-name
+       (format "%s.org" (format-time-string "%Y" date))
+       my/journal-directory))
+
+    (defun my/journal-current-year-file ()
+      "Return the journal file path for the current year.
+Creates the file with proper header if it doesn't exist."
+      (my/journal-ensure-file (current-time)))
+
+    (defun my/journal-week-number (date)
+      "Return ISO week number for DATE."
+      (string-to-number (format-time-string "%V" date)))
+
+    (defun my/journal-week-start (date)
+      "Return the Monday of the week containing DATE."
+      (let* ((dow (string-to-number (format-time-string "%u" date))) ; 1=Mon, 7=Sun
+             (days-since-monday (1- dow)))
+        (time-subtract date (days-to-time days-since-monday))))
+
+    (defun my/journal-week-end (date)
+      "Return the Sunday of the week containing DATE."
+      (let ((monday (my/journal-week-start date)))
+        (time-add monday (days-to-time 6))))
+
+    (defun my/journal-week-date-range (date)
+      "Return a string like 'Jan 6 - Jan 12' for the week containing DATE."
+      (let ((start (my/journal-week-start date))
+            (end (my/journal-week-end date)))
+        (format "%s - %s"
+                (format-time-string "%b %-d" start)
+                (format-time-string "%b %-d" end))))
+
+    (defun my/journal-month-for-week (date)
+      "Return which month the week belongs to (by Thursday, per ISO 8601)."
+      (let* ((monday (my/journal-week-start date))
+             (thursday (time-add monday (days-to-time 3))))
+        (format-time-string "%B" thursday)))
+
+    (defun my/journal-year-for-week (date)
+      "Return which year the week belongs to (by Thursday, per ISO 8601)."
+      (let* ((monday (my/journal-week-start date))
+             (thursday (time-add monday (days-to-time 3))))
+        (string-to-number (format-time-string "%Y" thursday))))
+
+    (defun my/journal-month-year-for-week (date)
+      "Return 'Month Year' string for the week containing DATE (by Thursday)."
+      (let* ((monday (my/journal-week-start date))
+             (thursday (time-add monday (days-to-time 3))))
+        (format-time-string "%B %Y" thursday)))
+
+    ;; --- Template Insertion ---
+
+    (defun my/journal-read-template (template-name)
+      "Read the contents of TEMPLATE-NAME from the templates directory."
+      (let ((template-file (expand-file-name
+                            (concat template-name ".org")
+                            my/journal-template-directory)))
+        (if (file-exists-p template-file)
+            (with-temp-buffer
+              (insert-file-contents template-file)
+              (buffer-string))
+          (format "Template '%s' not found at %s" template-name template-file))))
+
+    (defun my/journal-insert-daily-template ()
+      "Insert the daily review template at point."
+      (interactive)
+      (insert (my/journal-read-template "daily-review")))
+
+    (defun my/journal-insert-weekly-template ()
+      "Insert the weekly review template at point."
+      (interactive)
+      (insert (my/journal-read-template "weekly-review")))
+
+    (defun my/journal-insert-monthly-template ()
+      "Insert the monthly review template at point."
+      (interactive)
+      (insert (my/journal-read-template "monthly-review")))
+
+    ;; --- Ensure File and Structure ---
+
+    (defun my/journal-ensure-file (date)
+      "Ensure the journal file for DATE's year exists with proper header."
+      (let ((file (my/journal-file-for-date date))
+            (year (format-time-string "%Y" date)))
+        (unless (file-exists-p file)
+          (with-temp-file file
+            (insert (format "#+TITLE: Journal %s\n#+STARTUP: overview\n\n" year))))
+        file))
+
+    (defun my/journal-find-or-create-heading (level title &optional properties)
+      "Find or create a heading with TITLE at LEVEL. Return point at heading.
+PROPERTIES is an alist of property names and values to set."
+      (let ((marker (org-find-exact-headline-in-buffer title)))
+        (if marker
+            (goto-char marker)
+          ;; Need to create the heading - go to end of buffer or current subtree
+          (goto-char (point-max))
+          (unless (bolp) (insert "\n"))
+          (insert (make-string level ?*) " " title "\n")
+          (forward-line -1)
+          (when properties
+            (org-set-property (car (car properties)) (cdr (car properties)))
+            (dolist (prop (cdr properties))
+              (org-set-property (car prop) (cdr prop)))))
+        (point)))
+
+    (defun my/journal-ensure-month (date)
+      "Ensure the month heading exists for DATE. Return point at heading."
+      (let* ((month-year (my/journal-month-year-for-week date))
+             (month-name (my/journal-month-for-week date))
+             (year (my/journal-year-for-week date)))
+        (goto-char (point-min))
+        (let ((found (org-find-exact-headline-in-buffer (format "%s %d" month-name year))))
+          (if found
+              (goto-char found)
+            ;; Insert month in chronological order
+            (my/journal-insert-month-heading month-name year)))
+        (point)))
+
+    (defun my/journal-month-to-number (month-name)
+      "Convert MONTH-NAME (e.g., 'January') to number (1-12)."
+      (cdr (assoc month-name
+                  '(("January" . 1) ("February" . 2) ("March" . 3)
+                    ("April" . 4) ("May" . 5) ("June" . 6)
+                    ("July" . 7) ("August" . 8) ("September" . 9)
+                    ("October" . 10) ("November" . 11) ("December" . 12)))))
+
+    (defun my/journal-insert-month-heading (month-name year)
+      "Insert month heading in chronological order with Todos and Monthly Review."
+      (let ((target-month-num (my/journal-month-to-number month-name))
+            (insert-pos nil))
+        (goto-char (point-min))
+        ;; Find the right position to insert
+        (while (and (not insert-pos)
+                    (re-search-forward "^\\* \\([A-Za-z]+\\) \\([0-9]+\\)$" nil t))
+          (let* ((found-month (match-string 1))
+                 (found-year (string-to-number (match-string 2)))
+                 (found-month-num (my/journal-month-to-number found-month)))
+            (when (or (> found-year year)
+                      (and (= found-year year) (> found-month-num target-month-num)))
+              (setq insert-pos (line-beginning-position)))))
+        (if insert-pos
+            (goto-char insert-pos)
+          (goto-char (point-max))
+          (unless (bolp) (insert "\n")))
+        (insert (format "* %s %d\n" month-name year))
+        (insert "** Monthly Review\n")
+        (my/journal-insert-monthly-template)
+        (insert "** Todos\n")
+        (re-search-backward (format "^\\* %s %d$" month-name year) nil t)))
+
+    (defun my/journal-ensure-week (date)
+      "Ensure the week heading exists for DATE under the correct month."
+      (my/journal-ensure-month date)
+      (let* ((week-num (my/journal-week-number date))
+             (week-range (my/journal-week-date-range date))
+             (week-title (format "Week %d (%s)" week-num week-range))
+             (month-end (save-excursion (org-end-of-subtree t) (point))))
+        ;; Search within the month subtree
+        (if (re-search-forward (format "^\\*\\* Week %d " week-num) month-end t)
+            (beginning-of-line)
+          ;; Insert week in chronological order within month
+          (my/journal-insert-week-heading week-num week-range month-end))
+        (point)))
+
+    (defun my/journal-insert-week-heading (week-num week-range month-end)
+      "Insert week heading in chronological order within month."
+      (let ((insert-pos nil))
+        (save-excursion
+          (org-back-to-heading t)
+          (forward-line 1)
+          ;; Skip past Todos, Monthly Review headings
+          (while (and (< (point) month-end)
+                      (not insert-pos)
+                      (re-search-forward "^\\*\\* " month-end t))
+            (let ((heading (buffer-substring-no-properties
+                            (point) (line-end-position))))
+              (cond
+               ;; Skip Todos and Monthly Review - they come before weeks
+               ((or (string-prefix-p "Todos" heading)
+                    (string-prefix-p "Monthly Review" heading))
+                (forward-line 1))
+               ;; Found a week heading
+               ((string-match "^Week \\([0-9]+\\)" heading)
+                (let ((found-week (string-to-number (match-string 1 heading))))
+                  (if (> found-week week-num)
+                      (setq insert-pos (line-beginning-position))
+                    (forward-line 1))))
+               ;; Some other heading - insert before it
+               (t (setq insert-pos (line-beginning-position)))))))
+        (if insert-pos
+            (goto-char insert-pos)
+          (goto-char month-end)
+          (unless (bolp) (insert "\n")))
+        (insert (format "** Week %d (%s)\n" week-num week-range))
+        (insert ":PROPERTIES:\n")
+        (insert (format ":WEEK_NUM: %d\n" week-num))
+        (insert ":END:\n")
+        (insert "*** Todos\n")
+        (insert "*** Weekly Review\n")
+        (my/journal-insert-weekly-template)
+        (re-search-backward (format "^\\*\\* Week %d" week-num) nil t)))
+
+    (defun my/journal-ensure-day (date)
+      "Ensure the day heading exists for DATE under the correct week."
+      (my/journal-ensure-week date)
+      (let* ((date-str (format-time-string "%Y-%m-%d" date))
+             (day-name (format-time-string "%A" date))
+             (day-title (format "%s %s" date-str day-name))
+             (week-end (save-excursion (org-end-of-subtree t) (point))))
+        ;; Search within the week subtree
+        (if (re-search-forward (format "^\\*\\*\\* %s" (regexp-quote date-str)) week-end t)
+            (beginning-of-line)
+          ;; Insert day
+          (my/journal-insert-day-heading date date-str day-name week-end))
+        (point)))
+
+    (defun my/journal-insert-day-heading (date date-str day-name week-end)
+      "Insert day heading in chronological order within week."
+      (let ((insert-pos nil)
+            (target-time (float-time date)))
+        (save-excursion
+          (org-back-to-heading t)
+          (forward-line 1)
+          ;; Skip past Todos, Weekly Review headings
+          (while (and (< (point) week-end)
+                      (not insert-pos)
+                      (re-search-forward "^\\*\\*\\* " week-end t))
+            (let ((heading (buffer-substring-no-properties
+                            (point) (line-end-position))))
+              (cond
+               ((or (string-prefix-p "Todos" heading)
+                    (string-prefix-p "Weekly Review" heading))
+                (forward-line 1))
+               ((string-match "^\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" heading)
+                (let* ((found-date-str (match-string 1 heading))
+                       (found-time (float-time (date-to-time found-date-str))))
+                  (if (> found-time target-time)
+                      (setq insert-pos (line-beginning-position))
+                    (org-end-of-subtree t)
+                    (forward-line 1))))
+               (t (setq insert-pos (line-beginning-position)))))))
+        (if insert-pos
+            (goto-char insert-pos)
+          (goto-char week-end)
+          (unless (bolp) (insert "\n")))
+        (insert (format "*** %s %s\n" date-str day-name))
+        (insert ":PROPERTIES:\n")
+        (insert (format ":DATE: %s\n" date-str))
+        (insert ":END:\n")
+        (insert "**** Todos\n")
+        (insert "**** Daily Review\n")
+        (my/journal-insert-daily-template)
+        (insert "**** Notes\n")
+        (re-search-backward (format "^\\*\\*\\* %s" (regexp-quote date-str)) nil t)))
+
+    (defun my/journal-ensure-hierarchy (date)
+      "Create the full hierarchy for DATE: Year > Month > Week > Day."
+      (let ((file (my/journal-ensure-file date)))
+        (find-file file)
+        (my/journal-ensure-day date)))
+
+    ;; --- Navigation Functions ---
+
+    (defun my/journal-goto-today ()
+      "Jump to today's journal entry, creating it if necessary."
+      (interactive)
+      (my/journal-ensure-hierarchy (current-time))
+      (org-show-entry)
+      (org-show-children))
+
+    (defun my/journal-ensure-day-in-buffer (date)
+      "Ensure the day heading for DATE exists in the current buffer.
+For use with capture templates where the file is already visited."
+      (goto-char (point-min))
+      (my/journal-ensure-day date))
+
+    (defun my/journal-goto-today-heading ()
+      "Navigate to today's day heading (for capture templates).
+Assumes the correct file is already visited."
+      (my/journal-ensure-day-in-buffer (current-time))
+      (org-end-of-subtree t))
+
+    (defun my/journal-goto-today-todos ()
+      "Navigate to today's Todos section (for capture templates).
+Assumes the correct file is already visited."
+      (my/journal-ensure-day-in-buffer (current-time))
+      (let ((day-end (save-excursion (org-end-of-subtree t) (point))))
+        (if (re-search-forward "^\\*\\*\\*\\* Todos$" day-end t)
+            (progn
+              (org-end-of-subtree t)
+              (unless (bolp) (insert "\n")))
+          (org-end-of-subtree t))))
+
+    (defun my/journal-goto-date (date)
+      "Jump to a specific DATE's journal entry using calendar picker.
+When called interactively, prompts with calendar."
+      (interactive (list (org-read-date nil t nil "Go to date: ")))
+      (my/journal-ensure-hierarchy date)
+      (org-show-entry)
+      (org-show-children))
+
+    (defun my/journal-goto-week (&optional date)
+      "Jump to the week heading for DATE (defaults to current week)."
+      (interactive)
+      (let* ((target-date (or date (current-time)))
+             (file (my/journal-ensure-file target-date)))
+        (find-file file)
+        (my/journal-ensure-week target-date)
+        (org-show-entry)
+        (org-show-children)))
+
+    (defun my/journal-goto-month (&optional date)
+      "Jump to the month heading for DATE (defaults to current month)."
+      (interactive)
+      (let* ((target-date (or date (current-time)))
+             (file (my/journal-ensure-file target-date)))
+        (find-file file)
+        (my/journal-ensure-month target-date)
+        (org-show-entry)
+        (org-show-children)))
+
+    ;; --- Refile Helpers ---
+
+    (defun my/journal-refile-to-day ()
+      "Refile current heading to a day's Todos section."
+      (interactive)
+      (let* ((date (org-read-date nil t nil "Refile to day: "))
+             (file (my/journal-file-for-date date))
+             (date-str (format-time-string "%Y-%m-%d" date)))
+        (unless (file-exists-p file)
+          (my/journal-ensure-hierarchy date))
+        (let ((rfloc (save-excursion
+                       (find-file file)
+                       (goto-char (point-min))
+                       (when (re-search-forward
+                              (format "^\\*\\*\\* %s.*\n.*\n.*\n\\*\\*\\*\\* Todos$"
+                                      (regexp-quote date-str)) nil t)
+                         (list "Todos" file nil (point))))))
+          (if rfloc
+              (org-refile nil nil rfloc)
+            (message "Could not find Todos section for %s" date-str)))))
+
+    (defun my/journal-refile-to-week ()
+      "Refile current heading to a week's Todos section."
+      (interactive)
+      (let* ((date (org-read-date nil t nil "Refile to week of: "))
+             (file (my/journal-file-for-date date))
+             (week-num (my/journal-week-number date)))
+        (unless (file-exists-p file)
+          (my/journal-ensure-week date))
+        (let ((rfloc (save-excursion
+                       (find-file file)
+                       (goto-char (point-min))
+                       (when (re-search-forward
+                              (format "^\\*\\* Week %d.*\n.*\n.*\n\\*\\*\\* Todos$" week-num) nil t)
+                         (list "Todos" file nil (point))))))
+          (if rfloc
+              (org-refile nil nil rfloc)
+            (message "Could not find Todos section for week %d" week-num)))))
+
+    (defun my/journal-refile-to-month ()
+      "Refile current heading to a month's Todos section."
+      (interactive)
+      (let* ((date (org-read-date nil t nil "Refile to month: "))
+             (file (my/journal-file-for-date date))
+             (month-name (my/journal-month-for-week date))
+             (year (my/journal-year-for-week date)))
+        (unless (file-exists-p file)
+          (my/journal-ensure-month date))
+        ;; Ensure the month has a Todos heading
+        (save-excursion
+          (find-file file)
+          (goto-char (point-min))
+          (when (re-search-forward (format "^\\* %s %d$" month-name year) nil t)
+            (let ((month-end (save-excursion (org-end-of-subtree t) (point))))
+              (unless (re-search-forward "^\\*\\* Todos$" month-end t)
+                (forward-line 1)
+                (insert "** Todos\n")))))
+        (let ((rfloc (save-excursion
+                       (find-file file)
+                       (goto-char (point-min))
+                       (when (re-search-forward
+                              (format "^\\* %s %d\n\\*\\* Todos$" month-name year) nil t)
+                         (list "Todos" file nil (point))))))
+          (if rfloc
+              (org-refile nil nil rfloc)
+            (message "Could not find Todos section for %s %d" month-name year)))))
+
+    ;; --- Yesterday's Incomplete Todos ---
+
+    (defun my/journal-yesterday-date ()
+      "Return yesterday's date as a time value."
+      (time-subtract (current-time) (days-to-time 1)))
+
+    (defun my/journal-show-yesterday-todos ()
+      "Show yesterday's incomplete todos in an agenda view."
+      (interactive)
+      (let* ((yesterday (my/journal-yesterday-date))
+             (date-str (format-time-string "%Y-%m-%d" yesterday))
+             (file (my/journal-file-for-date yesterday)))
+        (if (file-exists-p file)
+            (org-ql-search (list file)
+              `(and (todo)
+                    (heading-regexp ,(regexp-quote date-str))
+                    (ancestors (heading-regexp ,(regexp-quote date-str))))
+              :title (format "Yesterday's Incomplete (%s)" date-str))
+          (message "No journal file found for %s" date-str))))
+
+    ;; --- Capture Templates for Journal ---
+
+    (require 'org-capture)
+    (setq org-capture-templates
+          `(("j" "Journal")
+            ("jd" "Day Note" entry
+             (file+function my/journal-current-year-file my/journal-goto-today-heading)
+             "***** %? :note:\n:PROPERTIES:\n:CREATED: %U\n:END:\n"
+             :empty-lines 1)
+            ("jm" "Meeting" entry
+             (file+function my/journal-current-year-file my/journal-goto-today-heading)
+             "***** %? :meeting:\n:PROPERTIES:\n:CREATED: %U\n:END:\n"
+             :empty-lines 1)
+            ("jt" "Therapy" entry
+             (file+function my/journal-current-year-file my/journal-goto-today-heading)
+             "***** %? :therapy:\n:PROPERTIES:\n:CREATED: %U\n:END:\n"
+             :empty-lines 1)
+            ("jT" "Today Todo" entry
+             (file+function my/journal-current-year-file my/journal-goto-today-todos)
+             "***** TODO %?\n"
+             :empty-lines 0)))
+
+    ;; --- Agenda Views for Journal ---
+
+    ;; Add journal directory to agenda files
+    (add-to-list 'org-agenda-files my/journal-directory)
+
+    ;; Journal agenda views
+    (add-to-list 'org-agenda-custom-commands
+                 '("j" . "Journal"))
+
+    (add-to-list 'org-agenda-custom-commands
+                 `("jt" "Today's Journal Todos"
+                   ((tags-todo ""
+                               ((org-agenda-files (list (my/journal-current-year-file)))
+                                (org-agenda-overriding-header "Today's Journal Todos")
+                                (org-super-agenda-groups
+                                 '((:name "Today" :date today)
+                                   (:auto-parent t))))))))
+
+    (add-to-list 'org-agenda-custom-commands
+                 `("jw" "This Week's Journal Todos"
+                   ((tags-todo ""
+                               ((org-agenda-files (list (my/journal-current-year-file)))
+                                (org-agenda-overriding-header "This Week's Journal Todos")
+                                (org-super-agenda-groups
+                                 '((:auto-parent t))))))))
+
+    ;; --- Keybindings ---
+
+    (spacemacs/declare-prefix "oj" "journal")
+    (spacemacs/set-leader-keys "ojt" 'my/journal-goto-today)
+    (spacemacs/set-leader-keys "ojd" 'my/journal-goto-date)
+    (spacemacs/set-leader-keys "ojw" 'my/journal-goto-week)
+    (spacemacs/set-leader-keys "ojm" 'my/journal-goto-month)
+    (spacemacs/set-leader-keys "ojy" 'my/journal-show-yesterday-todos)
+
+    ;; Refile helpers for org-mode
+    (spacemacs/declare-prefix-for-mode 'org-mode "mj" "journal")
+    (spacemacs/declare-prefix-for-mode 'org-mode "mjr" "refile")
+    (spacemacs/set-leader-keys-for-major-mode 'org-mode
+      "jrd" 'my/journal-refile-to-day
+      "jrw" 'my/journal-refile-to-week
+      "jrm" 'my/journal-refile-to-month)
+
+    ;; ============================================================
+    ;; End Hierarchical Journal System
+    ;; ============================================================
     )
 
   (indent-guide-global-mode)
@@ -895,6 +1193,8 @@ should be continued."
   (add-to-list 'auto-mode-alist '("\\.vue?\\'" . web-mode))
   ;; (add-to-list 'web-mode-content-types-alist '("vue". "\\.vue?\\'"))
 
+
+  (spacemacs/set-leader-keys "ori" 'org-roam-jump-to-index)
 
 
   ;; use the locally installed eslint
@@ -921,12 +1221,12 @@ should be continued."
   (with-eval-after-load 'undo-tree
     (setq undo-tree-auto-save-history nil))
 
-  ;; (defun my-web-mode-hook ()
-  ;;   "Hooks for Web mode."
-  ;;   (setq web-mode-markup-indent-offset 2)
-  ;;   (setq web-mode-code-indent-offset 2)
-  ;;   )
-  ;; (add-hook 'web-mode-hook  'my-web-mode-hook)
+  (defun my-web-mode-hook ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
+    )
+  (add-hook 'web-mode-hook  'my-web-mode-hook)
   (keychain-refresh-environment)
   ;; (fset 'vue-wrap-intl
   ;;    (kmacro-lambda-form [?w ?v ?e ?s ?\" ?v ?f ?\" ?s ?\) ?i ?$ ?t escape ?h ?v ?f ?\) ?s ?\} ?v ?f ?\} ?s ?\} escape] 0 "%d"))
@@ -974,7 +1274,18 @@ should be continued."
                           (org-element-property :end parent)))))
 
   (setq org-roam-preview-function #'my/preview-fetcher)
-
+  (defun org-replace-link-by-link-description ()
+    "Replace an org link by its description or if empty its address"
+    (interactive)
+    (if (org-in-regexp org-link-bracket-re 1)
+        (save-excursion
+          (let ((remove (list (match-beginning 0) (match-end 0)))
+                (description
+                 (if (match-end 2)
+                     (org-match-string-no-properties 2)
+                   (org-match-string-no-properties 1))))
+            (apply 'delete-region remove)
+            (insert description)))))
   (with-eval-after-load 'company
     ;; disable inline previews
     (delq 'company-preview-if-just-one-frontend company-frontends))
@@ -985,15 +1296,95 @@ should be continued."
     (define-key copilot-completion-map (kbd "C-TAB") 'copilot-accept-completion-by-word)
     (define-key copilot-completion-map (kbd "C-<tab>") 'copilot-accept-completion-by-word))
 
-  ;; (setq
-  ;;  split-width-threshold 0
-  ;;  split-height-threshold nil)
+  ;; (add-hook 'prog-mode-hook 'copilot-mode)
+  (setq
+   split-width-threshold 0
+   split-height-threshold nil)
   (setq magit-show-long-lines-warning nil)
   (custom-set-faces
    '(company-tooltip-common
      ((t (:inherit company-tooltip :weight bold :underline nil))))
    '(company-tooltip-common-selection
      ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
+  (defun trip-agenda-today ()
+    "Show agenda for today using only the current buffer, with time grid."
+    (interactive)
+    (let ((org-agenda-files (list (buffer-file-name))))
+      (org-agenda-list nil (org-read-date nil nil nil "Start date:") 1)))
+
+  (defun my/insert-agenda-view (date)
+    "Insert an agenda-like view for DATE in the current buffer."
+    (interactive "sDate (e.g. 2025-05-01): ")
+    (insert (format "* %s\n#+BEGIN_SRC emacs-lisp\n(org-agenda-list nil \"%s\" 1)\n#+END_SRC\n"
+                    date date)))
+
+  (org-add-link-type "agenda-block" 'ignore
+                     (lambda (path desc backend)
+                       (when (eq backend 'html)
+                         (format "<!-- Agenda for %s -->" path))))
+
+  (defun org-dblock-write:agenda-block (params)
+    "Insert a static agenda view for a trip itinerary.
+Supports :start (date) and :span (number of days or symbols like 'week)."
+    (let* ((date (or (plist-get params :start)
+
+                     (format-time-string "%Y-%m-%d")))
+           (span (or (plist-get params :span) 1)) ; number of days or 'week/'month
+           (org-agenda-span span)
+           (org-agenda-show-log nil)
+           (org-agenda-use-time-grid t)
+           (org-agenda-start-on-weekday nil)
+           (org-agenda-start-day date)
+           (org-agenda-prefix-format " %?-12t ")
+           (org-agenda-files (list (buffer-file-name)))
+           (output-buffer (get-buffer-create "*org-agenda-static*")))
+      (with-current-buffer output-buffer
+        (erase-buffer))
+      (org-agenda-list nil date span)
+      (let ((content (with-current-buffer "*Org Agenda*"
+                       (buffer-substring-no-properties (point-min) (point-max)))))
+        (insert "\n#+BEGIN_EXAMPLE\n")
+        (insert content)
+        (insert "#+END_EXAMPLE\n"))))
+
+
+  (defun my/insert-multi-day-itinerary (start-date num-days)
+    (interactive "sStart date (yyyy-mm-dd): \nnNumber of days: ")
+    (let ((date (date-to-time start-date)))
+      (dotimes (i num-days)
+        (let ((d (format-time-string "%Y-%m-%d" (time-add date (days-to-time i)))))
+          (insert (format "* %s\n#+BEGIN: agenda-block :day \"%s\"\n#+END:\n\n"
+                          d d))))))
+
+
+  ;; URL of the caldav server
+  (setq org-caldav-url "https://cloud.508.dev/remote.php/dav/calendars/caleb")
+
+  ;; calendar ID on server
+  (setq org-caldav-calendar-id "orgmodenext")
+
+  ;; Org filename where new entries from calendar stored
+  (setq org-caldav-inbox "~/Org/calendar.org")
+
+  ;; Additional Org files to check for calendar events
+  (setq org-caldav-files
+        (append
+         (mapcar #'expand-file-name
+                 '("~/Org/inbox.org"
+                   "~/Org/projects.org"
+                   "~/Org/trips.org"
+                   "~/Org/work.org"))
+         ))
+
+  (setq org-icalendar-include-todo 'all
+        org-caldav-sync-todo t)
+
+
+  (setq org-caldav-todo-priority '((0 nil) (1 "A") (3 "B") (5 "C") (7 "D")))
+
+  ;; Usually a good idea to set the timezone manually
+  ;; (setq org-icalendar-timezone "Asia/Taipei")
+
 
   (with-eval-after-load 'org-ql-view
     (push `("Meetings"
@@ -1008,22 +1399,14 @@ should be continued."
             )
 
           org-ql-views))
-
-  ;; (use-package neoscroll
-  ;;   :config
-  ;;   (setq neoscroll-easing 'cubic)
-  ;;   (setq neoscroll-scroll-duration 0.10)
-  ;;   (neoscroll-mode 1))
-  (with-eval-after-load 'prettier-js
-    (dolist (hook '(js2-mode-hook          ; javascript
-                    typescript-mode-hook   ; typescript
-                    web-mode-hook          ; react (jsx/tsx in web-mode), html
-                    css-mode-hook          ; css
-                    scss-mode-hook         ; scss
-                    json-mode-hook         ; json
-                    yaml-mode-hook         ; yaml
-                    markdown-mode-hook     ; markdown
-                    graphql-mode-hook))    ; graphql
-      (add-hook hook #'prettier-js-mode)))
-  (setq winum-scope 'frame-local)
+  (use-package neoscroll
+    :config
+    (setq neoscroll-easing 'cubic)
+    (setq neoscroll-scroll-duration 0.10)
+    (neoscroll-mode 1))
+  (with-eval-after-load 'indent-guide
+    (dolist (m '(helm-major-mode helm-mode))
+      (add-to-list 'indent-guide-inhibit-modes m)))
+  )
+(defun dotspacemacs/emacs-custom-settings ()
   )
