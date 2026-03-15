@@ -855,6 +855,10 @@ PROPERTIES is an alist of property names and values to set."
           (goto-char (point-max))
           (unless (bolp) (insert "\n")))
         (insert (format "* %s %d\n" month-name year))
+        (insert ":PROPERTIES:\n")
+        (insert (format ":DATE: %s\n"
+                        (format-time-string "%Y-%m")))
+        (insert ":END:\n")
         (insert "** Monthly Review\n")
         (my/journal-insert-monthly-template)
         (insert "** Todos\n")
@@ -906,6 +910,8 @@ PROPERTIES is an alist of property names and values to set."
         (insert (format "** Week %d (%s)\n" week-num week-range))
         (insert ":PROPERTIES:\n")
         (insert (format ":WEEK_NUM: %d\n" week-num))
+        (insert (format ":DATE: %s\n"
+                        (format-time-string "%G-W%V")))
         (insert ":END:\n")
         (insert "*** Todos\n")
         (insert "*** Weekly Review\n")
