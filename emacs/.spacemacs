@@ -1272,24 +1272,60 @@ When called interactively, prompts with calendar."
               (org-refile nil nil rfloc)
             (message "Could not find Todos section for %s %d" month-name year)))))
 
-    ;; --- Yesterday's Incomplete Todos ---
+    ;; --- Journal Todo Views (org-ql based) ---
 
-    (defun my/journal-yesterday-date ()
-      "Return yesterday's date as a time value."
-      (time-subtract (current-time) (days-to-time 1)))
+    (defun my/journal-show-today-todos ()
+      "Show today's journal todos using org-ql."
+      (interactive)
+      (let* ((date-str (format-time-string "%Y-%m-%d"))
+             (file (my/journal-current-year-file)))
+        (if (file-exists-p file)
+            (org-ql-search (list file)
+              `(and (todo)
+                    (ancestors (heading-regexp ,(concat "^" (regexp-quote date-str)))))
+              :title (format "Today's Todos (%s)" date-str)
+              :super-groups '((:auto-parent t)))
+          (message "No journal file found"))))
+
+    (defun my/journal-show-week-todos ()
+      "Show this week's journal todos using org-ql."
+      (interactive)
+      (let* ((week-num (my/journal-week-number (current-time)))
+             (file (my/journal-current-year-file)))
+        (if (file-exists-p file)
+            (org-ql-search (list file)
+              `(and (todo)
+                    (ancestors (property "WEEK_NUM" ,(number-to-string week-num))))
+              :title (format "Week %d Todos" week-num)
+              :super-groups '((:auto-parent t)))
+          (message "No journal file found"))))
+
+    (defun my/journal-show-month-todos ()
+      "Show this month's journal todos using org-ql."
+      (interactive)
+      (let* ((month-name (format-time-string "%B"))
+             (year (format-time-string "%Y"))
+             (file (my/journal-current-year-file)))
+        (if (file-exists-p file)
+            (org-ql-search (list file)
+              `(and (todo)
+                    (ancestors (heading-regexp ,(concat "^" month-name " " year))))
+              :title (format "%s %s Todos" month-name year)
+              :super-groups '((:auto-parent t)))
+          (message "No journal file found"))))
 
     (defun my/journal-show-yesterday-todos ()
-      "Show yesterday's incomplete todos in an agenda view."
+      "Show yesterday's incomplete todos using org-ql."
       (interactive)
-      (let* ((yesterday (my/journal-yesterday-date))
+      (let* ((yesterday (time-subtract (current-time) (days-to-time 1)))
              (date-str (format-time-string "%Y-%m-%d" yesterday))
              (file (my/journal-file-for-date yesterday)))
         (if (file-exists-p file)
             (org-ql-search (list file)
               `(and (todo)
-                    (heading-regexp ,(regexp-quote date-str))
-                    (ancestors (heading-regexp ,(regexp-quote date-str))))
-              :title (format "Yesterday's Incomplete (%s)" date-str))
+                    (ancestors (heading-regexp ,(concat "^" (regexp-quote date-str)))))
+              :title (format "Yesterday's Incomplete (%s)" date-str)
+              :super-groups '((:auto-parent t)))
           (message "No journal file found for %s" date-str))))
 
     ;; --- Capture Templates for Journal ---
@@ -1323,31 +1359,20 @@ When called interactively, prompts with calendar."
     (add-to-list 'org-agenda-custom-commands
                  '("j" . "Journal"))
 
-    (add-to-list 'org-agenda-custom-commands
-                 `("jt" "Today's Journal Todos"
-                   ((tags-todo ""
-                               ((org-agenda-files (list (my/journal-current-year-file)))
-                                (org-agenda-overriding-header "Today's Journal Todos")
-                                (org-super-agenda-groups
-                                 '((:name "Today" :date today)
-                                   (:auto-parent t))))))))
-
-    (add-to-list 'org-agenda-custom-commands
-                 `("jw" "This Week's Journal Todos"
-                   ((tags-todo ""
-                               ((org-agenda-files (list (my/journal-current-year-file)))
-                                (org-agenda-overriding-header "This Week's Journal Todos")
-                                (org-super-agenda-groups
-                                 '((:auto-parent t))))))))
-
     ;; --- Keybindings ---
 
     (spacemacs/declare-prefix "oj" "journal")
+    ;; Navigation
     (spacemacs/set-leader-keys "ojt" 'my/journal-goto-today)
     (spacemacs/set-leader-keys "ojd" 'my/journal-goto-date)
     (spacemacs/set-leader-keys "ojw" 'my/journal-goto-week)
     (spacemacs/set-leader-keys "ojm" 'my/journal-goto-month)
-    (spacemacs/set-leader-keys "ojy" 'my/journal-show-yesterday-todos)
+    ;; Todo views (org-ql)
+    (spacemacs/declare-prefix "ojv" "view todos")
+    (spacemacs/set-leader-keys "ojvt" 'my/journal-show-today-todos)
+    (spacemacs/set-leader-keys "ojvw" 'my/journal-show-week-todos)
+    (spacemacs/set-leader-keys "ojvm" 'my/journal-show-month-todos)
+    (spacemacs/set-leader-keys "ojvy" 'my/journal-show-yesterday-todos)
 
     ;; Refile helpers for org-mode
     (spacemacs/declare-prefix-for-mode 'org-mode "mj" "journal")
