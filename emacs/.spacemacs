@@ -740,7 +740,7 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                                                ":END:\n"
                                                "#+title: ${title}\n"
                                                "#+filetags: :book:\n\n"
-                                               "* Summary\n"))
+                                               ))
                    :unnarrowed t))
 
     (add-to-list 'org-roam-capture-templates
@@ -808,23 +808,38 @@ Optional PARAMS:
         (org-table-align)))
 
     ;; ============================================================
-    ;; End Book Notes / Reading Session System
+    ;; End Book Notes / Reading Session System (org-roam parts)
     ;; ============================================================
     )
 
-  ;; Book Notes / Reading Session keybindings (outside with-eval-after-load)
+  ;; Book Notes / Reading Session - Interactive commands (outside with-eval-after-load for helm visibility)
+  (defun my/reading-capture-note ()
+    "Capture a note linked to the current book."
+    (interactive)
+    (if my/reading-current-book
+        (org-roam-capture nil "n")
+      (message "No reading session active. Start one with SPC o r s")))
+
+  (defun my/reading-capture-book ()
+    "Capture a new book entry."
+    (interactive)
+    (org-roam-capture nil "b"))
+
+  (defun my/reading-find-book ()
+    "Find a book node."
+    (interactive)
+    (org-roam-node-find nil nil
+                        (lambda (node) (member "book" (org-roam-node-tags node)))))
+
+  ;; Book Notes / Reading Session keybindings
   (spacemacs/declare-prefix "or" "roam/reading")
   (spacemacs/set-leader-keys
     "ors" 'my/reading-start-session
     "ore" 'my/reading-end-session
-    "orn" (lambda () (interactive)
-            (if my/reading-current-book
-                (org-roam-capture nil "n")
-              (message "No reading session active. Start one with SPC o r s")))
-    "orb" (lambda () (interactive) (org-roam-capture nil "b"))
-    "orf" (lambda () (interactive)
-            (org-roam-node-find nil nil
-                                (lambda (node) (member "book" (org-roam-node-tags node))))))
+    "orn" 'my/reading-capture-note
+    "orb" 'my/reading-capture-book
+    "orf" 'my/reading-find-book)
+
   (with-eval-after-load 'org
     (require 'org-agenda)
     (org-super-agenda-mode)
@@ -1519,30 +1534,30 @@ Supports :start (date) and :span (number of days or symbols like 'week)."
                           d d))))))
 
 
-  ;; URL of the caldav server
-  (setq org-caldav-url "https://cloud.508.dev/remote.php/dav/calendars/caleb")
+  ;; ;; URL of the caldav server
+  ;; (setq org-caldav-url "https://cloud.508.dev/remote.php/dav/calendars/caleb")
 
-  ;; calendar ID on server
-  (setq org-caldav-calendar-id "orgmodenext")
+  ;; ;; calendar ID on server
+  ;; (setq org-caldav-calendar-id "orgmodenext")
 
-  ;; Org filename where new entries from calendar stored
-  (setq org-caldav-inbox "~/Org/calendar.org")
+  ;; ;; Org filename where new entries from calendar stored
+  ;; (setq org-caldav-inbox "~/Org/calendar.org")
 
-  ;; Additional Org files to check for calendar events
-  (setq org-caldav-files
-        (append
-         (mapcar #'expand-file-name
-                 '("~/Org/inbox.org"
-                   "~/Org/projects.org"
-                   "~/Org/trips.org"
-                   "~/Org/work.org"))
-         ))
+  ;; ;; Additional Org files to check for calendar events
+  ;; (setq org-caldav-files
+  ;;       (append
+  ;;        (mapcar #'expand-file-name
+  ;;                '("~/Org/inbox.org"
+  ;;                  "~/Org/projects.org"
+  ;;                  "~/Org/trips.org"
+  ;;                  "~/Org/work.org"))
+  ;;        ))
 
-  (setq org-icalendar-include-todo 'all
-        org-caldav-sync-todo t)
+  ;; (setq org-icalendar-include-todo 'all
+  ;;       org-caldav-sync-todo t)
 
 
-  (setq org-caldav-todo-priority '((0 nil) (1 "A") (3 "B") (5 "C") (7 "D")))
+  ;; (setq org-caldav-todo-priority '((0 nil) (1 "A") (3 "B") (5 "C") (7 "D")))
 
   ;; Usually a good idea to set the timezone manually
   ;; (setq org-icalendar-timezone "Asia/Taipei")
