@@ -1024,7 +1024,7 @@ PROPERTIES is an alist of property names and values to set."
             (goto-char insert-pos)
           (goto-char (point-max))
           (unless (bolp) (insert "\n")))
-        (insert (format "* %s \n" month-name ))
+        (insert (format "* %s %d\n" month-name year))
         (insert ":PROPERTIES:\n")
         (insert (format ":DATE: %s\n"
                         (format-time-string "%Y-%m")))
