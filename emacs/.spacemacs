@@ -854,7 +854,7 @@ Optional PARAMS:
                                      (tags . " %i %-12:c %-6e")
                                      (search . " %i %-12:c%-6e")))
     (setq org-todo-keywords
-          '((sequence "TODO" "WAITING" "|" "DONE")))
+          '((sequence "TODO" "|" "DONE")))
 
 
 
@@ -1024,7 +1024,7 @@ PROPERTIES is an alist of property names and values to set."
             (goto-char insert-pos)
           (goto-char (point-max))
           (unless (bolp) (insert "\n")))
-        (insert (format "* %s %d\n" month-name year))
+        (insert (format "* %s \n" month-name ))
         (insert ":PROPERTIES:\n")
         (insert (format ":DATE: %s\n"
                         (format-time-string "%Y-%m")))
