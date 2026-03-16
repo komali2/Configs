@@ -61,7 +61,7 @@ This function should only modify configuration layer settings."
           org-projectile-file "~/Org/projects.org"
           org-enable-roam-support t
           org-enable-org-journal-support t
-          org-roam-directory "~/Org/notes/"
+          org-roam-directory "~/Org/zetel/"
           org-roam-index-file "~/Org/notes/20200526213916-index.org"
           org-default-notes-file (concat org-directory "/inbox.org")
           org-roam-v2-ack t
@@ -140,7 +140,7 @@ This function should only modify configuration layer settings."
                                       helm-xref
                                       helm-org-ql
                                       ef-themes
-                                      ;; kanagawa-themes
+                                      kanagawa-themes
                                       all-the-icons
                                       (neoscroll :location (recipe :fetcher github :repo "0WD0/neoscroll.el"))
                                       )
@@ -662,6 +662,13 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
   (spacemacs/set-leader-keys "hdc" 'describe-char-at-click)
 
   (require 'org-roam-export)
+
+  ;; ============================================================
+  ;; Book Notes / Reading Session System - Variable (must be before functions)
+  ;; ============================================================
+  (defvar my/reading-current-book nil
+    "Current book node ID for reading session.")
+
   (with-eval-after-load 'org-roam
     (setq org-roam-mode-sections
           (list #'org-roam-backlinks-section
@@ -669,7 +676,84 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                 ;; #'org-roam-unlinked-references-section
                 ))
     (add-hook 'logseq-org-roam-updated-hook #'org-roam-db-sync)
+
+    ;; ============================================================
+    ;; Book Notes / Reading Session System - Functions
+    ;; ============================================================
+
+    (defun my/reading-start-session ()
+      "Start a reading session by selecting or creating a book."
+      (interactive)
+      (let ((node (org-roam-node-read nil
+                                      (lambda (node)
+                                        (member "book" (org-roam-node-tags node)))
+                                      nil nil "Select book: ")))
+        (if node
+            (progn
+              (setq my/reading-current-book (org-roam-node-id node))
+              (message "Reading session started: %s (ID: %s)"
+                       (org-roam-node-title node)
+                       my/reading-current-book))
+          (message "No book selected."))))
+
+    (defun my/reading-end-session ()
+      "End the current reading session."
+      (interactive)
+      (setq my/reading-current-book nil)
+      (message "Reading session ended."))
+
+    (defun my/reading-current-book-title ()
+      "Get the title of the current book, or nil."
+      (when my/reading-current-book
+        (org-roam-node-title (org-roam-node-from-id my/reading-current-book))))
+
+    (defun my/reading-book-link-string ()
+      "Return a link string to the current book, or empty string."
+      (if my/reading-current-book
+          (format "Source: [[id:%s][%s]]\n"
+                  my/reading-current-book
+                  (my/reading-current-book-title))
+        ""))
+
+    (defun my/reading-insert-book-link ()
+      "Insert a link to the current book at point."
+      (interactive)
+      (let ((link (my/reading-book-link-string)))
+        (if (string-empty-p link)
+            (message "No reading session active.")
+          (insert link))))
+
+    ;; Capture templates for books and notes
+    (add-to-list 'org-roam-capture-templates
+                 `("b" "Book" plain "%?"
+                   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                      ":PROPERTIES:\n:ID: %(org-id-new)\n:END:\n#+title: ${title}\n#+filetags: :book:\n\n* Metadata\n:PROPERTIES:\n:AUTHOR: %^{Author}\n:YEAR: %^{Year}\n:END:\n\n* Summary\n")
+                   :unnarrowed t))
+
+    (add-to-list 'org-roam-capture-templates
+                 `("n" "Note (linked to current book)" plain "%?"
+                   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                      ":PROPERTIES:\n:ID: %(org-id-new)\n:END:\n#+title: ${title}\n#+filetags: :note:\n\n%(my/reading-book-link-string)")
+                   :unnarrowed t))
+
+    ;; ============================================================
+    ;; End Book Notes / Reading Session System
+    ;; ============================================================
     )
+
+  ;; Book Notes / Reading Session keybindings (outside with-eval-after-load)
+  (spacemacs/declare-prefix "or" "roam/reading")
+  (spacemacs/set-leader-keys
+    "ors" 'my/reading-start-session
+    "ore" 'my/reading-end-session
+    "orn" (lambda () (interactive)
+            (if my/reading-current-book
+                (org-roam-capture nil "n")
+              (message "No reading session active. Start one with SPC o r s")))
+    "orb" (lambda () (interactive) (org-roam-capture nil "b"))
+    "orf" (lambda () (interactive)
+            (org-roam-node-find nil nil
+                                (lambda (node) (member "book" (org-roam-node-tags node))))))
   (with-eval-after-load 'org
     (require 'org-agenda)
     (org-super-agenda-mode)
