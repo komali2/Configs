@@ -727,7 +727,20 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
     (add-to-list 'org-roam-capture-templates
                  `("b" "Book" plain "%?"
                    :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                                      ":PROPERTIES:\n:ID: %(org-id-new)\n:END:\n#+title: ${title}\n#+filetags: :book:\n\n* Metadata\n:PROPERTIES:\n:AUTHOR: %^{Author}\n:YEAR: %^{Year}\n:END:\n\n* Summary\n")
+                                      ,(concat ":PROPERTIES:\n"
+                                               ":ID: %(org-id-new)\n"
+                                               ":AUTHOR: %^{Author}\n"
+                                               ":YEAR: %^{Year}\n"
+                                               ":TYPE: %^{Type|book|article|video|paper|podcast}\n"
+                                               ":STATUS: %^{Status|reading|to-read|completed|abandoned}\n"
+                                               ":DATE_STARTED: %^{Date started (empty if not started)}\n"
+                                               ":DATE_FINISHED: \n"
+                                               ":RATING: \n"
+                                               ":GENRE: %^{Genre (optional)}\n"
+                                               ":END:\n"
+                                               "#+title: ${title}\n"
+                                               "#+filetags: :book:\n\n"
+                                               "* Summary\n"))
                    :unnarrowed t))
 
     (add-to-list 'org-roam-capture-templates
@@ -735,6 +748,64 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                    :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                                       ":PROPERTIES:\n:ID: %(org-id-new)\n:END:\n#+title: ${title}\n#+filetags: :note:\n\n%(my/reading-book-link-string)")
                    :unnarrowed t))
+
+    ;; Dynamic block for reading list table
+    (defun my/reading-list-get-books ()
+      "Get all org-roam nodes with :book: tag and their properties."
+      (let ((nodes (seq-filter
+                    (lambda (node)
+                      (member "book" (org-roam-node-tags node)))
+                    (org-roam-node-list))))
+        (mapcar (lambda (node)
+                  (let* ((file (org-roam-node-file node))
+                         (props (with-temp-buffer
+                                  (insert-file-contents file)
+                                  (org-mode)
+                                  (org-element-map (org-element-parse-buffer) 'node-property
+                                    (lambda (p)
+                                      (cons (org-element-property :key p)
+                                            (org-element-property :value p)))))))
+                    (list :title (org-roam-node-title node)
+                          :id (org-roam-node-id node)
+                          :author (or (cdr (assoc "AUTHOR" props)) "")
+                          :year (or (cdr (assoc "YEAR" props)) "")
+                          :type (or (cdr (assoc "TYPE" props)) "")
+                          :status (or (cdr (assoc "STATUS" props)) "")
+                          :started (or (cdr (assoc "DATE_STARTED" props)) "")
+                          :finished (or (cdr (assoc "DATE_FINISHED" props)) "")
+                          :rating (or (cdr (assoc "RATING" props)) "")
+                          :genre (or (cdr (assoc "GENRE" props)) ""))))
+                nodes)))
+
+    (defun org-dblock-write:reading-list (params)
+      "Generate a table of all books from org-roam.
+Optional PARAMS:
+  :status - filter by status (e.g., \"reading\", \"completed\")
+  :type - filter by type (e.g., \"book\", \"article\")"
+      (let* ((status-filter (plist-get params :status))
+             (type-filter (plist-get params :type))
+             (books (my/reading-list-get-books))
+             (filtered (seq-filter
+                        (lambda (book)
+                          (and (or (null status-filter)
+                                   (string= (plist-get book :status) status-filter))
+                               (or (null type-filter)
+                                   (string= (plist-get book :type) type-filter))))
+                        books)))
+        (insert "| Title | Author | Type | Status | Started | Finished | Rating | Genre |\n")
+        (insert "|-------|--------|------|--------|---------|----------|--------|-------|\n")
+        (dolist (book filtered)
+          (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s | %s | %s | %s |\n"
+                          (plist-get book :id)
+                          (plist-get book :title)
+                          (plist-get book :author)
+                          (plist-get book :type)
+                          (plist-get book :status)
+                          (plist-get book :started)
+                          (plist-get book :finished)
+                          (plist-get book :rating)
+                          (plist-get book :genre))))
+        (org-table-align)))
 
     ;; ============================================================
     ;; End Book Notes / Reading Session System
