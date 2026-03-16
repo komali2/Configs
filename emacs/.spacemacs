@@ -1393,7 +1393,10 @@ When called interactively, prompts with calendar."
    '(company-tooltip-common
      ((t (:inherit company-tooltip :weight bold :underline nil))))
    '(company-tooltip-common-selection
-     ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
+     ((t (:inherit company-tooltip-selection :weight bold :underline nil))))
+   ;; Make org-roam buffer titles look like links
+   '(org-roam-title
+     ((t (:inherit link :weight bold)))))
   (defun trip-agenda-today ()
     "Show agenda for today using only the current buffer, with time grid."
     (interactive)
