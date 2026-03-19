@@ -123,6 +123,8 @@ This function should only modify configuration layer settings."
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
    dotspacemacs-additional-packages '(org-super-agenda
+                                      calfw
+                                      calfw-org
                                       color-theme-sanityinc-tomorrow
                                       leuven-theme
                                       monokai-theme
@@ -1092,17 +1094,16 @@ PROPERTIES is an alist of property names and values to set."
       "Ensure the day heading exists for DATE under the correct week."
       (my/journal-ensure-week date)
       (let* ((date-str (format-time-string "%Y-%m-%d" date))
-             (day-name (format-time-string "%A" date))
-             (day-title (format "%s %s" date-str day-name))
+             (day-abbrev (format-time-string "%a" date))
              (week-end (save-excursion (org-end-of-subtree t) (point))))
-        ;; Search within the week subtree
-        (if (re-search-forward (format "^\\*\\*\\* %s" (regexp-quote date-str)) week-end t)
+        ;; Search within the week subtree - match both old format (2026-03-19) and new (<2026-03-19)
+        (if (re-search-forward (format "^\\*\\*\\* <?%s" (regexp-quote date-str)) week-end t)
             (beginning-of-line)
           ;; Insert day
-          (my/journal-insert-day-heading date date-str day-name week-end))
+          (my/journal-insert-day-heading date date-str day-abbrev week-end))
         (point)))
 
-    (defun my/journal-insert-day-heading (date date-str day-name week-end)
+    (defun my/journal-insert-day-heading (date date-str day-abbrev week-end)
       "Insert day heading in chronological order within week."
       (let ((insert-pos nil)
             (target-time (float-time date)))
@@ -1119,7 +1120,8 @@ PROPERTIES is an alist of property names and values to set."
                ((or (string-prefix-p "Todos" heading)
                     (string-prefix-p "Weekly Review" heading))
                 (forward-line 1))
-               ((string-match "^\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" heading)
+               ;; Match both old (2026-03-19) and new (<2026-03-19 Thu>) formats
+               ((string-match "^<?\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" heading)
                 (let* ((found-date-str (match-string 1 heading))
                        (found-time (float-time (date-to-time found-date-str))))
                   (if (> found-time target-time)
@@ -1131,7 +1133,7 @@ PROPERTIES is an alist of property names and values to set."
             (goto-char insert-pos)
           (goto-char week-end)
           (unless (bolp) (insert "\n")))
-        (insert (format "*** %s %s\n" date-str day-name))
+        (insert (format "*** <%s %s>\n" date-str day-abbrev))
         (insert ":PROPERTIES:\n")
         (insert (format ":DATE: %s\n" date-str))
         (insert ":END:\n")
@@ -1139,7 +1141,7 @@ PROPERTIES is an alist of property names and values to set."
         (insert "**** Daily Review\n")
         (my/journal-insert-daily-template)
         (insert "**** Notes\n")
-        (re-search-backward (format "^\\*\\*\\* %s" (regexp-quote date-str)) nil t)))
+        (re-search-backward (format "^\\*\\*\\* <%s %s>" (regexp-quote date-str) day-abbrev) nil t)))
 
     (defun my/journal-ensure-hierarchy (date)
       "Create the full hierarchy for DATE: Year > Month > Week > Day."
@@ -1218,8 +1220,9 @@ When called interactively, prompts with calendar."
         (let ((rfloc (save-excursion
                        (find-file file)
                        (goto-char (point-min))
+                       ;; Match both old and new date formats
                        (when (re-search-forward
-                              (format "^\\*\\*\\* %s.*\n.*\n.*\n\\*\\*\\*\\* Todos$"
+                              (format "^\\*\\*\\* <?%s.*\n.*\n.*\n\\*\\*\\*\\* Todos$"
                                       (regexp-quote date-str)) nil t)
                          (list "Todos" file nil (point))))))
           (if rfloc
@@ -1282,7 +1285,7 @@ When called interactively, prompts with calendar."
         (if (file-exists-p file)
             (org-ql-search (list file)
               `(and (todo)
-                    (ancestors (heading-regexp ,(concat "^" (regexp-quote date-str)))))
+                    (ancestors (heading-regexp ,(concat "^<?" (regexp-quote date-str)))))
               :title (format "Today's Todos (%s)" date-str)
               :super-groups '((:auto-parent t)))
           (message "No journal file found"))))
@@ -1323,7 +1326,7 @@ When called interactively, prompts with calendar."
         (if (file-exists-p file)
             (org-ql-search (list file)
               `(and (todo)
-                    (ancestors (heading-regexp ,(concat "^" (regexp-quote date-str)))))
+                    (ancestors (heading-regexp ,(concat "^<?" (regexp-quote date-str)))))
               :title (format "Yesterday's Incomplete (%s)" date-str)
               :super-groups '((:auto-parent t)))
           (message "No journal file found for %s" date-str))))
@@ -1381,6 +1384,11 @@ When called interactively, prompts with calendar."
       "jrd" 'my/journal-refile-to-day
       "jrw" 'my/journal-refile-to-week
       "jrm" 'my/journal-refile-to-month)
+
+    ;; Calendar view (calfw)
+    (require 'calfw)
+    (require 'calfw-org)
+    (spacemacs/set-leader-keys "ojc" 'cfw:open-org-calendar)
 
     ;; ============================================================
     ;; End Hierarchical Journal System
@@ -1601,11 +1609,6 @@ Supports :start (date) and :span (number of days or symbols like 'week)."
             )
 
           org-ql-views))
-  (use-package neoscroll
-    :config
-    (setq neoscroll-easing 'cubic)
-    (setq neoscroll-scroll-duration 0.10)
-    (neoscroll-mode 1))
   (with-eval-after-load 'indent-guide
     (dolist (m '(helm-major-mode helm-mode))
       (add-to-list 'indent-guide-inhibit-modes m)))
