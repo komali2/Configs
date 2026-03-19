@@ -1386,9 +1386,13 @@ When called interactively, prompts with calendar."
       "jrm" 'my/journal-refile-to-month)
 
     ;; Calendar view (calfw)
-    (require 'calfw)
-    (require 'calfw-org)
-    (spacemacs/set-leader-keys "ojc" 'cfw:open-org-calendar)
+    (defun my/open-journal-calendar ()
+      "Open calfw calendar for journal."
+      (interactive)
+      (require 'calfw)
+      (require 'calfw-org)
+      (calfw-org-open-calendar))
+    (spacemacs/set-leader-keys "ojc" 'my/open-journal-calendar)
 
     ;; ============================================================
     ;; End Hierarchical Journal System
