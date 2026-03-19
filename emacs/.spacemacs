@@ -1385,13 +1385,190 @@ When called interactively, prompts with calendar."
       "jrw" 'my/journal-refile-to-week
       "jrm" 'my/journal-refile-to-month)
 
-    ;; Calendar view (calfw)
+    ;; Calendar view (calfw) with custom week/month TODO source
+
+    ;; Helper: convert emacs time to calfw date format (month day year)
+    (defun my/time-to-cfw-date (time)
+      "Convert TIME to calfw date format (month day year)."
+      (let ((decoded (decode-time time)))
+        (list (nth 4 decoded) (nth 3 decoded) (nth 5 decoded))))
+
+    ;; Helper: convert calfw date to emacs time
+    (defun my/cfw-date-to-time (cfw-date)
+      "Convert calfw date (month day year) to emacs time."
+      (encode-time 0 0 0 (nth 1 cfw-date) (nth 0 cfw-date) (nth 2 cfw-date)))
+
+    ;; Helper: get week start/end dates from ISO week string
+    (defun my/iso-week-to-date-range (iso-week-string)
+      "Convert ISO week string '2026-W12' to (start-time . end-time) cons."
+      (when (string-match "\\([0-9]+\\)-W\\([0-9]+\\)" iso-week-string)
+        (let* ((year (string-to-number (match-string 1 iso-week-string)))
+               (week (string-to-number (match-string 2 iso-week-string)))
+               ;; ISO week 1 contains Jan 4. Find Monday of week 1.
+               (jan-4 (encode-time 0 0 0 4 1 year))
+               (jan-4-dow (string-to-number (format-time-string "%u" jan-4)))
+               (week-1-monday (time-subtract jan-4 (days-to-time (1- jan-4-dow))))
+               ;; Target week's Monday and Sunday
+               (target-monday (time-add week-1-monday (days-to-time (* 7 (1- week)))))
+               (target-sunday (time-add target-monday (days-to-time 6))))
+          (cons target-monday target-sunday))))
+
+    ;; Helper: get month start/end dates
+    (defun my/month-to-date-range (year month-name)
+      "Get (start-time . end-time) for MONTH-NAME in YEAR."
+      (let ((month-num (cdr (assoc month-name
+                                   '(("January" . 1) ("February" . 2) ("March" . 3)
+                                     ("April" . 4) ("May" . 5) ("June" . 6)
+                                     ("July" . 7) ("August" . 8) ("September" . 9)
+                                     ("October" . 10) ("November" . 11) ("December" . 12))))))
+        (when month-num
+          (let* ((start (encode-time 0 0 0 1 month-num year))
+                 ;; Last day: go to 1st of next month, subtract 1 day
+                 (next-month (if (= month-num 12) 1 (1+ month-num)))
+                 (next-year (if (= month-num 12) (1+ year) year))
+                 (end (time-subtract (encode-time 0 0 0 1 next-month next-year)
+                                     (days-to-time 1))))
+            (cons start end)))))
+
+    ;; Helper: check if two date ranges overlap
+    (defun my/date-ranges-overlap-p (range1-start range1-end range2-start range2-end)
+      "Check if two date ranges overlap."
+      (and (time-less-p range1-start range2-end)
+           (time-less-p range2-start range1-end)))
+
+    ;; Get week-level TODOs as calfw period items
+    (defun my/journal-get-week-period-items (view-start view-end)
+      "Get week-level TODOs that overlap with VIEW-START to VIEW-END."
+      (let ((file (my/journal-current-year-file))
+            (items '()))
+        (when (and file (file-exists-p file))
+          (with-current-buffer (find-file-noselect file)
+            (save-excursion
+              (goto-char (point-min))
+              ;; Find all Week headings
+              (while (re-search-forward "^\\*\\* Week \\([0-9]+\\)" nil t)
+                (let* ((week-start (match-beginning 0))
+                       (week-props-start (save-excursion
+                                           (goto-char week-start)
+                                           (when (re-search-forward ":DATE: \\([0-9]+-W[0-9]+\\)"
+                                                                    (save-excursion (org-end-of-subtree t) (point)) t)
+                                             (match-string 1))))
+                       (date-range (when week-props-start
+                                     (my/iso-week-to-date-range week-props-start))))
+                  (when (and date-range
+                             (car date-range)
+                             (cdr date-range)
+                             (my/date-ranges-overlap-p (car date-range) (cdr date-range)
+                                                       view-start view-end))
+                    ;; Find Todos section under this week
+                    (save-excursion
+                      (goto-char week-start)
+                      (let ((week-end (save-excursion (org-end-of-subtree t) (point))))
+                        (when (re-search-forward "^\\*\\*\\* Todos$" week-end t)
+                          (let ((todos-end (save-excursion (org-end-of-subtree t) (point))))
+                            ;; Find all TODO items directly under this Todos section
+                            (while (re-search-forward "^\\*\\*\\*\\* \\(TODO\\|DONE\\) \\(.+\\)$" todos-end t)
+                              (let* ((status (match-string 1))
+                                     (title (match-string 2))
+                                     (start-cfw (my/time-to-cfw-date (car date-range)))
+                                     (end-cfw (my/time-to-cfw-date (cdr date-range))))
+                                (when (and start-cfw end-cfw
+                                           (nth 0 start-cfw) (nth 1 start-cfw) (nth 2 start-cfw)
+                                           (nth 0 end-cfw) (nth 1 end-cfw) (nth 2 end-cfw))
+                                  (push (list start-cfw end-cfw
+                                              (substring-no-properties
+                                               (concat (if (string= status "DONE") "✓ " "▶ ") title)))
+                                        items))))))))))))))
+        items))
+
+    ;; Get month-level TODOs as calfw period items
+    (defun my/journal-get-month-period-items (view-start view-end)
+      "Get month-level TODOs that overlap with VIEW-START to VIEW-END."
+      (let ((file (my/journal-current-year-file))
+            (items '()))
+        (when (and file (file-exists-p file))
+          (with-current-buffer (find-file-noselect file)
+            (save-excursion
+              (goto-char (point-min))
+              ;; Find all Month headings (e.g., "* March 2026")
+              (while (re-search-forward "^\\* \\([A-Za-z]+\\) \\([0-9]+\\)$" nil t)
+                (let* ((month-name (match-string 1))
+                       (year (string-to-number (match-string 2)))
+                       (month-start (match-beginning 0))
+                       (date-range (my/month-to-date-range year month-name)))
+                  (when (and date-range
+                             (car date-range)
+                             (cdr date-range)
+                             (my/date-ranges-overlap-p (car date-range) (cdr date-range)
+                                                       view-start view-end))
+                    ;; Find Todos section under this month (** Todos)
+                    (save-excursion
+                      (goto-char month-start)
+                      (let ((month-end (save-excursion (org-end-of-subtree t) (point))))
+                        (when (re-search-forward "^\\*\\* Todos$" month-end t)
+                          (let ((todos-end (save-excursion (org-end-of-subtree t) (point))))
+                            ;; Find all TODO items directly under this Todos section
+                            (while (re-search-forward "^\\*\\*\\* \\(TODO\\|DONE\\) \\(.+\\)$" todos-end t)
+                              (let* ((status (match-string 1))
+                                     (title (match-string 2))
+                                     (start-cfw (my/time-to-cfw-date (car date-range)))
+                                     (end-cfw (my/time-to-cfw-date (cdr date-range))))
+                                (when (and start-cfw end-cfw
+                                           (nth 0 start-cfw) (nth 1 start-cfw) (nth 2 start-cfw)
+                                           (nth 0 end-cfw) (nth 1 end-cfw) (nth 2 end-cfw))
+                                  (push (list start-cfw end-cfw
+                                              (substring-no-properties
+                                               (concat (if (string= status "DONE") "✓ " "◆ ") title)))
+                                        items))))))))))))))
+        items))
+
+    ;; The data source function for calfw - returns both contents and periods
+    (defun my/journal-period-data-fn (begin end)
+      "Return calfw data with periods for week/month TODOs between BEGIN and END."
+      (let* ((start-time (my/cfw-date-to-time begin))
+             (end-time (my/cfw-date-to-time end))
+             (week-periods (my/journal-get-week-period-items start-time end-time))
+             (month-periods (my/journal-get-month-period-items start-time end-time))
+             ;; Deduplicate by title (3rd element)
+             (seen-titles (make-hash-table :test 'equal))
+             (all-periods '()))
+        ;; Add week periods first (higher priority)
+        (dolist (p week-periods)
+          (let ((title (nth 2 p)))
+            (unless (gethash title seen-titles)
+              (puthash title t seen-titles)
+              (push p all-periods))))
+        ;; Add month periods (lower priority, will be limited)
+        (dolist (p month-periods)
+          (let ((title (nth 2 p)))
+            (unless (gethash title seen-titles)
+              (puthash title t seen-titles)
+              (push p all-periods))))
+        ;; Reverse to maintain order, then limit to avoid rendering issues
+        (setq all-periods (nreverse all-periods))
+        (when (> (length all-periods) 20)
+          (setq all-periods (seq-take all-periods 20)))
+        ;; Return format: list with (cons 'periods period-list)
+        (list (cons 'periods all-periods))))
+
+
+
     (defun my/open-journal-calendar ()
-      "Open calfw calendar for journal."
+      "Open calfw calendar for journal with week/month TODO periods."
       (interactive)
       (require 'calfw)
       (require 'calfw-org)
-      (calfw-org-open-calendar))
+      (let ((org-source (calfw-org-create-source nil "Org" "Green"))
+            (period-source (make-calfw-source
+                            :name "Journal Periods"
+                            :color "SteelBlue"
+                            :period-bgcolor "MidnightBlue"
+                            :period-fgcolor "White"
+                            :data 'my/journal-period-data-fn)))
+        (calfw-open-calendar-buffer
+         :contents-sources (list org-source period-source))))
+
+
     (spacemacs/set-leader-keys "ojc" 'my/open-journal-calendar)
 
     ;; ============================================================
