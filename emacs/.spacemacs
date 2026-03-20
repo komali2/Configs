@@ -1522,6 +1522,68 @@ When called interactively, prompts with calendar."
                                         items))))))))))))))
         items))
 
+    ;; Get day-level TODOs as regular calfw items (not periods)
+    (defun my/journal-get-day-items (view-start view-end)
+      "Get day-level TODOs between VIEW-START and VIEW-END as calfw content items."
+      (let ((file (my/journal-current-year-file))
+            (items '()))
+        (when (and file (file-exists-p file))
+          (with-current-buffer (find-file-noselect file)
+            (save-excursion
+              (goto-char (point-min))
+              ;; Find all day headings - match both old (2026-03-20 Thursday) and new (<2026-03-20 Thu>) formats
+              (while (re-search-forward "^\\*\\*\\* <?\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" nil t)
+                (let* ((date-str (match-string 1))
+                       (day-date (date-to-time (concat date-str " 00:00:00")))
+                       (day-cfw (my/time-to-cfw-date day-date))
+                       (day-start (line-beginning-position))
+                       (day-end (save-excursion (org-end-of-subtree t) (point))))
+                  ;; Check if this day is in our view range
+                  (when (and (not (time-less-p day-date view-start))
+                             (time-less-p day-date view-end))
+                    ;; Find Todos section under this day
+                    (save-excursion
+                      (goto-char day-start)
+                      (when (re-search-forward "^\\*\\*\\*\\* Todos$" day-end t)
+                        (let ((todos-end (save-excursion (org-end-of-subtree t) (point))))
+                          ;; Find all TODO items
+                          (while (re-search-forward "^\\*\\*\\*\\*\\* \\(TODO\\|DONE\\) \\(.+\\)$" todos-end t)
+                            (let ((status (match-string 1))
+                                  (title (substring-no-properties (match-string 2))))
+                              (push (cons day-cfw
+                                          (concat (if (string= status "DONE") "✓ " "• ") title))
+                                    items))))))))))))
+        items))
+
+    ;; Debug function for day items
+    (defun my/debug-journal-day-items ()
+      "Debug: show what day items would be generated."
+      (interactive)
+      (let* ((now (current-time))
+             (month (nth 4 (decode-time now)))
+             (year (nth 5 (decode-time now)))
+             (start-time (encode-time 0 0 0 1 month year))
+             (end-time (encode-time 0 0 0 28 month year)))
+        (message "Day items: %S" (my/journal-get-day-items start-time end-time))))
+
+    (defun my/journal-day-data-fn (begin end)
+      "Return calfw data with day-level TODOs."
+      (let* ((start-time (my/cfw-date-to-time begin))
+             (end-time (my/cfw-date-to-time end))
+             (raw-items (my/journal-get-day-items start-time end-time))
+             (grouped (make-hash-table :test 'equal)))
+        ;; Group items by date
+        (dolist (item raw-items)
+          (let ((date (car item))
+                (text (cdr item)))
+            (puthash date (cons text (gethash date grouped '())) grouped)))
+        ;; Convert to alist format: ((date item1 item2 ...) ...)
+        (let ((result '()))
+          (maphash (lambda (date items)
+                     (push (cons date (nreverse items)) result))
+                   grouped)
+          result)))
+
     ;; Separate data functions for week and month periods
     (defun my/journal-week-period-data-fn (begin end)
       "Return calfw data with week-level TODO periods."
@@ -1544,11 +1606,14 @@ When called interactively, prompts with calendar."
         (list (cons 'periods periods))))
 
     (defun my/open-journal-calendar ()
-      "Open calfw calendar for journal with separate week/month TODO sources."
+      "Open calfw calendar for journal with day/week/month TODO sources."
       (interactive)
       (require 'calfw)
       (require 'calfw-org)
-      (let ((org-source (calfw-org-create-source nil "Day" "Green"))
+      (let ((day-source (make-calfw-source
+                         :name "Day"
+                         :color "Green"
+                         :data 'my/journal-day-data-fn))
             (week-source (make-calfw-source
                           :name "Week"
                           :color "SteelBlue"
@@ -1562,7 +1627,7 @@ When called interactively, prompts with calendar."
                            :period-fgcolor "White"
                            :data 'my/journal-month-period-data-fn)))
         (calfw-open-calendar-buffer
-         :contents-sources (list org-source week-source month-source))))
+         :contents-sources (list day-source week-source month-source))))
 
 
     (spacemacs/set-leader-keys "ojc" 'my/open-journal-calendar)
