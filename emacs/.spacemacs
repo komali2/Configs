@@ -790,9 +790,13 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
       "Generate a table of all books from org-roam.
 Optional PARAMS:
   :status - filter by status (e.g., \"reading\", \"completed\")
-  :type - filter by type (e.g., \"book\", \"article\")"
+  :type - filter by type (e.g., \"book\", \"article\")
+  :sort - sort by field (title, author, status, started, finished, rating)
+  :reverse - if non-nil, reverse sort order"
       (let* ((status-filter (plist-get params :status))
              (type-filter (plist-get params :type))
+             (sort-field (plist-get params :sort))
+             (reverse-sort (plist-get params :reverse))
              (books (my/reading-list-get-books))
              (filtered (seq-filter
                         (lambda (book)
@@ -800,10 +804,20 @@ Optional PARAMS:
                                    (string= (plist-get book :status) status-filter))
                                (or (null type-filter)
                                    (string= (plist-get book :type) type-filter))))
-                        books)))
+                        books))
+             (sorted (if sort-field
+                         (let ((key (intern (concat ":" (symbol-name sort-field)))))
+                           (sort filtered
+                                 (lambda (a b)
+                                   (let ((va (or (plist-get a key) ""))
+                                         (vb (or (plist-get b key) "")))
+                                     (if reverse-sort
+                                         (string> va vb)
+                                       (string< va vb))))))
+                       filtered)))
         (insert "| Title | Author | Type | Status | Started | Finished | Rating | Genre |\n")
         (insert "|-------|--------|------|--------|---------|----------|--------|-------|\n")
-        (dolist (book filtered)
+        (dolist (book sorted)
           (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s | %s | %s | %s |\n"
                           (plist-get book :id)
                           (plist-get book :title)
