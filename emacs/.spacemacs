@@ -1522,51 +1522,47 @@ When called interactively, prompts with calendar."
                                         items))))))))))))))
         items))
 
-    ;; The data source function for calfw - returns both contents and periods
-    (defun my/journal-period-data-fn (begin end)
-      "Return calfw data with periods for week/month TODOs between BEGIN and END."
+    ;; Separate data functions for week and month periods
+    (defun my/journal-week-period-data-fn (begin end)
+      "Return calfw data with week-level TODO periods."
       (let* ((start-time (my/cfw-date-to-time begin))
              (end-time (my/cfw-date-to-time end))
-             (week-periods (my/journal-get-week-period-items start-time end-time))
-             (month-periods (my/journal-get-month-period-items start-time end-time))
-             ;; Deduplicate by title (3rd element)
-             (seen-titles (make-hash-table :test 'equal))
-             (all-periods '()))
-        ;; Add week periods first (higher priority)
-        (dolist (p week-periods)
-          (let ((title (nth 2 p)))
-            (unless (gethash title seen-titles)
-              (puthash title t seen-titles)
-              (push p all-periods))))
-        ;; Add month periods (lower priority, will be limited)
-        (dolist (p month-periods)
-          (let ((title (nth 2 p)))
-            (unless (gethash title seen-titles)
-              (puthash title t seen-titles)
-              (push p all-periods))))
-        ;; Reverse to maintain order, then limit to avoid rendering issues
-        (setq all-periods (nreverse all-periods))
-        (when (> (length all-periods) 20)
-          (setq all-periods (seq-take all-periods 20)))
-        ;; Return format: list with (cons 'periods period-list)
-        (list (cons 'periods all-periods))))
+             (periods (my/journal-get-week-period-items start-time end-time)))
+        ;; Limit to avoid rendering issues
+        (when (> (length periods) 15)
+          (setq periods (seq-take periods 15)))
+        (list (cons 'periods periods))))
 
-
+    (defun my/journal-month-period-data-fn (begin end)
+      "Return calfw data with month-level TODO periods."
+      (let* ((start-time (my/cfw-date-to-time begin))
+             (end-time (my/cfw-date-to-time end))
+             (periods (my/journal-get-month-period-items start-time end-time)))
+        ;; Limit to avoid rendering issues
+        (when (> (length periods) 10)
+          (setq periods (seq-take periods 10)))
+        (list (cons 'periods periods))))
 
     (defun my/open-journal-calendar ()
-      "Open calfw calendar for journal with week/month TODO periods."
+      "Open calfw calendar for journal with separate week/month TODO sources."
       (interactive)
       (require 'calfw)
       (require 'calfw-org)
-      (let ((org-source (calfw-org-create-source nil "Org" "Green"))
-            (period-source (make-calfw-source
-                            :name "Journal Periods"
-                            :color "SteelBlue"
-                            :period-bgcolor "MidnightBlue"
-                            :period-fgcolor "White"
-                            :data 'my/journal-period-data-fn)))
+      (let ((org-source (calfw-org-create-source nil "Day" "Green"))
+            (week-source (make-calfw-source
+                          :name "Week"
+                          :color "SteelBlue"
+                          :period-bgcolor "MidnightBlue"
+                          :period-fgcolor "White"
+                          :data 'my/journal-week-period-data-fn))
+            (month-source (make-calfw-source
+                           :name "Month"
+                           :color "DarkOrange"
+                           :period-bgcolor "SaddleBrown"
+                           :period-fgcolor "White"
+                           :data 'my/journal-month-period-data-fn)))
         (calfw-open-calendar-buffer
-         :contents-sources (list org-source period-source))))
+         :contents-sources (list org-source week-source month-source))))
 
 
     (spacemacs/set-leader-keys "ojc" 'my/open-journal-calendar)
