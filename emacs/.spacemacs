@@ -628,7 +628,7 @@ This function defines the environment variables for your Emacs session. By
 default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
-  (spacemacs/load-spacemacs-env)
+  ;; (spacemacs/load-spacemacs-env)
   )
 
 (defun dotspacemacs/user-init ()
@@ -1875,6 +1875,16 @@ Supports :start (date) and :span (number of days or symbols like 'week)."
   (with-eval-after-load 'indent-guide
     (dolist (m '(helm-major-mode helm-mode))
       (add-to-list 'indent-guide-inhibit-modes m)))
+  (defun my/set-gpg-agent-ssh-sock ()
+    "Set Emacs SSH environment from gpg-agent."
+    (let ((sock (string-trim
+                 (shell-command-to-string
+                  "gpgconf --list-dirs agent-ssh-socket"))))
+      (when (and sock (not (string-empty-p sock)))
+        (setenv "SSH_AUTH_SOCK" sock)
+        (setenv "SSH_AGENT_PID" nil))))
+
+  (my/set-gpg-agent-ssh-sock)
   )
 (defun dotspacemacs/emacs-custom-settings ()
   )
