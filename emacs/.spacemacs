@@ -395,6 +395,14 @@ It should only modify the values of Spacemacs settings."
    ;; displayed in the current window. (default nil)
    dotspacemacs-switch-to-buffer-prefers-purpose nil
 
+   ;; Make consecutive tab key presses after commands such as
+   ;; `spacemacs/alternate-buffer' (SPC TAB) cycle through previous
+   ;; buffers/windows/etc. Please see the option's docstring for more information.
+   ;; Set the option to t in order to enable cycling for all current and
+   ;; future cycling commands. Alternatively, choose a subset of the currently
+   ;; supported commands: '(alternate-buffer alternate-window). (default nil)
+   dotspacemacs-enable-cycling nil
+
    ;; Whether side windows (such as those created by treemacs or neotree)
    ;; are kept or minimized by `spacemacs/toggle-maximize-window' (SPC w m).
    ;; (default t)
@@ -513,7 +521,9 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil pressing the closing parenthesis `)' key in insert mode passes
    ;; over any automatically added closing parenthesis, bracket, quote, etc...
-   ;; This can be temporary disabled by pressing `C-q' before `)'. (default nil)
+   ;; This can be temporary disabled by pressing `C-q' before `)'.
+   ;; Only effective when `dotspacemacs-activate-smartparens-mode' is non-nil.
+   ;; Redundant when `smartparens-strict-mode' is enabled. (default nil)
    dotspacemacs-smart-closing-parenthesis nil
 
    ;; Select a scope to highlight delimiters. Possible values are `any',
@@ -542,11 +552,10 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-search-tools '("rg" "ag" "ack" "grep")
 
    ;; The backend used for undo/redo functionality. Possible values are
-   ;; `undo-fu', `undo-redo' and `undo-tree' see also `evil-undo-system'.
+   ;; `undo-redo', `undo-fu' and `undo-tree' see also `evil-undo-system'.
    ;; Note that saved undo history does not get transferred when changing
-   ;; your undo system. The default is currently `undo-fu' as `undo-tree'
-   ;; is not maintained anymore and `undo-redo' is very basic."
-   dotspacemacs-undo-system 'undo-fu
+   ;; your undo system from or to undo-tree. (default `undo-redo')
+   dotspacemacs-undo-system 'undo-redo
 
    ;; Format specification for setting the frame title.
    ;; %a - the `abbreviated-file-name', or `buffer-name'
@@ -628,7 +637,7 @@ This function defines the environment variables for your Emacs session. By
 default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
-  ;; (spacemacs/load-spacemacs-env)
+  (spacemacs/load-spacemacs-env)
   )
 
 (defun dotspacemacs/user-init ()
@@ -684,32 +693,15 @@ Similar to the C-u version of `what-cursor-position` but for a clicked position.
                 #'org-roam-reflinks-section
                 ;; #'org-roam-unlinked-references-section
                 ))
+
+    ;; Collapse headlines in org-roam buffer by default
+    (add-to-list 'magit-section-initial-visibility-alist '(org-roam-node-section . hide))
+
     (add-hook 'logseq-org-roam-updated-hook #'org-roam-db-sync)
 
     ;; ============================================================
     ;; Book Notes / Reading Session System - Functions
     ;; ============================================================
-
-    (defun my/reading-start-session ()
-      "Start a reading session by selecting or creating a book."
-      (interactive)
-      (let ((node (org-roam-node-read nil
-                                      (lambda (node)
-                                        (member "book" (org-roam-node-tags node)))
-                                      nil nil "Select book: ")))
-        (if node
-            (progn
-              (setq my/reading-current-book (org-roam-node-id node))
-              (message "Reading session started: %s (ID: %s)"
-                       (org-roam-node-title node)
-                       my/reading-current-book))
-          (message "No book selected."))))
-
-    (defun my/reading-end-session ()
-      "End the current reading session."
-      (interactive)
-      (setq my/reading-current-book nil)
-      (message "Reading session ended."))
 
     (defun my/reading-current-book-title ()
       "Get the title of the current book, or nil."
@@ -836,6 +828,26 @@ Optional PARAMS:
     )
 
   ;; Book Notes / Reading Session - Interactive commands (outside with-eval-after-load for helm visibility)
+  (defun my/reading-start-session ()
+    "Start a reading session by selecting or creating a book."
+    (interactive)
+    (let ((node (org-roam-node-read nil
+                                    (lambda (node)
+                                      (member "book" (org-roam-node-tags node)))
+                                    nil nil "Select book: ")))
+      (if node
+          (progn
+            (setq my/reading-current-book (org-roam-node-id node))
+            (message "Reading session started: %s (ID: %s)"
+                     (org-roam-node-title node)
+                     my/reading-current-book))
+        (message "No book selected."))))
+
+  (defun my/reading-end-session ()
+    "End the current reading session."
+    (interactive)
+    (setq my/reading-current-book nil)
+    (message "Reading session ended."))
   (defun my/reading-capture-note ()
     "Capture a note linked to the current book."
     (interactive)
@@ -1875,6 +1887,7 @@ Supports :start (date) and :span (number of days or symbols like 'week)."
   (with-eval-after-load 'indent-guide
     (dolist (m '(helm-major-mode helm-mode))
       (add-to-list 'indent-guide-inhibit-modes m)))
+  (setq winum-scope 'frame-local)
   (defun my/set-gpg-agent-ssh-sock ()
     "Set Emacs SSH environment from gpg-agent."
     (let ((sock (string-trim
