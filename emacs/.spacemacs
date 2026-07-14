@@ -61,7 +61,7 @@ This function should only modify configuration layer settings."
           org-projectile-file "~/Org/projects.org"
           org-enable-roam-support t
           org-enable-org-journal-support t
-          org-roam-directory "~/Org/zetel/"
+          org-roam-directory "~/Org"
           org-roam-index-file "~/Org/notes/20200526213916-index.org"
           org-default-notes-file (concat org-directory "/inbox.org")
           org-roam-v2-ack t
@@ -75,6 +75,7 @@ This function should only modify configuration layer settings."
           org-enable-roam-ui t
           org-enable-roam-protocol t
           org-roam-file-exclude-regexp "\\.git/.*\\|logseq/.*$"
+          org-enable-modern-support t
           ;; org-agenda-use-tag-inheritance nil
           ;; org-use-tag-inheritance nil
           ;; wasn't working for some reason with regex
